@@ -18,7 +18,7 @@ export class GameLifecycle {
 
         for (const layer of state.currentRoom.getLayersSortedFromTop()) {
             for (const instance of layer.getActorInstances()) {
-                if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(event.x, event.y)) {
+                if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(event.x, event.y)) {
                     instance.actor.callPointerInput(instance, state, event);
                 }
             }
@@ -43,8 +43,8 @@ export class GameLifecycle {
     }
 
     draw(state: GameState, canvas: GameCanvas): void {
+        canvas.setOrigin(-state.currentRoom.camera.x, -state.currentRoom.camera.y);
         canvas.clear();
-        canvas.origin = [-state.currentRoom.camera.x, -state.currentRoom.camera.y];
 
         for (const layer of state.currentRoom.getLayersSortedFromBottom()) {
             layer.draw(state, canvas);

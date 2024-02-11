@@ -18,19 +18,19 @@ export interface CanvasDrawOptions {
 export interface GameCanvas {
     height: number;
     width: number;
-    origin: [number, number];
 
     clear(): void;
+    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options?: CanvasDrawOptions): void;
+    drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawOptions): void;
     fill(width: number, height: number, color: string): void;
     fillArea(x: number, y: number, width: number, height: number, color: string): void;
-    drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawOptions): void;
-    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options?: CanvasDrawOptions): void;
+    setOrigin(x: number, y: number): void;
 }
 
 export class GameCanvasHtml2D implements GameCanvas {
     private backgroundColor: string = '#fff';
     private canvas: HTMLCanvasElement;
-    origin: [number, number] = [0, 0];
+    private origin: [number, number] = [0, 0];
 
     private get canvasContext2D(): CanvasRenderingContext2D {
         return this.canvas.getContext('2d');
@@ -46,6 +46,9 @@ export class GameCanvasHtml2D implements GameCanvas {
         if (options.height) {
             gc.canvas.height = options.height;
         }
+        if (options.width) {
+            gc.canvas.width = options.width;
+        }
 
         if (!gc.canvas) {
             throw new Error(`Attempted to attach to invalid canvas element ID: ${elementId}.`);
@@ -58,18 +61,9 @@ export class GameCanvasHtml2D implements GameCanvas {
 
     clear(): void {
         this.canvasContext2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.fillArea(0, 0, this.canvas.width, this.canvas.height, this.backgroundColor);
-    }
-
-    fill(width: number, height: number, color: string): void {
-        const [x, y] = this.origin;
-        this.fillArea(x, y, width, height, color);
-    }
-
-    fillArea(x: number, y: number, width: number, height: number, color: string): void {
-        this.canvasContext2D.beginPath();
-        this.canvasContext2D.rect(x, y, width, height);
-        this.canvasContext2D.fillStyle = color;
+        
+        this.canvasContext2D.rect(0, 0, this.canvas.width, this.canvas.height);
+        this.canvasContext2D.fillStyle = this.backgroundColor;
         this.canvasContext2D.fill();
     }
 
@@ -94,13 +88,8 @@ export class GameCanvasHtml2D implements GameCanvas {
             const repetition = options.repeatX && options.repeatY ? 'repeat' : options.repeatX ? 'repeat-x' : 'repeat-y';
             const pattern = this.canvasContext2D.createPattern(image, repetition);
             this.canvasContext2D.fillStyle = pattern;
-
-            const fillHeight = options.repeatHeight || this.height;
-            const fillWidth = options.repeatWidth || this.width;
-            
-            // TODO: need separate function for drawBackgroundImage, or something
             this.canvasContext2D.translate(originX, originY);
-            this.canvasContext2D.fillRect( destX, destY, fillWidth, fillHeight);
+            this.canvasContext2D.fillRect( destX, destY, options.repeatWidth || this.width, options.repeatHeight || this.height);
             this.canvasContext2D.translate(-originX, -originY)
         }
         else {
@@ -111,5 +100,23 @@ export class GameCanvasHtml2D implements GameCanvas {
         if (previousOpacity !== null) {
             this.canvasContext2D.globalAlpha = previousOpacity;
         }
+    }
+
+    fill(width: number, height: number, color: string): void {
+        const [x, y] = this.origin;
+        this.fillArea(x, y, width, height, color);
+    }
+
+    fillArea(x: number, y: number, width: number, height: number, color: string): void {
+        const [originX, originY] = this.origin;
+
+        this.canvasContext2D.beginPath();
+        this.canvasContext2D.rect(x + originX, y + originY, width, height);
+        this.canvasContext2D.fillStyle = color;
+        this.canvasContext2D.fill();
+    }
+
+    setOrigin(x: number, y: number): void {
+        this.origin = [x, y];
     }
 }

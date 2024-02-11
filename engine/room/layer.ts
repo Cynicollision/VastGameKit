@@ -126,11 +126,6 @@ export class Layer {
 
     step(state: GameState): void {
 
-        if (this._followingCamera) {
-            this.x = this._followingCamera.x;
-            this.y = this._followingCamera.y;
-        }
-
         if (this.onStepCallback) {
             this.onStepCallback(this, state);
         }
@@ -164,6 +159,16 @@ export class Layer {
                 this.gameEventHandlerRegistry[event.name](this, state, event);
             }
         }
+
+        this.updatePosition();
+    }
+
+    // TODO way to follow camera at offset
+    private updatePosition(): void {
+        if (this._followingCamera) {
+            this.x = this._followingCamera.x;
+            this.y = this._followingCamera.y;
+        }
     }
 
     onDraw(callback: LayerLifecycleDrawCallback): void {
@@ -192,7 +197,6 @@ export class Layer {
             this.onDestroyCallback(this, state);
         }
     }
-
     
     setBackground(colorOrSprite: string | Sprite): void {
         if (typeof colorOrSprite === 'string') {
@@ -207,12 +211,14 @@ export class Layer {
         this._followingCamera = view;
     }
 
-
     createInstance(actorName: string, x?: number, y?: number): ActorInstance {
         const instanceId = this.room.game.nextActorInstanceID();
         const actor = this.room.game.getActor(actorName);
 
-        const newInstance = ActorInstance.spawn(instanceId, actor, x || 0, y || 0);
+        const spawnX = (x || 0) + this.x;
+        const spawnY = (y || 0) + this.y;
+
+        const newInstance = ActorInstance.spawn(instanceId, actor, this, spawnX, spawnY);
 
         if (!this.actorInstanceRegistryByActor[actorName]) {
             this.actorInstanceRegistryByActor[actorName] = [];

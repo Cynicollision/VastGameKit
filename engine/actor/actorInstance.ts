@@ -3,8 +3,8 @@ import { ActorInstanceBehavior, ActorInstanceBehaviorName } from './actorInstanc
 import { ActorInstanceMotionBehavior } from './actorInstanceMotionBehavior';
 import { GameCanvas } from './../device';
 import { GameState } from './../game';
+import { Layer } from './../room';
 import { SpriteAnimation } from './../sprite';
-
 
 export enum ActorInstanceStatus {
     New = 'New',
@@ -13,14 +13,10 @@ export enum ActorInstanceStatus {
 }
 
 export class ActorInstance {
-    private previousX: number;
-    private previousY: number;
-
-    private _id: number;
-    get id() { return this._id; }
-
-    private _actor: Actor;
-    get actor() { return this._actor; }
+    private readonly behaviors: ActorInstanceBehavior[] = [];
+    readonly id: number;
+    readonly actor: Actor;
+    readonly layer: Layer;
 
     private _animation: SpriteAnimation;
     get animation() { return this._animation; }
@@ -28,28 +24,24 @@ export class ActorInstance {
     private _status: ActorInstanceStatus;
     get status() { return this._status; }
 
-    private _behaviors: ActorInstanceBehavior[] = [];
-    get behaviors() { return this._behaviors; }
-
     private _motion: ActorInstanceMotionBehavior;
     get motion() { return this._motion; }
 
     x: number = 0;
     y: number = 0;
 
-    get hasMoved(): boolean {
-        return (this.x !== this.previousX || this.y !== this.previousY);
-    }
-
     // allow properties to dynamically be assigned to ActorInstances.
     [x: string | number | symbol]: unknown;
 
-    static spawn(id: number, actor: Actor, x: number, y: number): ActorInstance {
-        const instance = new ActorInstance(id, actor);
+    static spawn(id: number, actor: Actor, layer: Layer, x: number, y: number): ActorInstance {
+        const instance = new ActorInstance(id, actor, layer);
         instance.x = x; 
         instance.y = y;
 
-        instance._animation = SpriteAnimation.forSprite(actor.sprite);
+        if (actor.sprite) {
+            instance._animation = SpriteAnimation.forSprite(actor.sprite);
+        }
+        
         instance._status = ActorInstanceStatus.New;
 
         for (const behavior of actor.behaviors) {
@@ -59,19 +51,21 @@ export class ActorInstance {
         return instance;
     }
 
-    private constructor(id: number, actor: Actor) {
-        this._id = id;
-        this._actor = actor;
+    private constructor(id: number, actor: Actor, layer: Layer) {
+        this.id = id;
+        this.actor = actor;
+        this.layer = layer;
+        this._status = ActorInstanceStatus.New;
     }
 
     applyBeforeStepBehaviors(state: GameState): void {
-        for (const behavior of this._behaviors) {
+        for (const behavior of this.behaviors) {
             behavior.beforeStep(this, state);
         }
     }
 
     applyAfterStepBehaviors(state: GameState): void {
-        for (const behavior of this._behaviors) {
+        for (const behavior of this.behaviors) {
             behavior.afterStep(this, state);
         }
     }
@@ -86,10 +80,10 @@ export class ActorInstance {
 
     draw(state: GameState, canvas: GameCanvas): void {
         if (this._animation) {
-            this._animation.draw(canvas, this.x, this.y);
+            this._animation.draw(canvas, this.x + this.layer.x, this.y + this.layer.y);
         }
 
-        this._actor.callDraw(this, state, canvas);
+        this.actor.callDraw(this, state, canvas);
     }
 
     callStep(state: GameState): void {
@@ -102,7 +96,7 @@ export class ActorInstance {
         if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
             const motion = new ActorInstanceMotionBehavior();
             this._motion = motion;
-            this._behaviors.push(motion);
+            this.behaviors.push(motion);
         }
         
     }

@@ -75,6 +75,18 @@ export class Room {
         }
     }
 
+    onStart(callback: RoomLifecycleCallback): void {
+        this.onStartCallback = callback;
+    }
+
+    start(state: GameState): void {
+        if (this.onStartCallback) {
+            this.onStartCallback(this, state);
+        }
+
+        this._status = RoomStatus.Running;
+    }
+
     step(state: GameState): void {
         this._camera.updatePosition();
 
@@ -91,18 +103,6 @@ export class Room {
                 layer.step(state);
             }
         }
-    }
-
-    onStart(callback: RoomLifecycleCallback): void {
-        this.onStartCallback = callback;
-    }
-
-    start(state: GameState): void {
-        if (this.onStartCallback) {
-            this.onStartCallback(this, state);
-        }
-
-        this._status = RoomStatus.Running;
     }
 
     onGameEvent(eventName: string, callback: LayerLifecycleEventCallback): void {

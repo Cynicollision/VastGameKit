@@ -86,9 +86,25 @@ act1.onDestroy((self, state) => {
 });
 
 // DefaultRoom
-game.defaultRoom.onStart((self, state) => {
-    
+game.defaultRoom.options.persistent = true
+const hud1 = game.defaultRoom.createLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 });
+hud1.setBackground('#0A0');
 
+const sprButton = game.defineSprite('sprButton', './resources/pinkblue.png');
+const button = game.defineActor('button', { sprite: sprButton });
+button.onCreate((self, state) => button.setBoundaryFromSprite());
+button.onPointerInput('mousedown', (self, state, event) => {
+    alert('button!');
+    //self.destroy();
+});
+
+
+hud1.onCreate((self, state) => {
+    self.createInstance('button', 16, 16);
+    self.follow(self.room.camera);
+});
+
+game.defaultRoom.onStart((self, state) => {
     console.log('defaultRoom.onStart');
     const player = self.createInstance('actor1', 256, 256);
     self.camera.follow(player, 300, 300);
@@ -107,11 +123,10 @@ game.defaultRoom.defaultLayer.onCreate((self, state) => {
 })
 
 // Room1
-const room1 = game.defineRoom('room1', { persistent: true });
+const room1 = game.defineRoom('room1', { persistent: false });
 room1.setBackground('#C00');
-
-const hud = room1.createLayer('hud', { height: 64, width: 800, x: 16, y: 16 });
-hud.setBackground(game.getSprite('sky'));
+const hud2 = room1.createLayer('hud2', { height: 64, width: 800, x: 16, y: 16 });
+hud2.setBackground(game.getSprite('sky'));
 
 room1.onStart((self, state) => {
     console.log('room1.onStart');
@@ -126,7 +141,7 @@ room1.onResume((self, state) => {
 room1.defaultLayer.onCreate((self, state) => {
     console.log('room1.defaultLayer.onCreate');
 
-    hud.createInstance('actor1', 32, 32);
+    hud2.createInstance('actor1', 32, 32);
 });
 
 // load and start the game
