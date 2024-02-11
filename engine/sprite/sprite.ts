@@ -32,7 +32,7 @@ export class Sprite {
         return this._options.width || this._image.width;
     }
 
-    static fromImage(name: string, source: string, options?: SpriteOptions): Sprite {
+    static fromImage(name: string, source: string, options: SpriteOptions = {}): Sprite {
         const sprite = new Sprite(name, options);
         sprite._image = new Image();
         sprite.image.src = source;

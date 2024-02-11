@@ -1,20 +1,17 @@
 import { VastGameKit } from './../engine/vastgamekit';
-import { ActorInstanceBehaviorName, Direction } from './../engine/actor';
+import { Direction } from './../engine/actor';
+import { SpriteTransformation } from '../engine/sprite/sprite';
 
 const game = VastGameKit.init({ canvasElementId: 'gameCanvas' });
 
 const spr1 = game.defineSprite('sprite1', './resources/playerShip3_blue.png');
 const act1 = game.defineActor('actor1', { sprite: spr1 });
-
-// TODO act1.useBasicMotionBehavior()
-act1.useBehavior(ActorInstanceBehaviorName.BasicMotion);
+act1.useBasicMotionBehavior();
 
 // Actor1
 act1.onCreate((self, state) => {
-    act1.setBoundaryFromSprite(); // TODO make possible to do outside of lifecycle, i.e. load image if its not already loaded
-
-
     console.log('act1.onCreate');
+    act1.setBoundaryFromSprite(); // TODO make possible to do outside of lifecycle, i.e. load image if its not already loaded
 
     self.stats = { health: 100 };
 });
@@ -90,8 +87,11 @@ act1.onDestroy((self, state) => {
 
 // DefaultRoom
 game.defaultRoom.onStart((self, state) => {
+    
+
     console.log('defaultRoom.onStart');
-    self.createInstance('actor1', 256, 256);
+    const player = self.createInstance('actor1', 256, 256);
+    self.camera.follow(player, 300, 300);
 });
 
 game.defaultRoom.onGameEvent('something', (self, state, event) => {
@@ -100,15 +100,23 @@ game.defaultRoom.onGameEvent('something', (self, state, event) => {
     //event.cancel();
 });
 
+game.defaultRoom.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'));
+
 game.defaultRoom.defaultLayer.onCreate((self, state) => {
     console.log('defaultRoom.defaultLayer.onCreate');
 })
 
 // Room1
 const room1 = game.defineRoom('room1', { persistent: true });
+room1.setBackground('#C00');
+
+const hud = room1.createLayer('hud', { height: 64, width: 800, x: 16, y: 16 });
+hud.setBackground(game.getSprite('sky'));
+
 room1.onStart((self, state) => {
     console.log('room1.onStart');
-    self.createInstance('actor1', 32, 96);
+    const one = self.createInstance('actor1', 32, 96);
+    one.animation.setTransform(SpriteTransformation.Opacity, 0.5);
 });
 
 room1.onResume((self, state) => {
@@ -118,7 +126,7 @@ room1.onResume((self, state) => {
 room1.defaultLayer.onCreate((self, state) => {
     console.log('room1.defaultLayer.onCreate');
 
-    room1.createInstance('actor1', 32, 32);
+    hud.createInstance('actor1', 32, 32);
 });
 
 // load and start the game

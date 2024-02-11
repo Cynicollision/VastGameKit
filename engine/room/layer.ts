@@ -1,7 +1,9 @@
 import { ActorInstance, ActorInstanceStatus } from './../actor';
+import { RoomCamera } from './camera';
 import { GameCanvas } from './../device';
 import { GameEvent, GameState } from './../game';
-import { Room, RoomView } from './room';
+import { Room } from './room';
+import { Sprite } from './../sprite';
 
 interface LayerLifecycleCallback {
     (self: Layer, state: GameState): void;
@@ -17,6 +19,8 @@ interface LayerLifecycleDrawCallback {
 
 export interface LayerOptions {
     depth?: number;
+    height?: number;
+    width?: number;
     visible?: boolean;
     x?: number;
     y?: number;
@@ -31,7 +35,6 @@ export enum LayerStatus {
 export class Layer {
     private actorInstanceRegistry: { [index: number]: ActorInstance } = {};
     private actorInstanceRegistryByActor: { [actorName: string]: ActorInstance[] } = {};
-
     private gameEventHandlerRegistry: { [eventName: string]: LayerLifecycleEventCallback } = {};
 
     private onCreateCallback: LayerLifecycleCallback;
@@ -42,8 +45,8 @@ export class Layer {
     private readonly _room: Room;
     get room() { return this._room; }
 
-    private _followingView: RoomView;
-    get followingView() { return this._followingView; }
+    private _followingCamera: RoomCamera;
+    get followingView() { return this._followingCamera; }
 
     private readonly _name: string;
     get name() { return this._name; }
@@ -51,17 +54,23 @@ export class Layer {
     private _status: LayerStatus;
     get status() { return this._status; }
     
+    private backgroundColor: string = '#fff';
+    private backgroundSprite: Sprite;
+
     depth: number;
+    height: number;
+    width: number;
     visible: boolean; // TODO implement (control whether this layer is drawn)
     x: number;
     y: number;
 
-    static define(room: Room, layerName: string, options?: LayerOptions): Layer {
+    static define(room: Room, layerName: string, options: LayerOptions = {}): Layer {
         const layer = new Layer(room, layerName);
         layer.init();
 
-        options = options || {};
         layer.depth = options.depth || 0;
+        layer.height = options.height || room.height;
+        layer.width = options.width || room.width;
         layer.visible = options.visible || true;
         layer.x = options.x || 0;
         layer.y = options.y || 0;
@@ -86,10 +95,6 @@ export class Layer {
 
     destroy(): void {
         this._status = LayerStatus.Destroyed;
-    }
-
-    follow(view: RoomView): void {
-        this._followingView = view;
     }
 
     onCreate(callback: LayerLifecycleCallback): void {
@@ -120,6 +125,11 @@ export class Layer {
     }
 
     step(state: GameState): void {
+
+        if (this._followingCamera) {
+            this.x = this._followingCamera.x;
+            this.y = this._followingCamera.y;
+        }
 
         if (this.onStepCallback) {
             this.onStepCallback(this, state);
@@ -160,12 +170,19 @@ export class Layer {
         this.onDrawCallback = callback;
     }
 
-    callDraw(state: GameState, canvas: GameCanvas): void {
+    draw(state: GameState, canvas: GameCanvas): void {
+        if (this.backgroundSprite) {
+            canvas.drawSprite(this.backgroundSprite, this.x, this.y, { repeatHeight: this.height, repeatWidth: this.width, repeatX: true, repeatY: true });
+        }
+        else if (this.backgroundColor) {
+            canvas.fillArea(this.x, this.y, this.width, this.height, this.backgroundColor);
+        }
+        
         if (this.onDrawCallback) {
             this.onDrawCallback(this, state, canvas);
         }
     }
-    
+
     onDestroy(callback: LayerLifecycleCallback): void {
         this.onDestroyCallback = callback;
     }
@@ -175,6 +192,21 @@ export class Layer {
             this.onDestroyCallback(this, state);
         }
     }
+
+    
+    setBackground(colorOrSprite: string | Sprite): void {
+        if (typeof colorOrSprite === 'string') {
+            this.backgroundColor = colorOrSprite;
+        }
+        else {
+            this.backgroundSprite = colorOrSprite;
+        }
+    }
+
+    follow(view: RoomCamera): void {
+        this._followingCamera = view;
+    }
+
 
     createInstance(actorName: string, x?: number, y?: number): ActorInstance {
         const instanceId = this.room.game.nextActorInstanceID();
@@ -210,6 +242,4 @@ export class Layer {
 
         return instances;
     }
-
-    
 }

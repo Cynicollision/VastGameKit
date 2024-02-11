@@ -54,8 +54,8 @@ export class Actor {
 
     sprite: Sprite;
 
-    static define(name: string, game: Game, options?: ActorOptions): Actor {
-        const actor = new Actor(name, game, options || {});
+    static define(name: string, game: Game, options: ActorOptions = {}): Actor {
+        const actor = new Actor(name, game, options);
 
         return actor;
     }
@@ -76,14 +76,14 @@ export class Actor {
             throw new GameError(`Actor ${this.name} attempting to set a Boundary from a null Sprite.`);
         }
 
-        if (!sprite.loaded) {
-            //throw new GameError(`Attempting to set boundary from Sprite ${sprite.name} which has not yet been loaded.`);
-        }
-        
         const boundary = RectBoundary.fromSprite(sprite);
         this._boundary = boundary;
 
         return boundary;
+    }
+
+    useBasicMotionBehavior(): void {
+        this.useBehavior(ActorInstanceBehaviorName.BasicMotion);
     }
 
     useBehavior(behaviorName: ActorInstanceBehaviorName): void {

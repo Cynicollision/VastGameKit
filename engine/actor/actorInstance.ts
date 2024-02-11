@@ -23,7 +23,7 @@ export class ActorInstance {
     get actor() { return this._actor; }
 
     private _animation: SpriteAnimation;
-    //get animation() { return this._animation; }
+    get animation() { return this._animation; }
 
     private _status: ActorInstanceStatus;
     get status() { return this._status; }
@@ -84,18 +84,16 @@ export class ActorInstance {
         this._status = ActorInstanceStatus.Destroyed;
     }
 
-    drawAnimation(canvas: GameCanvas): void {
+    draw(state: GameState, canvas: GameCanvas): void {
         if (this._animation) {
             this._animation.draw(canvas, this.x, this.y);
         }
+
+        this._actor.callDraw(this, state, canvas);
     }
 
     callStep(state: GameState): void {
         this.actor.callStep(this, state);
-    }
-
-    callDraw(state: GameState, canvas: GameCanvas): void {
-        this._actor.callDraw(this, state, canvas);
     }
 
     private initBehavior(behaviorName: ActorInstanceBehaviorName): void {

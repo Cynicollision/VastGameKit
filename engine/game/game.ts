@@ -53,7 +53,7 @@ export class Game {
         return (() => ++currentID);
     })();
 
-    defineActor(actorName: string, options?: ActorOptions): Actor {
+    defineActor(actorName: string, options: ActorOptions = {}): Actor {
         if (this.actorRegistry[actorName]) {
             throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
         }
@@ -72,7 +72,7 @@ export class Game {
         return this.actorRegistry[actorName];
     }
 
-    defineRoom(roomName: string, options?: RoomOptions): Room {
+    defineRoom(roomName: string, options: RoomOptions = {}): Room {
         if (this.roomRegistry[roomName]) {
             throw new GameError(`Room defined with existing Event name: ${roomName}.`);
         }
@@ -91,7 +91,7 @@ export class Game {
         return this.roomRegistry[roomName];
     }
 
-    defineSprite(spriteName: string, imageSource: string, options?: SpriteOptions): Sprite {
+    defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
         if (this.spriteRegistry[spriteName]) {
             throw new GameError(`Sprite defined with existing Event name: ${spriteName}.`);
         }

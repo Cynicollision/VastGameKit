@@ -1,2 +1,2 @@
 export { Sprite, SpriteOptions } from './sprite';
-export { DrawSpriteOptions, SpriteAnimation } from './spriteAnimation';
+export { SpriteDrawOptions as DrawSpriteOptions, SpriteAnimation } from './spriteAnimation';

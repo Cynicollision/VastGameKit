@@ -1,13 +1,17 @@
 import { ActorInstance } from './../actor';
 import { Game, GameError, GameState } from './../game';
 import { Layer, LayerLifecycleEventCallback, LayerOptions, LayerStatus } from './layer';
+import { RoomCamera } from './camera';
+import { Sprite } from './../sprite';
 
 interface RoomLifecycleCallback {
     (self: Room, state: GameState): void;
 }
 
 export interface RoomOptions {
+    height?: number;
     persistent?: boolean;
+    width?: number;
 }
 
 export enum RoomStatus {
@@ -16,18 +20,6 @@ export enum RoomStatus {
     Resuming = 'Resuming',
     Running = 'Running',
     Suspended = 'Suspended',
-}
-
-export class RoomView {
-    x: number = 0;
-    y: number = 0;
-
-    private _followingInstance: ActorInstance;
-    get followingInstance() { return this._followingInstance; }
-
-    follow(instance: ActorInstance): void {
-        this._followingInstance = instance;
-    }
 }
 
 export class Room {
@@ -39,28 +31,22 @@ export class Room {
     private onResumeCallback: RoomLifecycleCallback;
     private onSuspendCallback: RoomLifecycleCallback;
 
-    private readonly _name: string;
-    get name() { return this._name; }
-
-    private readonly _game: Game;
-    get game() { return this._game; }
-
-    // private _state: GameState;
-    // get state() { return this._state; }
-
-    private readonly _options: RoomOptions;
-    get options() { return this._options; }
-
     private _status: RoomStatus;
     get status() { return this._status; }
 
     private _defaultLayer: Layer;
     get defaultLayer() { return this._defaultLayer; }
 
-    private _view: RoomView;
-    get view() { return this._view; }
+    private _camera: RoomCamera;
+    get camera() { return this._camera; }
 
-    static define(name: string, game: Game, options?: RoomOptions): Room {
+    readonly game: Game;
+    readonly height: number;
+    readonly name: string;
+    readonly options: RoomOptions;
+    readonly width: number;
+
+    static define(name: string, game: Game, options: RoomOptions = {}): Room {
         const room: Room = new Room(name, game, options);
         room._defaultLayer = room.createLayer(Room.DefaultLayerName);
         room._status = RoomStatus.NotStarted;
@@ -68,13 +54,15 @@ export class Room {
         return room;
     }
 
-    private constructor(name: string, game: Game, options?: RoomOptions) {
-        this._name = name;
-        this._game = game;
-        this._options = options || {};
-        this._options.persistent = options !== undefined ? options.persistent : false;
+    private constructor(name: string, game: Game, options: RoomOptions = {}) {
+        this.name = name;
+        this.game = game;
+        this.options = options;
+        this.options.persistent = options !== undefined ? options.persistent : false;
+        this.height = options.height || game.canvas.height;
+        this.width = options.width || game.canvas.width;
         
-        this._view = new RoomView();
+        this._camera = new RoomCamera();
     }
 
     init(): void {
@@ -88,6 +76,7 @@ export class Room {
     }
 
     step(state: GameState): void {
+        this._camera.updatePosition();
 
         for (const layer of this.getLayersSortedFromBottom()) {
             if (layer.status === LayerStatus.Destroyed) {
@@ -144,7 +133,7 @@ export class Room {
         this._status = RoomStatus.Running;
     }
 
-    createLayer(layerName: string, options?: LayerOptions): Layer {
+    createLayer(layerName: string, options: LayerOptions = {}): Layer {
         if (this.layerRegistry[layerName]) {
             throw new GameError((`Layer created with name that already exists: ${layerName}.`)); 
         }
@@ -203,6 +192,10 @@ export class Room {
 
     getLayersSortedFromTop(): Layer[] {
         return this.getLayers().sort((a, b) => a.depth - b.depth);
+    }
+
+    setBackground(colorOrSprite: string | Sprite): void {
+        this._defaultLayer.setBackground(colorOrSprite);
     }
 
     createInstance(actorName: string, x: number, y: number): ActorInstance {

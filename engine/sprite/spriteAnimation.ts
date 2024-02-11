@@ -1,11 +1,8 @@
-import { GameCanvas } from './../device';
+import { CanvasDrawOptions, GameCanvas } from './../device';
 import { Sprite, SpriteTransformation } from './sprite';
 
-export interface DrawSpriteOptions {
+export interface SpriteDrawOptions extends CanvasDrawOptions {
     frame?: number;
-    opacity?: number;
-    tileX?: boolean;
-    tileY?: boolean;
 }
 
 export class SpriteAnimation {
@@ -59,27 +56,22 @@ export class SpriteAnimation {
         this.setTransform(SpriteTransformation.Frame, frame);
     }
 
-    draw(canvas: GameCanvas, x: number, y: number, options: DrawSpriteOptions = {}): void {
+    draw(canvas: GameCanvas, x: number, y: number, options: SpriteDrawOptions = {}): void {
         if (this.sprite.image) {
-            // frame
-            const frame = this.getTransform(SpriteTransformation.Frame);
-            if (options.frame !== null && options.frame !== undefined) {
-                this.setTransform(SpriteTransformation.Frame, options.frame);
-            }
+            const animationFrame = this.getTransform(SpriteTransformation.Frame);
+            const frame = (options.frame !== null && options.frame !== undefined) ? options.frame : animationFrame;
+            options.frame = frame || 0;
 
-            // opacity TODO where does this get used or how
-            const opacity = this.getTransform(SpriteTransformation.Opacity);
-            if (options.frame !== null && options.frame !== undefined) {
-                this.setTransform(SpriteTransformation.Opacity, options.opacity);
-            }
+            const animationOpacity = this.getTransform(SpriteTransformation.Opacity);
+            const opacity = (options.opacity !== null && options.opacity !== undefined) ? options.opacity : animationOpacity;
+            options.opacity = opacity || 1;
 
-            const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(frame);
+            const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(animationFrame);
             
             canvas.drawImage(this.sprite.image, srcX, srcY, x, y, this.sprite.width, this.sprite.height, options);
         }
     }
 
-    // transformations
     getTransform(transformation: SpriteTransformation): number {
         return this.transformations[transformation];
     }

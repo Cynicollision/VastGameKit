@@ -13,9 +13,8 @@ export class GameLifecycle {
     }
 
     pointerEvent(event: PointerInputEvent, state: GameState): void {
-        // TODO: need to account for offsets before passing event
-        // ++ view.x, view.y
-        // -- layer.x, layer.y ??
+        event.x += state.currentRoom.camera.x;
+        event.y += state.currentRoom.camera.y;
 
         for (const layer of state.currentRoom.getLayersSortedFromTop()) {
             for (const instance of layer.getActorInstances()) {
@@ -45,13 +44,13 @@ export class GameLifecycle {
 
     draw(state: GameState, canvas: GameCanvas): void {
         canvas.clear();
+        canvas.origin = [-state.currentRoom.camera.x, -state.currentRoom.camera.y];
 
         for (const layer of state.currentRoom.getLayersSortedFromBottom()) {
-            layer.callDraw(state, canvas);
+            layer.draw(state, canvas);
 
             for (const instance of layer.getActorInstances()) {
-                instance.drawAnimation(canvas);
-                instance.callDraw(state, canvas);
+                instance.draw(state, canvas);
             }
         }
     }
