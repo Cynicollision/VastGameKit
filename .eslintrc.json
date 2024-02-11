@@ -1,0 +1,11 @@
+/* eslint-env node */
+{
+    "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+    "ignorePatterns": ["karma.conf.js", "webpack.config.js", "game/game-bundle.js", "test/mocks/**/*.ts"],
+    "parser": "@typescript-eslint/parser",
+    "plugins": ["@typescript-eslint"],
+    "root": true,
+    "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+    }
+}
