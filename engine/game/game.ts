@@ -140,7 +140,7 @@ export class Game {
 
         let offset: number = 0;
         let previous: number = window.performance.now();
-        const stepSize: number = 1 / state.game.options.targetFPS;
+        const stepSize: number = 1 / this.options.targetFPS;
 
         const gameLoop: FrameRequestCallback = (): void => {
             const current: number = window.performance.now();

@@ -55,7 +55,7 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
         return this._currentY;
     }
     
-    static init(): BrowserDocumentInputHandler {
+    static initForElement(body: HTMLElement): BrowserDocumentInputHandler {
         const inputHandler = new BrowserDocumentInputHandler();
 
         function raiseKeyboardEvent(ev: KeyboardEvent): void {
@@ -74,25 +74,25 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
             });
         }
 
-        document.body.onkeydown = document.body.onkeyup = function(this: GlobalEventHandlers, ev: KeyboardEvent): void {
+        body.onkeydown = body.onkeyup = function(this: GlobalEventHandlers, ev: KeyboardEvent): void {
             raiseKeyboardEvent(ev);
         };
 
-        document.body.onmousemove = function trackActiveMousePosition(this: GlobalEventHandlers, ev: MouseEvent): void {
+        body.onmousemove = function trackActiveMousePosition(this: GlobalEventHandlers, ev: MouseEvent): void {
             inputHandler._currentX = ev.offsetX;
             inputHandler._currentY = ev.offsetY;
         };
 
-        document.body.ontouchmove = function trackActiveTouchPosition(ev: TouchEvent): void {
+        body.ontouchmove = function trackActiveTouchPosition(ev: TouchEvent): void {
             inputHandler._currentX = getTouchEventX(ev);
             inputHandler._currentY = getTouchEventY(ev);
         };
 
-        document.body.onmousedown = document.body.onmouseup = function(this: GlobalEventHandlers, ev: MouseEvent): void {
+        body.onmousedown = body.onmouseup = function(this: GlobalEventHandlers, ev: MouseEvent): void {
             raisePointerEvent(PointerInputEvent.fromMouseEvent(ev));
         };
 
-        document.body.ontouchstart = document.body.ontouchend = function (ev: TouchEvent) {
+        body.ontouchstart = body.ontouchend = function (ev: TouchEvent) {
             raisePointerEvent(PointerInputEvent.fromTouchEvent(ev));
         };
 

@@ -39,22 +39,18 @@ export class GameCanvasHtml2D implements GameCanvas {
     get height() { return this.canvas.height; }
     get width() { return this.canvas.width; }
 
-    static defineForHtmlCanvasElement(elementId: string, options: GameCanvasOptions = {}): GameCanvas {
-        const gc = new GameCanvasHtml2D();
-        gc.canvas = <HTMLCanvasElement>document.getElementById(elementId);
+    static initForCanvasElement(canvas: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
+        const gameCanvas = new GameCanvasHtml2D();
+        gameCanvas.canvas = canvas;
 
-        if (options.height) {
-            gc.canvas.height = options.height;
-        }
-        if (options.width) {
-            gc.canvas.width = options.width;
+        if (!gameCanvas.canvas) {
+            throw new Error(`Attempted to attach to invalid canvas element.`);
         }
 
-        if (!gc.canvas) {
-            throw new Error(`Attempted to attach to invalid canvas element ID: ${elementId}.`);
-        }
+        gameCanvas.canvas.height = options.height || gameCanvas.canvas.height;
+        gameCanvas.canvas.width = options.width || gameCanvas.canvas.width;
 
-        return gc;
+        return gameCanvas;
     }
 
     private constructor() {}

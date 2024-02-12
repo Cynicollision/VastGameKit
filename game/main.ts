@@ -90,12 +90,16 @@ game.defaultRoom.options.persistent = true
 const hud1 = game.defaultRoom.createLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 });
 hud1.setBackground('#0A0');
 
-const sprButton = game.defineSprite('sprButton', './resources/pinkblue.png');
-const button = game.defineActor('button', { sprite: sprButton });
+const button = game.defineActor('button');
+button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 button.onCreate((self, state) => button.setBoundaryFromSprite());
 button.onPointerInput('mousedown', (self, state, event) => {
-    alert('button!');
-    //self.destroy();
+    if (self.animation.stopped) {
+        self.animation.start(0, 1, 500);
+    }
+    else {
+        self.animation.stop();
+    }
 });
 
 

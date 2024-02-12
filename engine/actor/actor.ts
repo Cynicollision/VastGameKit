@@ -32,27 +32,25 @@ export interface ActorOptions {
 }
 
 export class Actor {
-    private readonly _game: Game;
+    private readonly game: Game;
 
     private gameEventHandlerRegistry: { [eventName: string]: ActorLifecycleEventCallback } = {};
     private keyboardInputEventHandlerRegistry: { [type: string]: ActorKeyboardInputCallback } = {};
     private pointerInputEventHandlerRegistry: { [type: string]: ActorPointerInputCallback } = {};
-
-    private _behaviors: ActorInstanceBehaviorName[] = [];
-    get behaviors() { return this._behaviors; }
 
     private onCreateCallback: ActorLifecycleCallback;
     private onStepCallback: ActorLifecycleCallback;
     private onDrawCallback: ActorLifecycleDrawCallback;
     private onDestroyCallback: ActorLifecycleCallback;
 
-    private readonly _name: string;
-    get name() { return this._name; }
+    readonly name: string;
+    sprite: Sprite;
+
+    private _behaviors: ActorInstanceBehaviorName[] = [];
+    get behaviors() { return this._behaviors; }
 
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
-
-    sprite: Sprite;
 
     static define(name: string, game: Game, options: ActorOptions = {}): Actor {
         const actor = new Actor(name, game, options);
@@ -61,8 +59,8 @@ export class Actor {
     }
 
     private constructor(name: string, game: Game, options: ActorOptions) {
-        this._name = name;
-        this._game = game;
+        this.name = name;
+        this.game = game;
         this._boundary = options.boundary;
         this.sprite = options.sprite;
     }

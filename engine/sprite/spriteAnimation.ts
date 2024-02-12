@@ -6,27 +6,26 @@ export interface SpriteDrawOptions extends CanvasDrawOptions {
 }
 
 export class SpriteAnimation {
-    private sprite: Sprite;
+    private readonly sprite: Sprite;
     private transformations: { [index: number]: SpriteTransformation } = {};
     private timer: NodeJS.Timeout;
 
-    depth: number = 0;
-
     private _paused: boolean = true;
-    get paused(): boolean {
+    get stopped(): boolean {
         return this._paused;
     }
 
-    private constructor() {}
-
     static forSprite(sprite: Sprite): SpriteAnimation {
-        const animation: SpriteAnimation = new SpriteAnimation();
-        animation.sprite = sprite;
+        const animation: SpriteAnimation = new SpriteAnimation(sprite);
 
         animation.setTransform(SpriteTransformation.Frame, 0);
         animation.setTransform(SpriteTransformation.Opacity, 1);
 
         return animation;
+    }
+
+    private constructor(sprite: Sprite) {
+        this.sprite = sprite;
     }
 
     start(start: number, end: number, delay?: number): void {
@@ -37,6 +36,7 @@ export class SpriteAnimation {
         this.timer = setInterval(() => {
             if (this.getTransform(SpriteTransformation.Frame) === end) {
                 this.setTransform(SpriteTransformation.Frame, start);
+                // TODO: onAnimationEnd: ActorLifecycleCallback callback
             }
             else {
                 this.transform(SpriteTransformation.Frame, 1);
@@ -56,6 +56,18 @@ export class SpriteAnimation {
         this.setTransform(SpriteTransformation.Frame, frame);
     }
 
+    getTransform(transformation: SpriteTransformation): number {
+        return this.transformations[transformation];
+    }
+
+    transform(transformation: SpriteTransformation, delta: number): void {
+        this.transformations[transformation] += delta;
+    }
+
+    setTransform(transformation: SpriteTransformation, value: number): void {
+        this.transformations[transformation] = value;
+    }
+
     draw(canvas: GameCanvas, x: number, y: number, options: SpriteDrawOptions = {}): void {
         if (this.sprite.image) {
             const animationFrame = this.getTransform(SpriteTransformation.Frame);
@@ -72,15 +84,5 @@ export class SpriteAnimation {
         }
     }
 
-    getTransform(transformation: SpriteTransformation): number {
-        return this.transformations[transformation];
-    }
-
-    transform(transformation: SpriteTransformation, delta: number): void {
-        this.transformations[transformation] += delta;
-    }
-
-    setTransform(transformation: SpriteTransformation, value: number): void {
-        this.transformations[transformation] = value;
-    }
+    
 }
