@@ -34,6 +34,15 @@ describe('Game', () => {
         expect(room.name).toBe('testRoom');
     });
 
+    it('defines Audio', () => {
+        game.defineAudio('testAudio', null);
+
+        const audio = game.getAudio('testAudio');
+
+        expect(audio).toBeDefined();
+        expect(audio.name).toBe('testAudio');
+    });
+
     it('defines Sprites', () => {
         game.defineSprite('testSprite', TestImage.Source);
 

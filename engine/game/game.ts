@@ -27,6 +27,7 @@ export class Game {
 
     private readonly actorRegistry: { [name: string]: Actor } = {};
     private readonly roomRegistry: { [name: string]: Room } = {};
+    private readonly audioRegistry: { [name: string]: GameAudio } = {};
     private readonly spriteRegistry: { [name: string]: Sprite } = {};
 
     private readonly _options: GameOptions;
@@ -75,7 +76,7 @@ export class Game {
 
     defineRoom(roomName: string, options: RoomOptions = {}): Room {
         if (this.roomRegistry[roomName]) {
-            throw new GameError(`Room defined with existing Event name: ${roomName}.`);
+            throw new GameError(`Room defined with existing Room name: ${roomName}.`);
         }
 
         const room = Room.define(roomName, this, options);
@@ -93,15 +94,27 @@ export class Game {
     }
 
     defineAudio(audioName: string, source: string, options?: GameAudioOptions): GameAudio {
-        // TODO registry
-        return GameAudio.fromSource(audioName, source);
+        if (this.audioRegistry[audioName]) {
+            throw new GameError(`Audio defined with existing Audio name: ${audioName}.`);
+        }
+
+        const audio = GameAudio.fromSource(audioName, source);
+        this.audioRegistry[audioName] = audio;
+
+        return audio;
     }
 
-    // TODO getAudio
+    getAudio(audioName: string): GameAudio {
+        if (!this.audioRegistry[audioName]) {
+            throw new GameError(`Audio retrieved by name that does not exist: ${audioName}.`);
+        }
+
+        return this.audioRegistry[audioName];
+    }
 
     defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
         if (this.spriteRegistry[spriteName]) {
-            throw new GameError(`Sprite defined with existing Event name: ${spriteName}.`);
+            throw new GameError(`Sprite defined with existing Sprite name: ${spriteName}.`);
         }
 
         const newSprite = Sprite.fromSource(spriteName, imageSource, options);

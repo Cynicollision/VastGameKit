@@ -1,15 +1,17 @@
 import { ActorInstance } from './../engine/actor';
-import { Game } from './../engine/game';
+import { Game, GameState } from './../engine/game';
 import { Layer, LayerStatus , Room } from './../engine/room';
 import { TestUtil } from './testUtil';
 
 describe('Layer', () => {
     let testGame: Game;
+    let testState: GameState;
     let testRoom: Room;
     let testLayer: Layer;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
+        testState = TestUtil.getTestState(testGame);
         testRoom = testGame.defineRoom('testRoom');
         testLayer = testRoom.createLayer('testLayer');
 
@@ -18,6 +20,14 @@ describe('Layer', () => {
 
     it('defines the default layer', () => {
         expect(testRoom.defaultLayer).not.toBeNull();
+    });
+
+    it('creates ActorInstances', () => {
+        testRoom.defaultLayer.createInstance('testActor', 0, 0);
+        const layerInstances = testRoom.defaultLayer.getActorInstances();
+
+        expect(layerInstances.length).toBe(1);
+        expect(layerInstances[0].actor.name).toBe('testActor');
     });
 
     it('deletes ActorInstances from its registries', () => {
@@ -31,10 +41,27 @@ describe('Layer', () => {
         expect(currentCount).toBe(0);
     });
 
-    // TODO
+    describe('lifecycle callbacks', () => {
+
+        it('defines an onCreate callback', () => {
+            let onCreateCalled = false;
+            testLayer.onCreate((self, state) => {
+                onCreateCalled = true;
+            });
+
+            expect(onCreateCalled).toBeFalse();
+
+            testLayer.callCreate(testState);
+
+            expect(onCreateCalled).toBeTrue();
+        });
+
+        // TODO callEvent, callPointerInput, callKeyboardInput, callDraw, callDestroy
+    });
+
     describe('step lifecycle', () => {
         it('NEEDS TESTS', () => {
-
+            // TODO
         });
     });
 
@@ -52,6 +79,15 @@ describe('Layer', () => {
         it('when destroyed, changes to Destroyed', () => {
             testLayer.destroy();
             expect(testLayer.status).toBe(LayerStatus.Destroyed);
+        });
+
+        it('when initialized, changes to New', () => {
+            testLayer.activate();
+            expect(testLayer.status).toBe(LayerStatus.Active);
+
+            testLayer.init();
+            
+            expect(testLayer.status).toBe(LayerStatus.New);
         });
     });
 });

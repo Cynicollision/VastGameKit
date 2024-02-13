@@ -113,6 +113,17 @@ export class Actor {
         }
     }
 
+    onKeyboardInput(key: string, callback: ActorKeyboardInputCallback): void {
+        this.keyboardInputEventHandlerRegistry[key] = callback;
+    }
+
+    callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardEvent): void {
+        const handler: ActorKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
+        if (handler) {
+            handler(self, state, event);
+        }
+    }
+
     onPointerInput(type: string, callback: ActorPointerInputCallback): void {
         this.pointerInputEventHandlerRegistry[type] = callback;
     }
@@ -123,17 +134,6 @@ export class Actor {
             if (handler) {
                 handler(self, state, event);
             }
-        }
-    }
-
-    onKeyboardInput(key: string, callback: ActorKeyboardInputCallback): void {
-        this.keyboardInputEventHandlerRegistry[key] = callback;
-    }
-
-    callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardEvent): void {
-        const handler: ActorKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
-        if (handler) {
-            handler(self, state, event);
         }
     }
 

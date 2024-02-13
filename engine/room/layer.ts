@@ -130,6 +130,17 @@ export class Layer {
         }
     }
 
+    onKeyboardInput(key: string, callback: LayerKeyboardInputCallback): void {
+        this.keyboardInputEventHandlerRegistry[key] = callback;
+    }
+
+    callKeyboardInput(state: GameState, event: KeyboardEvent): void {
+        const handler: LayerKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
+        if (handler) {
+            handler(this, state, event);
+        }
+    }
+
     onPointerInput(type: string, callback: LayerPointerInputCallback): void {
         this.pointerInputEventHandlerRegistry[type] = callback;
     }
@@ -140,17 +151,6 @@ export class Layer {
             if (handler) {
                 handler(this, state, event);
             }
-        }
-    }
-
-    onKeyboardInput(key: string, callback: LayerKeyboardInputCallback): void {
-        this.keyboardInputEventHandlerRegistry[key] = callback;
-    }
-
-    callKeyboardInput(state: GameState, event: KeyboardEvent): void {
-        const handler: LayerKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
-        if (handler) {
-            handler(this, state, event);
         }
     }
 

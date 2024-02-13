@@ -14,6 +14,13 @@ describe('Actor', () => {
         testActor = testGame.defineActor('testActor');
     });
 
+    describe('lifecycle callbacks', () => {
+        // TODO callCreate, callEvent, callPointerInput, callKeyboardInput, callDraw, callDestroy
+        it('NEEDS TESTS', () => {
+
+        });
+    });
+
     it('sets its boundary to the size of its Sprite', (done) => {
         expect(testActor.boundary).toBeUndefined();
 
