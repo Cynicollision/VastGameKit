@@ -1,3 +1,5 @@
+import { GameEvent } from "./../game";
+
 export class InputEventHandler<T> {
     callback: (event: T) => void;
     isAlive: boolean = true;
@@ -15,27 +17,30 @@ export class InputEventHandler<T> {
     }
 }
 
-export class PointerInputEvent {
+export class PointerInputEvent extends GameEvent {
     type: string;
     x: number;
     y: number;
 
     static fromMouseEvent(ev: MouseEvent): PointerInputEvent {
-        return { type: ev.type, x: ev.offsetX, y: ev.offsetY };
+        return new PointerInputEvent(ev.type, ev.offsetX, ev.offsetY);
     }
 
     static fromTouchEvent(ev: TouchEvent): PointerInputEvent {
-        const x = getTouchEventX(ev);
-        const y = getTouchEventY(ev);
-        
-        return { type: ev.type, x: x, y: y };
+        return new PointerInputEvent(ev.type, getTouchEventX(ev), getTouchEventY(ev));
+    }
+
+    constructor(type: string, x: number, y: number) {
+        super(type);
+        this.type = type;
+        this.x = x;
+        this.y = y;
     }
 }
 
 export interface GameInputHandler {
     currentX: number;
     currentY: number;
-
     registerPointerInputHandler(callback: (event: PointerInputEvent) => void): InputEventHandler<PointerInputEvent>;
     registerKeyboardInputHandler(callback: (event: KeyboardEvent) => void): InputEventHandler<KeyboardEvent>;
 }
@@ -116,12 +121,10 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
 
 function getTouchEventX(ev: TouchEvent): number {
     const touch = ev.touches[0];
-
     return touch ? touch.clientX : 0
 }
 
 function getTouchEventY(ev: TouchEvent): number {
     const touch = ev.touches[0];
-    
     return touch ? touch.clientY : 0
 }

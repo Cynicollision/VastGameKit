@@ -21,7 +21,7 @@ describe('Layer', () => {
     });
 
     it('deletes ActorInstances from its registries', () => {
-        const instance: ActorInstance = testRoom.createInstance('testActor', 0, 0);
+        const instance: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 0, 0);
         let currentCount = testRoom.defaultLayer.getActorInstances().length;
         expect(currentCount).toBe(1);
 

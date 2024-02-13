@@ -1,18 +1,6 @@
-import { ActorInstance } from './../actor';
 import { Game, GameError, GameState } from './../game';
-import { Layer, LayerLifecycleEventCallback, LayerOptions, LayerStatus } from './layer';
+import { Layer, LayerOptions, LayerStatus } from './layer';
 import { RoomCamera } from './camera';
-import { Sprite } from './../sprite';
-
-interface RoomLifecycleCallback {
-    (self: Room, state: GameState): void;
-}
-
-export interface RoomOptions {
-    height?: number;
-    persistent?: boolean;
-    width?: number;
-}
 
 export enum RoomStatus {
     NotStarted = 'NotStarted',
@@ -21,6 +9,16 @@ export enum RoomStatus {
     Running = 'Running',
     Suspended = 'Suspended',
 }
+
+type RoomLifecycleCallback = {
+    (self: Room, state: GameState): void;
+};
+
+export type RoomOptions = {
+    height?: number;
+    persistent?: boolean;
+    width?: number;
+};
 
 export class Room {
     static readonly DefaultLayerName = 'default';
@@ -31,38 +29,34 @@ export class Room {
     private onResumeCallback: RoomLifecycleCallback;
     private onSuspendCallback: RoomLifecycleCallback;
 
-    private _status: RoomStatus;
-    get status() { return this._status; }
-
-    private _defaultLayer: Layer;
-    get defaultLayer() { return this._defaultLayer; }
-
-    private _camera: RoomCamera;
-    get camera() { return this._camera; }
-
+    readonly camera: RoomCamera;
+    readonly defaultLayer: Layer;
     readonly game: Game;
     readonly height: number;
     readonly name: string;
     readonly options: RoomOptions;
     readonly width: number;
 
-    static define(name: string, game: Game, options: RoomOptions = {}): Room {
-        const room: Room = new Room(name, game, options);
-        room._defaultLayer = room.createLayer(Room.DefaultLayerName);
-        room._status = RoomStatus.NotStarted;
+    private _status: RoomStatus;
+    get status() { return this._status; }
 
-        return room;
+    static define(name: string, game: Game, options: RoomOptions = {}): Room {
+        return new Room(name, game, options);
     }
 
     private constructor(name: string, game: Game, options: RoomOptions = {}) {
         this.name = name;
         this.game = game;
+
         this.options = options;
         this.options.persistent = options !== undefined ? options.persistent : false;
         this.height = options.height || game.canvas.height;
         this.width = options.width || game.canvas.width;
-        
-        this._camera = new RoomCamera();
+
+        this.camera = new RoomCamera();
+        this.defaultLayer = this.createLayer(Room.DefaultLayerName);
+
+        this._status = RoomStatus.NotStarted;
     }
 
     init(): void {
@@ -88,7 +82,7 @@ export class Room {
     }
 
     step(state: GameState): void {
-        this._camera.updatePosition();
+        this.camera.updatePosition();
 
         for (const layer of this.getLayersSortedFromBottom()) {
             if (layer.status === LayerStatus.Destroyed) {
@@ -103,10 +97,6 @@ export class Room {
                 layer.step(state);
             }
         }
-    }
-
-    onGameEvent(eventName: string, callback: LayerLifecycleEventCallback): void {
-        this.defaultLayer.onGameEvent(eventName, callback);
     }
 
     onSuspend(callback: RoomLifecycleCallback): void {
@@ -138,7 +128,7 @@ export class Room {
             throw new GameError((`Layer created with name that already exists: ${layerName}.`)); 
         }
 
-        const layer: Layer = Layer.define(this, layerName, options);
+        const layer: Layer = Layer.define(layerName, this, options);
         this.layerRegistry[layerName] = layer;
 
         return layer;
@@ -161,21 +151,6 @@ export class Room {
         }
     }
 
-    private deleteLayer(layer: Layer): void {
-        if (this.layerRegistry[layer.name]) {
-            delete this.layerRegistry[layer.name];
-        }
-        else {
-            throw new GameError(`Attempted to delete Layer with name that does not exist: ${layer.name}`);
-        }
-    }
-
-    resetLayers(): void {
-        for (const layerName in this.layerRegistry) {
-            this.layerRegistry[layerName].init();
-        }
-    }
-
     getLayers(): Layer[] {
         const layers: Layer[] = [];
 
@@ -194,11 +169,18 @@ export class Room {
         return this.getLayers().sort((a, b) => a.depth - b.depth);
     }
 
-    setBackground(colorOrSprite: string | Sprite): void {
-        this._defaultLayer.setBackground(colorOrSprite);
+    private deleteLayer(layer: Layer): void {
+        if (this.layerRegistry[layer.name]) {
+            delete this.layerRegistry[layer.name];
+        }
+        else {
+            throw new GameError(`Attempted to delete Layer with name that does not exist: ${layer.name}`);
+        }
     }
 
-    createInstance(actorName: string, x: number, y: number): ActorInstance {
-        return this._defaultLayer.createInstance(actorName, x, y);
+    private resetLayers(): void {
+        for (const layerName in this.layerRegistry) {
+            this.layerRegistry[layerName].init();
+        }
     }
 }

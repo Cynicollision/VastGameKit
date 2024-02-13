@@ -1,9 +1,9 @@
 import { CanvasDrawOptions, GameCanvas } from './../device';
 import { Sprite, SpriteTransformation } from './sprite';
 
-export interface SpriteDrawOptions extends CanvasDrawOptions {
+export type SpriteDrawOptions = CanvasDrawOptions & {
     frame?: number;
-}
+};
 
 export class SpriteAnimation {
     private readonly sprite: Sprite;
@@ -37,6 +37,7 @@ export class SpriteAnimation {
             if (this.getTransform(SpriteTransformation.Frame) === end) {
                 this.setTransform(SpriteTransformation.Frame, start);
                 // TODO: onAnimationEnd: ActorLifecycleCallback callback
+                //   define on Sprite ?
             }
             else {
                 this.transform(SpriteTransformation.Frame, 1);

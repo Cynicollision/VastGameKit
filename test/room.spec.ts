@@ -19,16 +19,6 @@ describe('Room', () => {
         expect(testRoom.defaultLayer.name).toBe(Room.DefaultLayerName);
     });
 
-    it('creates ActorInstances on the default Layer', () => {
-        let currentCount = testRoom.defaultLayer.getActorInstances().length;
-        expect(currentCount).toBe(0);
-
-        testRoom.createInstance('testActor', 0, 0);
-
-        currentCount = testRoom.defaultLayer.getActorInstances().length;
-        expect(currentCount).toBe(1);
-    });
-
     it('creates Layers', () => {
         testRoom.createLayer('testLayer');
         const testLayer =  testRoom.getLayer('testLayer');

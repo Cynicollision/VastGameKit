@@ -110,11 +110,11 @@ hud1.onCreate((self, state) => {
 
 game.defaultRoom.onStart((self, state) => {
     console.log('defaultRoom.onStart');
-    const player = self.createInstance('actor1', 256, 256);
+    const player = self.defaultLayer.createInstance('actor1', 256, 256);
     self.camera.follow(player, 300, 300);
 });
 
-game.defaultRoom.onGameEvent('something', (self, state, event) => {
+game.defaultRoom.defaultLayer.onGameEvent('something', (self, state, event) => {
     console.log('game.defaultRoom.onGameEvent.something!');
     console.log('game.defaultRoom.onGameEvent.something data = '+event.data);
     //event.cancel();
@@ -128,13 +128,13 @@ game.defaultRoom.defaultLayer.onCreate((self, state) => {
 
 // Room1
 const room1 = game.defineRoom('room1', { persistent: false });
-room1.setBackground('#C00');
+room1.defaultLayer.setBackground('#C00');
 const hud2 = room1.createLayer('hud2', { height: 64, width: 800, x: 16, y: 16 });
 hud2.setBackground(game.getSprite('sky'));
 
 room1.onStart((self, state) => {
     console.log('room1.onStart');
-    const one = self.createInstance('actor1', 32, 96);
+    const one = self.defaultLayer.createInstance('actor1', 32, 96);
     one.animation.setTransform(SpriteTransformation.Opacity, 0.5);
 });
 

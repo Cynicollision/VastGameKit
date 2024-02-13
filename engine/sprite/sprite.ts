@@ -1,9 +1,3 @@
-export interface SpriteOptions {
-    height?: number;
-    width?: number;
-    frameBorder?: number;
-}
-
 export enum SpriteTransformation {
     Opacity = 0,
     Frame = 1,
@@ -11,53 +5,52 @@ export enum SpriteTransformation {
     TileY = 3,
 }
 
-export class Sprite {
-    private _name: string;
-    get name() { return this._name; }
+export type SpriteOptions = {
+    height?: number;
+    width?: number;
+    frameBorder?: number;
+};
 
-    private _image: HTMLImageElement;
-    get image() { return this._image; }
+export class Sprite {
+    readonly name: string;
+    readonly image: HTMLImageElement;
+    readonly options: SpriteOptions;
 
     private _loaded: boolean = false;
     get loaded() { return this._loaded; }
 
-    private _options: SpriteOptions;
-    get options() { return this._options; }
-
     get height(): number {
-        return this._options.height || this._image.height;
+        return this.options.height || this.image.height;
     }
     
     get width(): number {
-        return this._options.width || this._image.width;
+        return this.options.width || this.image.width;
     }
 
-    static fromImage(name: string, source: string, options: SpriteOptions = {}): Sprite {
-        const sprite = new Sprite(name, options);
-        sprite._image = new Image();
-        sprite.image.src = source;
-
-        return sprite;
+    static fromSource(name: string, source: string, options: SpriteOptions = {}): Sprite {
+        return new Sprite(name, source, options);
     }
 
-    private constructor(name: string, options: SpriteOptions) {
-        this._name = name;
-        this._options = options || {};
+    private constructor(name: string, source: string, options: SpriteOptions) {
+        this.name = name;
+        this.options = options || {};
+        this.image = new Image();
+        this.image.src = source;
     }
 
     load(): Promise<void | string> {
-        if (this._loaded || !this._image) {
+        if (this._loaded || !this.image) {
             return Promise.resolve();
         }
 
         const spriteName = this.name;
-        const imageSrc = this._image.src ? this._image.src.substring(0, 100) : undefined;
+        const imageSrc = this.image.src ? this.image.src.substring(0, 100) : undefined;
 
         return new Promise((resolve, reject) => {
-            this._image.onload = function(this: GlobalEventHandlers): void {
+            this.image.onload = function(this: GlobalEventHandlers): void {
                 resolve();
             };
-            this._image.onerror = function(this: GlobalEventHandlers): void {
+            this.image.onerror = function(this: GlobalEventHandlers): void {
                 reject(`Failed to load Sprite "${spriteName}" from source: ${imageSrc}.`);
             };
         });

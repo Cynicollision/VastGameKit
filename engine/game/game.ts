@@ -1,14 +1,15 @@
 import { Actor, ActorOptions } from './../actor';
-import { GameCanvas, GameInputHandler } from './../device';
+import { GameAudio, GameCanvas, GameInputHandler } from './../device';
 import { GameLifecycle } from './lifecycle';
 import { GameState } from './state';
 import { Room, RoomOptions } from './../room';
 import { Sprite, SpriteOptions } from './../sprite';
+import { GameAudioOptions } from '../device/audio';
 
-export interface GameOptions {
+export type GameOptions = {
     canvasElementId: string;
     targetFPS?: number;
-}
+};
 
 export class GameError extends Error {
     private _innerError: Error;
@@ -91,12 +92,19 @@ export class Game {
         return this.roomRegistry[roomName];
     }
 
+    defineAudio(audioName: string, source: string, options?: GameAudioOptions): GameAudio {
+        // TODO registry
+        return GameAudio.fromSource(audioName, source);
+    }
+
+    // TODO getAudio
+
     defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
         if (this.spriteRegistry[spriteName]) {
             throw new GameError(`Sprite defined with existing Event name: ${spriteName}.`);
         }
 
-        const newSprite = Sprite.fromImage(spriteName, imageSource, options);
+        const newSprite = Sprite.fromSource(spriteName, imageSource, options);
         this.spriteRegistry[spriteName] = newSprite;
 
         return newSprite;
@@ -152,7 +160,6 @@ export class Game {
             }
 
             lifecycle.draw(state, canvas);
-
             previous = current;
             requestAnimationFrame(gameLoop);
         };

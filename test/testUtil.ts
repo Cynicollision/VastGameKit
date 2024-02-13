@@ -20,6 +20,6 @@ export class TestUtil {
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
-        return Sprite.fromImage('testSprite', TestImage.Source, options);
+        return Sprite.fromSource('testSprite', TestImage.Source, options);
     }
 }

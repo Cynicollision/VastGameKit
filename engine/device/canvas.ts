@@ -1,29 +1,37 @@
 import { Sprite } from './../sprite';
 
-export interface GameCanvasOptions {
+export type GameCanvasOptions = {
     backgroundColor?: string;
     fullScreen?: boolean;
     height?: number;
     width?: number;
-}
+};
 
-export interface CanvasDrawOptions {
+export type CanvasDrawImageOptions = {
     opacity?: number;
     repeatHeight?: number;
     repeatWidth?: number;
     repeatX?: boolean;
     repeatY?: boolean;
+};
+
+export type CanvasDrawTextOptions = {
+    // TODO font? etc.
+};
+
+export type CanvasFillOptions = {
+    opacity?: number;
 }
 
 export interface GameCanvas {
     height: number;
     width: number;
-
     clear(): void;
-    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options?: CanvasDrawOptions): void;
-    drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawOptions): void;
-    fill(width: number, height: number, color: string): void;
-    fillArea(x: number, y: number, width: number, height: number, color: string): void;
+    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options?: CanvasDrawImageOptions): void;
+    drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void;
+    drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
+    fill(color: string, width: number, height: number, options?: CanvasFillOptions): void;
+    fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
     setOrigin(x: number, y: number): void;
 }
 
@@ -39,7 +47,7 @@ export class GameCanvasHtml2D implements GameCanvas {
     get height() { return this.canvas.height; }
     get width() { return this.canvas.width; }
 
-    static initForCanvasElement(canvas: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
+    static initForElement(canvas: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
         const gameCanvas = new GameCanvasHtml2D();
         gameCanvas.canvas = canvas;
 
@@ -55,6 +63,10 @@ export class GameCanvasHtml2D implements GameCanvas {
 
     private constructor() {}
 
+    setOrigin(x: number, y: number): void {
+        this.origin = [x, y];
+    }
+
     clear(): void {
         this.canvasContext2D.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
@@ -63,11 +75,15 @@ export class GameCanvasHtml2D implements GameCanvas {
         this.canvasContext2D.fill();
     }
 
-    drawSprite(sprite: Sprite, x: number, y: number, options: CanvasDrawOptions = {}): void {
+    drawSprite(sprite: Sprite, x: number, y: number, options: CanvasDrawImageOptions = {}): void {
         this.drawImage(sprite.image, 0, 0, x, y, sprite.width, sprite.height, options);
     }
 
-    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options: CanvasDrawOptions = {}): void {
+    drawText(text: string, x: number, y: number, options: CanvasDrawTextOptions = {}): void {
+        // TODO
+    }
+
+    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options: CanvasDrawImageOptions = {}): void {
         // set opacity
         const defaultOpacity = 1;
         let previousOpacity: number = null;
@@ -98,21 +114,19 @@ export class GameCanvasHtml2D implements GameCanvas {
         }
     }
 
-    fill(width: number, height: number, color: string): void {
+    fill(color: string, width: number, height: number, options: CanvasFillOptions = {}): void {
         const [x, y] = this.origin;
-        this.fillArea(x, y, width, height, color);
+        // TODO use options.opacity
+        this.fillArea(color, x, y, width, height);
     }
 
-    fillArea(x: number, y: number, width: number, height: number, color: string): void {
+    fillArea(color: string, x: number, y: number, width: number, height: number, options: CanvasFillOptions = {}): void {
         const [originX, originY] = this.origin;
 
+        // TODO use options.opacity
         this.canvasContext2D.beginPath();
         this.canvasContext2D.rect(x + originX, y + originY, width, height);
         this.canvasContext2D.fillStyle = color;
         this.canvasContext2D.fill();
-    }
-
-    setOrigin(x: number, y: number): void {
-        this.origin = [x, y];
     }
 }

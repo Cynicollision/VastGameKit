@@ -6,7 +6,7 @@ export class VastGameKit {
     static init(options: GameOptions): Game {
         try {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
-            const canvas = GameCanvasHtml2D.initForCanvasElement(canvasElement);
+            const canvas = GameCanvasHtml2D.initForElement(canvasElement);
             const inputHandler = BrowserDocumentInputHandler.initForElement(document.body);
             const game = new Game(options, canvas, inputHandler);
 

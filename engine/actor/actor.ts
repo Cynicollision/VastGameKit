@@ -5,35 +5,33 @@ import { Game, GameError, GameEvent, GameState } from './../game';
 import { GameCanvas, PointerInputEvent } from './../device';
 import { Sprite } from './../sprite';
 
-export interface ActorLifecycleCallback {
-    (self: ActorInstance, state: GameState): void;
-}
-
-export interface ActorLifecycleEventCallback {
-    (self: ActorInstance, state: GameState, event: GameEvent): void;
-}
-
-export interface ActorLifecycleDrawCallback {
-    (self: ActorInstance, state: GameState, canvas: GameCanvas): void;
-}
-
-export interface ActorKeyboardInputCallback {
-    (self: ActorInstance, state: GameState, event: KeyboardEvent): void;
-}
-
-export interface ActorPointerInputCallback {
-    (self: ActorInstance, state: GameState, event: PointerInputEvent): void;
-}
-
-export interface ActorOptions {
+export type ActorOptions = {
     boundary?: Boundary;
-    solid?: boolean; // TODO implement
+    solid?: boolean;
     sprite?: Sprite;
-}
+};
+
+export type ActorLifecycleCallback = {
+    (self: ActorInstance, state: GameState): void;
+};
+
+export type ActorLifecycleEventCallback = {
+    (self: ActorInstance, state: GameState, event: GameEvent): void;
+};
+
+export type ActorKeyboardInputCallback = {
+    (self: ActorInstance, state: GameState, event: KeyboardEvent): void;
+};
+
+export type ActorPointerInputCallback = {
+    (self: ActorInstance, state: GameState, event: PointerInputEvent): void;
+};
+
+export type ActorLifecycleDrawCallback = {
+    (self: ActorInstance, state: GameState, canvas: GameCanvas): void;
+};
 
 export class Actor {
-    private readonly game: Game;
-
     private gameEventHandlerRegistry: { [eventName: string]: ActorLifecycleEventCallback } = {};
     private keyboardInputEventHandlerRegistry: { [type: string]: ActorKeyboardInputCallback } = {};
     private pointerInputEventHandlerRegistry: { [type: string]: ActorPointerInputCallback } = {};
@@ -44,6 +42,8 @@ export class Actor {
     private onDestroyCallback: ActorLifecycleCallback;
 
     readonly name: string;
+    readonly game: Game;
+    solid: boolean;
     sprite: Sprite;
 
     private _behaviors: ActorInstanceBehaviorName[] = [];
@@ -53,15 +53,14 @@ export class Actor {
     get boundary() { return this._boundary; }
 
     static define(name: string, game: Game, options: ActorOptions = {}): Actor {
-        const actor = new Actor(name, game, options);
-
-        return actor;
+        return new Actor(name, game, options);
     }
 
-    private constructor(name: string, game: Game, options: ActorOptions) {
+    private constructor(name: string, game: Game, options: ActorOptions = {}) {
         this.name = name;
         this.game = game;
         this._boundary = options.boundary;
+        this.solid = options.solid || false;
         this.sprite = options.sprite;
     }
 
@@ -107,7 +106,7 @@ export class Actor {
     }
 
     callEvent(self: ActorInstance, state: GameState, event: GameEvent): void {
-        if (!event.isCanelled) {
+        if (!event.isCancelled) {
             if (this.gameEventHandlerRegistry[event.name]) {
                 this.gameEventHandlerRegistry[event.name](self, state, event);
             }
@@ -119,9 +118,11 @@ export class Actor {
     }
 
     callPointerInput(self: ActorInstance, state: GameState, event: PointerInputEvent): void {
-        const handler: ActorPointerInputCallback = this.pointerInputEventHandlerRegistry[event.type];
-        if (handler) {
-            handler(self, state, event);
+        if (!event.isCancelled) {
+            const handler: ActorPointerInputCallback = this.pointerInputEventHandlerRegistry[event.type];
+            if (handler) {
+                handler(self, state, event);
+            }
         }
     }
 

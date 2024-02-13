@@ -1,6 +1,5 @@
 import { Actor } from './actor';
-import { ActorInstanceBehavior, ActorInstanceBehaviorName } from './actorInstanceBehavior';
-import { ActorInstanceMotionBehavior } from './actorInstanceMotionBehavior';
+import { ActorInstanceBehavior, ActorInstanceBehaviorName, ActorInstanceMotionBehavior } from './actorInstanceBehavior';
 import { GameCanvas } from './../device';
 import { GameState } from './../game';
 import { Layer } from './../room';
@@ -60,13 +59,17 @@ export class ActorInstance {
 
     applyBeforeStepBehaviors(state: GameState): void {
         for (const behavior of this.behaviors) {
-            behavior.beforeStep(this, state);
+            if (behavior.beforeStep) {
+                behavior.beforeStep(this, state);
+            }
         }
     }
 
     applyAfterStepBehaviors(state: GameState): void {
         for (const behavior of this.behaviors) {
-            behavior.afterStep(this, state);
+            if (behavior.afterStep) {
+                behavior.afterStep(this, state);
+            }
         }
     }
 
@@ -91,13 +94,10 @@ export class ActorInstance {
     }
 
     private initBehavior(behaviorName: ActorInstanceBehaviorName): void {
-
-        // TODO add "init" callback to behavior, call here (accept self as arg) ?
         if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
             const motion = new ActorInstanceMotionBehavior();
             this._motion = motion;
             this.behaviors.push(motion);
         }
-        
     }
 }
