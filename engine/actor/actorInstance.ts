@@ -30,6 +30,7 @@ export class ActorInstance {
     y: number = 0;
 
     // allow properties to dynamically be assigned to ActorInstances.
+    // TODO: also on Layers?
     [x: string | number | symbol]: unknown;
 
     static spawn(id: number, actor: Actor, layer: Layer, x: number, y: number): ActorInstance {
@@ -55,6 +56,14 @@ export class ActorInstance {
         this.actor = actor;
         this.layer = layer;
         this._status = ActorInstanceStatus.New;
+    }
+
+    private initBehavior(behaviorName: ActorInstanceBehaviorName): void {
+        if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
+            const motion = new ActorInstanceMotionBehavior();
+            this._motion = motion;
+            this.behaviors.push(motion);
+        }
     }
 
     applyBeforeStepBehaviors(state: GameState): void {
@@ -93,11 +102,11 @@ export class ActorInstance {
         this.actor.callStep(this, state);
     }
 
-    private initBehavior(behaviorName: ActorInstanceBehaviorName): void {
-        if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
-            const motion = new ActorInstanceMotionBehavior();
-            this._motion = motion;
-            this.behaviors.push(motion);
+    collidesWith(other: ActorInstance): boolean {
+        if (this.actor.boundary && other.actor.boundary) {
+            return this.actor.boundary.atPosition(this.x, this.y).collidesWith(other.actor.boundary.atPosition(other.x, other.y));
         }
+
+        return false;
     }
 }

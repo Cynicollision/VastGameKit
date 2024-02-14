@@ -177,13 +177,12 @@ export class Layer {
                 instance.actor.callCreate(instance, state);
             }
             else if (instance.status === ActorInstanceStatus.Active) {
-                // TODO checkCollisions(layer, instance), somewhere.
                 instance.applyBeforeStepBehaviors(state);
                 instance.callStep(state);
                 instance.applyAfterStepBehaviors(state);
 
                 for (const event of raisedEvents) {
-                    instance.actor.callEvent(instance, state, event);
+                    instance.actor.callGameEvent(instance, state, event);
                 }
             }
         }
@@ -209,6 +208,10 @@ export class Layer {
     }
 
     draw(state: GameState, canvas: GameCanvas): void {
+
+        // TODO new class or type: LayerBackground
+        //  - Sprite or background color
+        //  - CanvasFillOptions or CanvasDrawImageOptions
         if (this.backgroundSprite) {
             canvas.drawSprite(this.backgroundSprite, this.x, this.y, { repeatHeight: this.height, repeatWidth: this.width, repeatX: true, repeatY: true });
         }

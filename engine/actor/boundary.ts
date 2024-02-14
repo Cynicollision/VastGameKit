@@ -5,7 +5,7 @@ export interface Boundary {
 }
 
 export interface PositionedBoundary {
-    collidesWith(other: PositionedRectBoundary): boolean;
+    collidesWith(other: PositionedBoundary): boolean;
     containsPosition(x: number, y: number): boolean;
 }
 

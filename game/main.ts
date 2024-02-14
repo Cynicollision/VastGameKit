@@ -81,6 +81,10 @@ act1.onGameEvent('something', (self, state, event) => {
     event.cancel();
 });
 
+act1.onCollision('coin', (self, other, state) => {
+    other.destroy();
+});
+
 act1.onDestroy((self, state) => {
     console.log('act1.onDestroy');
 });
@@ -102,6 +106,8 @@ button.onPointerInput('mousedown', (self, state, event) => {
     }
 });
 
+game.defineActor('coin', { sprite: game.defineSprite('sprCoin', './resources/coin.png') });
+
 
 hud1.onCreate((self, state) => {
     self.createInstance('button', 16, 16);
@@ -112,6 +118,9 @@ game.defaultRoom.onStart((self, state) => {
     console.log('defaultRoom.onStart');
     const player = self.defaultLayer.createInstance('actor1', 256, 256);
     self.camera.follow(player, 300, 300);
+
+    self.defaultLayer.createInstance('coin', 600, 500);
+    game.getActor('coin').setBoundaryFromSprite();
 });
 
 game.defaultRoom.defaultLayer.onGameEvent('something', (self, state, event) => {

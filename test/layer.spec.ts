@@ -56,7 +56,29 @@ describe('Layer', () => {
             expect(onCreateCalled).toBeTrue();
         });
 
-        // TODO callEvent, callPointerInput, callKeyboardInput, callDraw, callDestroy
+        it('defines a game event handler callback', () => {
+            // TODO
+        });
+
+        xit('defines a pointer event handler callback', () => {
+            // TODO
+        });
+
+        xit('defines a keyboard event handler callback', () => {
+            // TODO
+        });
+
+        xit('defines an onStep callback', () => {
+            // TODO
+        });
+
+        xit('defines an onDraw callback', () => {
+            // TODO
+        });
+
+        xit('defines an onDestroy callback', () => {
+            // TODO
+        });
     });
 
     describe('step lifecycle', () => {

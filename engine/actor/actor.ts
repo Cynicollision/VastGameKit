@@ -15,6 +15,10 @@ export type ActorLifecycleCallback = {
     (self: ActorInstance, state: GameState): void;
 };
 
+export type ActorLifecycleCollisionCallback = {
+    (self: ActorInstance, other: ActorInstance, state: GameState): void;
+};
+
 export type ActorLifecycleEventCallback = {
     (self: ActorInstance, state: GameState, event: GameEvent): void;
 };
@@ -32,6 +36,7 @@ export type ActorLifecycleDrawCallback = {
 };
 
 export class Actor {
+    private collisionHandlerRegistry: { [actorName: string]: ActorLifecycleCollisionCallback } = {};
     private gameEventHandlerRegistry: { [eventName: string]: ActorLifecycleEventCallback } = {};
     private keyboardInputEventHandlerRegistry: { [type: string]: ActorKeyboardInputCallback } = {};
     private pointerInputEventHandlerRegistry: { [type: string]: ActorPointerInputCallback } = {};
@@ -63,8 +68,6 @@ export class Actor {
         this.solid = options.solid || false;
         this.sprite = options.sprite;
     }
-
-    // TODO onCollision(actorName, callback)
 
     setBoundaryFromSprite(sprite?: Sprite): RectBoundary {
         sprite = sprite || this.sprite;
@@ -101,11 +104,35 @@ export class Actor {
         }
     }
 
+    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void {
+        if (this.collisionHandlerRegistry[actorName]) {
+            throw new GameError(`Actor ${this.name} already has a collision handler for Actor ${actorName}.`)
+        }
+
+        this.collisionHandlerRegistry[actorName] = callback;
+    }
+
+    getCollisionActorNames(): string[] {
+        const actorNames = [];
+
+        for (const name in this.collisionHandlerRegistry) {
+            actorNames.push(name);
+        }
+
+        return actorNames;
+    }
+
+    callCollision(self: ActorInstance, other: ActorInstance, state: GameState): void {
+        if (this.collisionHandlerRegistry[other.actor.name]) {
+            this.collisionHandlerRegistry[other.actor.name](self, other, state);
+        }
+    }
+
     onGameEvent(eventName: string, callback: ActorLifecycleEventCallback): void {
         this.gameEventHandlerRegistry[eventName] = callback;
     }
 
-    callEvent(self: ActorInstance, state: GameState, event: GameEvent): void {
+    callGameEvent(self: ActorInstance, state: GameState, event: GameEvent): void {
         if (!event.isCancelled) {
             if (this.gameEventHandlerRegistry[event.name]) {
                 this.gameEventHandlerRegistry[event.name](self, state, event);
