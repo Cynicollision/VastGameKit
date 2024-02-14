@@ -116,17 +116,26 @@ export class GameCanvasHtml2D implements GameCanvas {
 
     fill(color: string, width: number, height: number, options: CanvasFillOptions = {}): void {
         const [x, y] = this.origin;
-        // TODO use options.opacity
-        this.fillArea(color, x, y, width, height);
+        this.fillArea(color, x, y, width, height, options);
     }
 
     fillArea(color: string, x: number, y: number, width: number, height: number, options: CanvasFillOptions = {}): void {
         const [originX, originY] = this.origin;
+        let previousOpacity: number = null;
 
-        // TODO use options.opacity
+        if (options.opacity && options.opacity !== 1) {
+            previousOpacity = this.canvasContext2D.globalAlpha;
+            this.canvasContext2D.globalAlpha = options.opacity;
+        }
+        
         this.canvasContext2D.beginPath();
         this.canvasContext2D.rect(x + originX, y + originY, width, height);
         this.canvasContext2D.fillStyle = color;
         this.canvasContext2D.fill();
+
+        // reset opacity
+        if (previousOpacity !== null) {
+            this.canvasContext2D.globalAlpha = previousOpacity;
+        }
     }
 }
