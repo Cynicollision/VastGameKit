@@ -53,7 +53,7 @@ export class Room {
         this.height = options.height || game.canvas.height;
         this.width = options.width || game.canvas.width;
 
-        this.camera = new RoomCamera();
+        this.camera = new RoomCamera(this);
         this.defaultLayer = this.createLayer(Room.DefaultLayerName);
 
         this._status = RoomStatus.NotStarted;

@@ -2,6 +2,8 @@ import { Sprite } from './../sprite';
 
 export interface Boundary {
     atPosition(x: number, y: number): PositionedBoundary;
+    height: number;
+    width: number;
 }
 
 export interface PositionedBoundary {

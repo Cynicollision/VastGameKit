@@ -2,7 +2,13 @@ import { VastGameKit } from './../engine/vastgamekit';
 import { Direction } from './../engine/actor';
 import { SpriteTransformation } from '../engine/sprite/sprite';
 
-const game = VastGameKit.init({ canvasElementId: 'gameCanvas' });
+const gameOptions = {
+    canvasElementId: 'gameCanvas',
+    defaultRoomOptions: {
+        height: 1000, width: 2000, persistent: true
+    }
+}
+const game = VastGameKit.init(gameOptions);
 
 const spr1 = game.defineSprite('sprite1', './resources/playerShip3_blue.png');
 const act1 = game.defineActor('actor1', { sprite: spr1 });
@@ -90,7 +96,6 @@ act1.onDestroy((self, state) => {
 });
 
 // DefaultRoom
-game.defaultRoom.options.persistent = true
 const hud1 = game.defaultRoom.createLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 });
 hud1.setBackground('#0A0');
 
@@ -117,7 +122,7 @@ hud1.onCreate((self, state) => {
 game.defaultRoom.onStart((self, state) => {
     console.log('defaultRoom.onStart');
     const player = self.defaultLayer.createInstance('actor1', 256, 256);
-    self.camera.follow(player, 300, 300);
+    self.camera.follow(player, { centerOnInstanceBoundary: true });
 
     self.defaultLayer.createInstance('coin', 600, 500);
     game.getActor('coin').setBoundaryFromSprite();

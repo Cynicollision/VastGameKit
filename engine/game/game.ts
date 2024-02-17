@@ -9,6 +9,7 @@ import { GameAudioOptions } from '../device/audio';
 export type GameOptions = {
     canvasElementId: string;
     targetFPS?: number;
+    defaultRoomOptions?: RoomOptions;
 };
 
 export class GameError extends Error {
@@ -47,7 +48,7 @@ export class Game {
         this._options.targetFPS = config.targetFPS || Game.DefaultTargetFPS;
         this._canvas = canvas;
         this._inputHandler = inputHandler;
-        this._defaultRoom = this.defineRoom(Game.DefaultRoomName);
+        this._defaultRoom = this.defineRoom(Game.DefaultRoomName, config.defaultRoomOptions);
     }
 
     nextActorInstanceID = (() => {
