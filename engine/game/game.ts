@@ -1,5 +1,5 @@
 import { Actor, ActorOptions } from './../actor';
-import { GameAudio, GameCanvas, GameInputHandler } from './../device';
+import { GameAudio, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameLifecycle } from './lifecycle';
 import { GameState } from './state';
 import { Room, RoomOptions } from './../room';
@@ -152,11 +152,11 @@ export class Game {
     private run(state: GameState, canvas: GameCanvas, inputHandler: GameInputHandler) {
         const lifecycle = new GameLifecycle();
 
-        inputHandler.registerPointerInputHandler(event =>{
+        inputHandler.registerPointerInputHandler((event: PointerInputEvent) =>{
             lifecycle.pointerEvent(event, state);
         });
 
-        inputHandler.registerKeyboardInputHandler((event: KeyboardEvent) => {
+        inputHandler.registerKeyboardInputHandler((event: KeyboardInputEvent) => {
             lifecycle.keyboardEvent(event, state);
         });
 

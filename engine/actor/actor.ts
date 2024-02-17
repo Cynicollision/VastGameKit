@@ -2,7 +2,7 @@ import { ActorInstance } from './actorInstance';
 import { ActorInstanceBehaviorName } from './actorInstanceBehavior';
 import { Boundary, RectBoundary } from './boundary';
 import { Game, GameError, GameEvent, GameState } from './../game';
-import { GameCanvas, PointerInputEvent } from './../device';
+import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { Sprite } from './../sprite';
 
 export type ActorOptions = {
@@ -24,7 +24,7 @@ export type ActorLifecycleEventCallback = {
 };
 
 export type ActorKeyboardInputCallback = {
-    (self: ActorInstance, state: GameState, event: KeyboardEvent): void;
+    (self: ActorInstance, state: GameState, event: KeyboardInputEvent): void;
 };
 
 export type ActorPointerInputCallback = {
@@ -61,12 +61,19 @@ export class Actor {
         return new Actor(name, game, options);
     }
 
-    private constructor(name: string, game: Game, options: ActorOptions = {}) {
+    private constructor(name: string, game: Game, options: ActorOptions) {
         this.name = name;
         this.game = game;
         this._boundary = options.boundary;
         this.solid = options.solid || false;
         this.sprite = options.sprite;
+    }
+
+    setRectBoundary(height: number, width: number): RectBoundary {
+        const boundary = new RectBoundary(height, width);
+        this._boundary = boundary;
+        
+        return boundary;
     }
 
     setBoundaryFromSprite(sprite?: Sprite): RectBoundary {
@@ -144,7 +151,7 @@ export class Actor {
         this.keyboardInputEventHandlerRegistry[key] = callback;
     }
 
-    callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardEvent): void {
+    callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardInputEvent): void {
         const handler: ActorKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
         if (handler) {
             handler(self, state, event);

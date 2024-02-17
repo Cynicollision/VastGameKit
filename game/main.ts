@@ -134,7 +134,7 @@ game.defaultRoom.defaultLayer.onGameEvent('something', (self, state, event) => {
     //event.cancel();
 });
 
-game.defaultRoom.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'));
+game.defaultRoom.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'), { opacity: 0.5});
 
 game.defaultRoom.defaultLayer.onCreate((self, state) => {
     console.log('defaultRoom.defaultLayer.onCreate');

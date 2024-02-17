@@ -3,8 +3,8 @@ import { CanvasDrawOptions, GameCanvas } from './../../engine/device';
 import { CanvasDrawTextOptions } from '../../engine/device/canvas';
 
 export class MockGameCanvas implements GameCanvas {
-    height: number;
-    width: number;
+    height: number = 800;
+    width: number = 600;
 
     clear(): void {
     }

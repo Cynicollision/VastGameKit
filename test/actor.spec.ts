@@ -1,19 +1,20 @@
 
 import { Actor } from './../engine/actor';
 import { Game, GameEvent, GameState } from './../engine/game';
+import { KeyboardInputEvent, PointerInputEvent } from '../engine/device';
 import { Room } from './../engine/room';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
     let testGame: Game;
-    //let testState: GameState;
+    let testState: GameState;
     let testActor: Actor;
     let testRoom: Room;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        //testState = TestUtil.getTestState(testGame);
+        testState = TestUtil.getTestState(testGame);
         testActor = testGame.defineActor('testActor');
         testRoom = testGame.defineRoom('testRoom');
     });
@@ -21,16 +22,16 @@ describe('Actor', () => {
     describe('lifecycle callbacks', () => {
 
         it('defines an onCreate callback', () => {
-            let onCreateCalled = false;
+            let createCalled = false;
             testActor.onCreate((self, state) => {
-                onCreateCalled = true;
+                createCalled = true;
             });
 
-            expect(onCreateCalled).toBeFalse();
+            expect(createCalled).toBeFalse();
             
-            testActor.callCreate(null, null)
+            testActor.callCreate(null, testState)
 
-            expect(onCreateCalled).toBeTrue();
+            expect(createCalled).toBeTrue();
         });
 
         it('defines a collsion handler callback', () => {
@@ -44,7 +45,7 @@ describe('Actor', () => {
 
             expect(collisionHandlerCalled).toBeFalse();
 
-            testActor.callCollision(null, instance2, null);
+            testActor.callCollision(null, instance2, testState);
             
             expect(collisionHandlerCalled).toBeTrue();
         });
@@ -57,29 +58,80 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, null, new GameEvent('testEvent'));
+            testActor.callGameEvent(null, testState, new GameEvent('testEvent'));
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
 
-        xit('defines a pointer event handler callback', () => {
-            // TODO
+        it('defines a pointer event handler callback', () => {
+            let pointerEventCalled = false;
+            let pointerEventCoords = null;
+            testActor.onPointerInput('pointertest', (self, state, event) => {
+                pointerEventCalled = true;
+                pointerEventCoords = [event.x, event.y];
+            });
+
+            expect(pointerEventCalled).toBeFalse();
+
+            testActor.callPointerInput(null, testState, new PointerInputEvent('pointertest', 20, 40));
+
+            expect(pointerEventCalled).toBeTrue();
+            expect(pointerEventCoords).toEqual([20, 40]);
         });
 
-        xit('defines a keyboard event handler callback', () => {
-            // TODO
+        it('defines a keyboard event handler callback', () => {
+            let keyboardEventCalled = false;
+            let keyboardEventType = null;
+            testActor.onKeyboardInput('testkey', (self, state, event) => {
+                keyboardEventCalled = true;
+                keyboardEventType = event.type;
+            });
+
+            expect(keyboardEventCalled).toBeFalse();
+
+            testActor.callKeyboardInput(null, testState, new KeyboardInputEvent('testkey', 'testkeytype'));
+
+            expect(keyboardEventCalled).toBeTrue();
+            expect(keyboardEventType).toBe('testkeytype');
         });
 
-        xit('defines an onStep callback', () => {
-            // TODO
+        it('defines an onStep callback', () => {
+            let stepCalled = false;
+            testActor.onStep((self, state) => {
+                stepCalled = true;
+            });
+
+            expect(stepCalled).toBeFalse();
+
+            testActor.callStep(null, testState);
+
+            expect(stepCalled).toBeTrue();
         });
 
-        xit('defines an onDraw callback', () => {
-            // TODO
+        it('defines an onDraw callback', () => {
+            let drawCalled = false;
+            testActor.onDraw((self, state) => {
+                drawCalled = true;
+            });
+
+            expect(drawCalled).toBeFalse();
+
+            testActor.callDraw(null, testState, testGame.canvas);
+
+            expect(drawCalled).toBeTrue();
         });
 
-        xit('defines an onDestroy callback', () => {
-            // TODO
+        it('defines an onDestroy callback', () => {
+            let destroyCalled = false;
+            testActor.onDestroy((self, state) => {
+                destroyCalled = true;
+            });
+
+            expect(destroyCalled).toBeFalse();
+
+            testActor.callDestroy(null, testState);
+
+            expect(destroyCalled).toBeTrue();
         });
     });
 

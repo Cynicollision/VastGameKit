@@ -30,7 +30,6 @@ export class ActorInstance {
     y: number = 0;
 
     // allow properties to dynamically be assigned to ActorInstances.
-    // TODO: also on Layers?
     [x: string | number | symbol]: unknown;
 
     static spawn(id: number, actor: Actor, layer: Layer, x: number, y: number): ActorInstance {

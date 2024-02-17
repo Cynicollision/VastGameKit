@@ -1,6 +1,7 @@
 import { ActorInstance, ActorInstanceStatus } from './../actor';
+import { Background, BackgroundOptions } from './background';
 import { RoomCamera } from './camera';
-import { GameCanvas, PointerInputEvent } from './../device';
+import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameEvent, GameState } from './../game';
 import { Room } from './room';
 import { Sprite } from './../sprite';
@@ -20,7 +21,7 @@ type LayerLifecycleEventCallback = {
 };
 
 type LayerKeyboardInputCallback = {
-    (self: Layer, state: GameState, event: KeyboardEvent): void;
+    (self: Layer, state: GameState, event: KeyboardInputEvent): void;
 };
 
 type LayerPointerInputCallback = {
@@ -32,6 +33,7 @@ type LayerLifecycleDrawCallback = {
 };
 
 export type LayerOptions = {
+    active?: boolean;
     depth?: number;
     height?: number;
     width?: number;
@@ -53,18 +55,18 @@ export class Layer {
     private onDrawCallback: LayerLifecycleDrawCallback;
     private onDestroyCallback: LayerLifecycleCallback;
 
-    private backgroundColor: string = '#fff';
-    private backgroundSprite: Sprite;
+    private background: Background;
     private followOffsetX: number;
     private followOffsetY: number;
 
     readonly name: string;
     readonly room: Room;
 
+    active: boolean;
     depth: number;
     height: number;
     width: number;
-    visible: boolean; // TODO implement (control whether this layer is drawn)
+    visible: boolean;
     x: number;
     y: number;
 
@@ -73,24 +75,27 @@ export class Layer {
 
     private _followingCamera: RoomCamera;
     get followingCamera() { return this._followingCamera; }
+
+    // allow properties to dynamically be assigned to Layers.
+    [x: string | number | symbol]: unknown;
     
     static define(layerName: string, room: Room, options: LayerOptions = {}): Layer {
-        const layer = new Layer(layerName, room);
+        const layer = new Layer(layerName, room, options);
         layer.init();
-
-        layer.depth = options.depth || 0;
-        layer.height = options.height || room.height;
-        layer.width = options.width || room.width;
-        layer.visible = options.visible || true;
-        layer.x = options.x || 0;
-        layer.y = options.y || 0;
 
         return layer;
     }
 
-    private constructor(name: string, room: Room) {
+    private constructor(name: string, room: Room, options: LayerOptions) {
         this.name = name;
         this.room = room;
+        this.active = options.active !== undefined ? options.active : true;
+        this.depth = options.depth || 0;
+        this.height = options.height || room.height;
+        this.width = options.width || room.width;
+        this.visible = options.visible !== undefined ? options.visible : true;
+        this.x = options.x || 0;
+        this.y = options.y || 0;
     }
 
     init(): void {
@@ -121,7 +126,7 @@ export class Layer {
         this.gameEventHandlerRegistry[eventName] = callback;
     }
 
-    callEvent(state: GameState, event: GameEvent): void {
+    callGameEvent(state: GameState, event: GameEvent): void {
 
         if (!event.isCancelled) {
             if (this.gameEventHandlerRegistry[event.name]) {
@@ -134,7 +139,7 @@ export class Layer {
         this.keyboardInputEventHandlerRegistry[key] = callback;
     }
 
-    callKeyboardInput(state: GameState, event: KeyboardEvent): void {
+    callKeyboardInput(state: GameState, event: KeyboardInputEvent): void {
         const handler: LayerKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
         if (handler) {
             handler(this, state, event);
@@ -159,6 +164,10 @@ export class Layer {
     }
 
     step(state: GameState): void {
+
+        if (!this.active) {
+            return;
+        }
 
         if (this.onStepCallback) {
             this.onStepCallback(this, state);
@@ -209,16 +218,14 @@ export class Layer {
 
     draw(state: GameState, canvas: GameCanvas): void {
 
-        // TODO new class or type: LayerBackground
-        //  - Sprite or background color
-        //  - CanvasFillOptions or CanvasDrawImageOptions
-        if (this.backgroundSprite) {
-            canvas.drawSprite(this.backgroundSprite, this.x, this.y, { repeatHeight: this.height, repeatWidth: this.width, repeatX: true, repeatY: true });
+        if (!this.visible) {
+            return;
         }
-        else if (this.backgroundColor) {
-            canvas.fillArea(this.backgroundColor, this.x, this.y, this.width, this.height);
+
+        if (this.background) {
+            this.background.draw(canvas);
         }
-        
+
         if (this.onDrawCallback) {
             this.onDrawCallback(this, state, canvas);
         }
@@ -234,12 +241,12 @@ export class Layer {
         }
     }
     
-    setBackground(colorOrSprite: string | Sprite): void {
+    setBackground(colorOrSprite: string | Sprite, options: BackgroundOptions = {}): void {
         if (typeof colorOrSprite === 'string') {
-            this.backgroundColor = colorOrSprite;
+            this.background = Background.fromColor(this, colorOrSprite, options);
         }
         else {
-            this.backgroundSprite = colorOrSprite;
+            this.background = Background.fromSprite(this, colorOrSprite, options);
         }
     }
 

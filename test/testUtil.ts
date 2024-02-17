@@ -10,9 +10,11 @@ export class TestUtil {
         canvasElementId: 'test', 
     };
 
+    static readonly inputHandler = new MockInputHandler();
+
     static getTestGame(options?: GameOptions): Game {
         options = options || TestUtil.defaultGameConfig;
-        return new Game(options, new MockGameCanvas(), new MockInputHandler());
+        return new Game(options, new MockGameCanvas(), TestUtil.inputHandler);
     }
 
     static getTestState(game: Game): GameState {

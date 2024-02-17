@@ -38,15 +38,30 @@ export class PointerInputEvent extends GameEvent {
     }
 }
 
+export class KeyboardInputEvent extends GameEvent {
+    key: string;
+    type: string;
+
+    static fromKeyboardEvent(ev: KeyboardEvent): KeyboardInputEvent {
+        return new KeyboardInputEvent(ev.key, ev.type);
+    }
+
+    constructor(key: string, type: string) {
+        super(key);
+        this.key = key;
+        this.type = type;
+    }
+}
+
 export interface GameInputHandler {
     currentX: number;
     currentY: number;
     registerPointerInputHandler(callback: (event: PointerInputEvent) => void): InputEventHandler<PointerInputEvent>;
-    registerKeyboardInputHandler(callback: (event: KeyboardEvent) => void): InputEventHandler<KeyboardEvent>;
+    registerKeyboardInputHandler(callback: (event: KeyboardInputEvent) => void): InputEventHandler<KeyboardInputEvent>;
 }
 
 export class BrowserDocumentInputHandler implements GameInputHandler {
-    private keyboardEventHandlers: InputEventHandler<KeyboardEvent>[] = [];
+    private keyboardEventHandlers: InputEventHandler<KeyboardInputEvent>[] = [];
     private pointerEventHandlers: InputEventHandler<PointerInputEvent>[] = [];
 
     private _currentX: number;
@@ -63,8 +78,8 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
     static initForElement(body: HTMLElement): BrowserDocumentInputHandler {
         const inputHandler = new BrowserDocumentInputHandler();
 
-        function raiseKeyboardEvent(ev: KeyboardEvent): void {
-            inputHandler.keyboardEventHandlers.forEach((handler: InputEventHandler<KeyboardEvent>) => {
+        function raiseKeyboardEvent(ev: KeyboardInputEvent): void {
+            inputHandler.keyboardEventHandlers.forEach((handler: InputEventHandler<KeyboardInputEvent>) => {
                 if (handler.isActive) {
                     handler.callback(ev);
                 }
@@ -80,7 +95,7 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
         }
 
         body.onkeydown = body.onkeyup = function(this: GlobalEventHandlers, ev: KeyboardEvent): void {
-            raiseKeyboardEvent(ev);
+            raiseKeyboardEvent(KeyboardInputEvent.fromKeyboardEvent(ev));
         };
 
         body.onmousemove = function trackActiveMousePosition(this: GlobalEventHandlers, ev: MouseEvent): void {
@@ -111,8 +126,8 @@ export class BrowserDocumentInputHandler implements GameInputHandler {
         return clickHandler;
     }
 
-    registerKeyboardInputHandler(callback: (event: KeyboardEvent) => void): InputEventHandler<KeyboardEvent> {
-        const clickHandler = new InputEventHandler<KeyboardEvent>(callback);
+    registerKeyboardInputHandler(callback: (event: KeyboardInputEvent) => void): InputEventHandler<KeyboardInputEvent> {
+        const clickHandler = new InputEventHandler<KeyboardInputEvent>(callback);
         this.keyboardEventHandlers.push(clickHandler);
 
         return clickHandler;

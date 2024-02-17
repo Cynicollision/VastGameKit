@@ -1,10 +1,10 @@
-import { GameCanvas, PointerInputEvent } from './../device';
+import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameState } from './state';
 import { RoomStatus } from './../room';
 
 export class GameLifecycle {
 
-    keyboardEvent(event: KeyboardEvent, state: GameState): void {
+    keyboardEvent(event: KeyboardInputEvent, state: GameState): void {
         for (const layer of state.currentRoom.getLayersSortedFromTop()) {
             for (const instance of layer.getActorInstances()) {
                 instance.actor.callKeyboardInput(instance, state, event);

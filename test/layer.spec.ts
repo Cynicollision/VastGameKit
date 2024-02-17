@@ -1,5 +1,6 @@
 import { ActorInstance } from './../engine/actor';
-import { Game, GameState } from './../engine/game';
+import { Game, GameEvent, GameState } from './../engine/game';
+import { KeyboardInputEvent, PointerInputEvent } from '../engine/device';
 import { Layer, LayerStatus , Room } from './../engine/room';
 import { TestUtil } from './testUtil';
 
@@ -44,40 +45,100 @@ describe('Layer', () => {
     describe('lifecycle callbacks', () => {
 
         it('defines an onCreate callback', () => {
-            let onCreateCalled = false;
+            let createCalled = false;
             testLayer.onCreate((self, state) => {
-                onCreateCalled = true;
+                createCalled = true;
             });
 
-            expect(onCreateCalled).toBeFalse();
+            expect(createCalled).toBeFalse();
 
             testLayer.callCreate(testState);
 
-            expect(onCreateCalled).toBeTrue();
+            expect(createCalled).toBeTrue();
         });
 
         it('defines a game event handler callback', () => {
-            // TODO
+            let gameEventHandlerCalled = false;
+            testLayer.onGameEvent('testEvent', (self, state, event) => {
+                gameEventHandlerCalled = true;
+            });
+
+            expect(gameEventHandlerCalled).toBeFalse();
+
+            testLayer.callGameEvent(testState, new GameEvent('testEvent'));
+
+            expect(gameEventHandlerCalled).toBeTrue();
         });
 
-        xit('defines a pointer event handler callback', () => {
-            // TODO
+        it('defines a pointer event handler callback', () => {
+            let pointerEventCalled = false;
+            let pointerEventCoords = null;
+            testLayer.onPointerInput('pointertest', (self, state, event) => {
+                pointerEventCalled = true;
+                pointerEventCoords = [event.x, event.y];
+            });
+
+            expect(pointerEventCalled).toBeFalse();
+
+            testLayer.callPointerInput(testState, new PointerInputEvent('pointertest', 20, 40));
+
+            expect(pointerEventCalled).toBeTrue();
+            expect(pointerEventCoords).toEqual([20, 40]);
         });
 
-        xit('defines a keyboard event handler callback', () => {
-            // TODO
+        it('defines a keyboard event handler callback', () => {
+            let keyboardEventCalled = false;
+            let keyboardEventType = null;
+            testLayer.onKeyboardInput('testkey', (self, state, event) => {
+                keyboardEventCalled = true;
+                keyboardEventType = event.type;
+            });
+
+            expect(keyboardEventCalled).toBeFalse();
+
+            testLayer.callKeyboardInput(testState, new KeyboardInputEvent('testkey', 'testkeytype'));
+
+            expect(keyboardEventCalled).toBeTrue();
+            expect(keyboardEventType).toBe('testkeytype');
         });
 
-        xit('defines an onStep callback', () => {
-            // TODO
+        it('defines an onStep callback', () => {
+            let stepCalled = false;
+            testLayer.onStep((self, state) => {
+                stepCalled = true;
+            });
+
+            expect(stepCalled).toBeFalse();
+
+            testLayer.step(testState);
+
+            expect(stepCalled).toBeTrue();
         });
 
-        xit('defines an onDraw callback', () => {
-            // TODO
+        it('defines an onDraw callback', () => {
+            let drawCalled = false;
+            testLayer.onDraw((self, state) => {
+                drawCalled = true;
+            });
+
+            expect(drawCalled).toBeFalse();
+
+            testLayer.draw(testState, testGame.canvas);
+
+            expect(drawCalled).toBeTrue();
         });
 
-        xit('defines an onDestroy callback', () => {
-            // TODO
+        it('defines an onDestroy callback', () => {
+            let destroyCalled = false;
+            testLayer.onDestroy((self, state) => {
+                destroyCalled = true;
+            });
+
+            expect(destroyCalled).toBeFalse();
+
+            testLayer.callDestroy(testState);
+
+            expect(destroyCalled).toBeTrue();
         });
     });
 

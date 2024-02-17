@@ -27,10 +27,10 @@ export class RoomCamera {
     follow(instance: ActorInstance, options: RoomCameraOptions = {}): void {
         this.followingInstance = instance;
         this.options = options;
-        this.options.centerOnInstanceBoundary = this.options.centerOnInstanceBoundary || false;
+        this.options.centerOnInstanceBoundary = this.options.centerOnInstanceBoundary !== undefined ? this.options.centerOnInstanceBoundary : false;
         this.options.offsetX = this.options.offsetX || 0;
         this.options.offsetY = this.options.offsetY || 0;
-        this.options.stayWithinRoom = this.options.stayWithinRoom || true;
+        this.options.stayWithinRoom = this.options.stayWithinRoom !== undefined ? this.options.stayWithinRoom : true;
     }
 
     updatePosition(): void {
