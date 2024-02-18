@@ -12,7 +12,7 @@ export enum ActorInstanceStatus {
 }
 
 export class ActorInstance {
-    private readonly behaviors: ActorInstanceBehavior[] = [];
+    readonly behaviors: ActorInstanceBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;
     readonly layer: Layer;
@@ -61,19 +61,24 @@ export class ActorInstance {
         if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
             const motion = new ActorInstanceMotionBehavior();
             this._motion = motion;
-            this.behaviors.push(motion);
+            this.useBehavior(motion);
         }
     }
 
-    applyBeforeStepBehaviors(state: GameState): void {
+    useBehavior(behavior: ActorInstanceBehavior) {
+        this.behaviors.push(behavior);
+    }
+
+    callBeforeStepBehaviors(state: GameState): void {
         for (const behavior of this.behaviors) {
             if (behavior.beforeStep) {
+                
                 behavior.beforeStep(this, state);
             }
         }
     }
 
-    applyAfterStepBehaviors(state: GameState): void {
+    callAfterStepBehaviors(state: GameState): void {
         for (const behavior of this.behaviors) {
             if (behavior.afterStep) {
                 behavior.afterStep(this, state);

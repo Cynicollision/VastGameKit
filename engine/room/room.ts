@@ -69,8 +69,9 @@ export class Room {
         }
     }
 
-    onStart(callback: RoomLifecycleCallback): void {
+    onStart(callback: RoomLifecycleCallback): Room {
         this.onStartCallback = callback;
+        return this;
     }
 
     start(state: GameState): void {
@@ -99,8 +100,9 @@ export class Room {
         }
     }
 
-    onSuspend(callback: RoomLifecycleCallback): void {
+    onSuspend(callback: RoomLifecycleCallback): Room {
         this.onSuspendCallback = callback;
+        return this;
     }
 
     suspend(state: GameState): void {
@@ -111,8 +113,9 @@ export class Room {
         this._status = RoomStatus.Suspended;
     }
 
-    onResume(callback: RoomLifecycleCallback): void {
+    onResume(callback: RoomLifecycleCallback): Room {
         this.onResumeCallback = callback;
+        return this;
     }
 
     resume(state: GameState): void {

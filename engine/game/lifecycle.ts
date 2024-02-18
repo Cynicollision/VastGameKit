@@ -6,7 +6,7 @@ export class GameLifecycle {
 
     keyboardEvent(event: KeyboardInputEvent, state: GameState): void {
         for (const layer of state.currentRoom.getLayersSortedFromTop()) {
-            for (const instance of layer.getActorInstances()) {
+            for (const instance of layer.getInstances()) {
                 instance.actor.callKeyboardInput(instance, state, event);
             }
         }
@@ -17,7 +17,7 @@ export class GameLifecycle {
         event.y += state.currentRoom.camera.y;
 
         for (const layer of state.currentRoom.getLayersSortedFromTop()) {
-            for (const instance of layer.getActorInstances()) {
+            for (const instance of layer.getInstances()) {
                 if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(event.x, event.y)) {
                     instance.actor.callPointerInput(instance, state, event);
                 }
@@ -49,7 +49,7 @@ export class GameLifecycle {
         for (const layer of state.currentRoom.getLayersSortedFromBottom()) {
             layer.draw(state, canvas);
 
-            for (const instance of layer.getActorInstances()) {
+            for (const instance of layer.getInstances()) {
                 instance.draw(state, canvas);
             }
         }

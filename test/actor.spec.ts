@@ -1,7 +1,7 @@
 
 import { Actor } from './../engine/actor';
 import { Game, GameEvent, GameState } from './../engine/game';
-import { KeyboardInputEvent, PointerInputEvent } from '../engine/device';
+import { KeyboardInputEvent, PointerInputEvent } from './../engine/device';
 import { Room } from './../engine/room';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
@@ -17,6 +17,22 @@ describe('Actor', () => {
         testState = TestUtil.getTestState(testGame);
         testActor = testGame.defineActor('testActor');
         testRoom = testGame.defineRoom('testRoom');
+    });
+
+    it('defines an on-load callback', () => {
+        let loadCalled = false;
+        let loadedActor = null;
+        testActor.onLoad(actor => {
+            loadCalled = true;
+            loadedActor = actor;
+        });
+
+        expect(loadCalled).toBeFalse();
+
+        testActor.load();
+
+        expect(loadCalled).toBeTrue();
+        expect(loadedActor).toBe(testActor);
     });
 
     describe('lifecycle callbacks', () => {

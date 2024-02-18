@@ -16,7 +16,8 @@ export type CanvasDrawImageOptions = {
 };
 
 export type CanvasDrawTextOptions = {
-    // TODO font? etc.
+    color?: string;
+    font?: string;
 };
 
 export type CanvasFillOptions = {
@@ -80,7 +81,12 @@ export class GameCanvasHtml2D implements GameCanvas {
     }
 
     drawText(text: string, x: number, y: number, options: CanvasDrawTextOptions = {}): void {
-        // TODO
+        const [originX, originY] = this.origin;
+        this.canvasContext2D.font = options.font || '16px arial';
+        this.canvasContext2D.fillStyle = options.color || '#000';
+        this.canvasContext2D.translate(originX, originY);
+        this.canvasContext2D.fillText(text, x, y);
+        this.canvasContext2D.translate(-originX, -originY)
     }
 
     drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options: CanvasDrawImageOptions = {}): void {

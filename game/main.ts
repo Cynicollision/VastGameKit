@@ -1,166 +1,26 @@
 import { VastGameKit } from './../engine/vastgamekit';
-import { Direction } from './../engine/actor';
-import { SpriteTransformation } from '../engine/sprite/sprite';
 
-const gameOptions = {
+import { buildWallActor } from './actors/wall';
+import { buildRoom1 } from './rooms/room1';
+import { buildPlayerActor } from './actors/player';
+import { buildCoinActor } from './actors/coin';
+import { buildDefaultRoom } from './rooms/default';
+
+const game = VastGameKit.init({
     canvasElementId: 'gameCanvas',
     defaultRoomOptions: {
-        height: 1000, width: 2000, persistent: true
-    }
-}
-const game = VastGameKit.init(gameOptions);
-
-const spr1 = game.defineSprite('sprite1', './resources/playerShip3_blue.png');
-const act1 = game.defineActor('actor1', { sprite: spr1 });
-act1.useBasicMotionBehavior();
-
-// Actor1
-act1.onCreate((self, state) => {
-    console.log('act1.onCreate');
-    act1.setRectBoundaryFromSprite(); // TODO make possible to do outside of lifecycle, i.e. load image if its not already loaded
-
-    self.stats = { health: 100 };
-});
-
-act1.onStep((self, state) => {
-
-    if (self.moveUp || self.moveLeft || self.moveRight || self.moveDown) {
-        self.motion.speed = 4;
-    }
-    else {
-        self.motion.speed = 0;
-    }
-
-    if (self.moveUp && self.moveLeft) {
-        self.motion.direction = 225;
-    }
-    else if (self.moveUp && self.moveRight) {
-        self.motion.direction = 315;
-    }
-    else if (self.moveDown && self.moveLeft) {
-        self.motion.direction = 135;
-    }
-    else if (self.moveDown && self.moveRight) {
-        self.motion.direction = 45;
-    }
-    else if (self.moveUp) {
-        self.motion.direction = Direction.Up;
-    }
-    else if (self.moveLeft) {
-        self.motion.direction = Direction.Left;
-    }
-    else if (self.moveRight) {
-        self.motion.direction = Direction.Right;
-    }
-    else if (self.moveDown) {
-        self.motion.direction = Direction.Down;
+        height: 1000, 
+        width: 2000, 
+        persistent: true
     }
 });
 
-act1.onPointerInput('mousedown', (self, state, event) => {
-    console.log('you clicked me');
-    state.raiseEvent('something', { foo: 'bar'});
-    //self.destroy();
-});
+buildCoinActor(game);
+buildPlayerActor(game);
+buildWallActor(game);
 
-act1.onKeyboardInput('w', (self, state, event) => {
-    self.moveUp = event.type === 'keydown';
-});
-
-act1.onKeyboardInput('a', (self, state, event) => {
-    self.moveLeft = event.type === 'keydown';
-});
-
-act1.onKeyboardInput('s', (self, state, event) => {
-    self.moveDown = event.type === 'keydown';
-});
-
-act1.onKeyboardInput('d', (self, state, event) => {
-    self.moveRight = event.type === 'keydown';
-});
-
-act1.onGameEvent('something', (self, state, event) => {
-    console.log('act1.onGameEvent.something');
-    console.log('act1.onGameEvent.something data = '+event.data);
-
-    state.goToRoom(state.currentRoom.name === 'default' ? 'room1' : 'default');
-    event.cancel();
-});
-
-act1.onCollision('coin', (self, other, state) => {
-    other.destroy();
-});
-
-act1.onDestroy((self, state) => {
-    console.log('act1.onDestroy');
-});
-
-// DefaultRoom
-const hud1 = game.defaultRoom.createLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 });
-hud1.setBackground('#0A0');
-
-const button = game.defineActor('button');
-button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
-button.onCreate((self, state) => button.setRectBoundaryFromSprite());
-button.onPointerInput('mousedown', (self, state, event) => {
-    if (self.animation.stopped) {
-        self.animation.start(0, 1, 500);
-    }
-    else {
-        self.animation.stop();
-    }
-});
-
-game.defineActor('coin', { sprite: game.defineSprite('sprCoin', './resources/coin.png') });
-
-
-hud1.onCreate((self, state) => {
-    self.createInstance('button', 16, 16);
-    self.follow(self.room.camera);
-});
-
-game.defaultRoom.onStart((self, state) => {
-    console.log('defaultRoom.onStart');
-    const player = self.defaultLayer.createInstance('actor1', 256, 256);
-    self.camera.follow(player, { centerOnInstanceBoundary: true });
-
-    self.defaultLayer.createInstance('coin', 600, 500);
-    game.getActor('coin').setCircleBoundaryFromSprite();
-});
-
-game.defaultRoom.defaultLayer.onGameEvent('something', (self, state, event) => {
-    console.log('game.defaultRoom.onGameEvent.something!');
-    console.log('game.defaultRoom.onGameEvent.something data = '+event.data);
-    //event.cancel();
-});
-
-game.defaultRoom.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'), { opacity: 0.5});
-
-game.defaultRoom.defaultLayer.onCreate((self, state) => {
-    console.log('defaultRoom.defaultLayer.onCreate');
-})
-
-// Room1
-const room1 = game.defineRoom('room1', { persistent: false });
-room1.defaultLayer.setBackground('#C00');
-const hud2 = room1.createLayer('hud2', { height: 64, width: 800, x: 16, y: 16 });
-hud2.setBackground(game.getSprite('sky'));
-
-room1.onStart((self, state) => {
-    console.log('room1.onStart');
-    const one = self.defaultLayer.createInstance('actor1', 32, 96);
-    one.animation.setTransform(SpriteTransformation.Opacity, 0.5);
-});
-
-room1.onResume((self, state) => {
-    console.log('room1.onResume');
-})
-
-room1.defaultLayer.onCreate((self, state) => {
-    console.log('room1.defaultLayer.onCreate');
-
-    hud2.createInstance('actor1', 32, 32);
-});
+buildDefaultRoom(game);
+buildRoom1(game);
 
 // load and start the game
 game.load().then(() => {

@@ -1,10 +1,9 @@
 import { Actor, ActorOptions } from './../actor';
-import { GameAudio, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
+import { GameAudio, GameAudioOptions, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameLifecycle } from './lifecycle';
 import { GameState } from './state';
 import { Room, RoomOptions } from './../room';
 import { Sprite, SpriteOptions } from './../sprite';
-import { GameAudioOptions } from '../device/audio';
 
 export type GameOptions = {
     canvasElementId: string;
@@ -140,7 +139,14 @@ export class Game {
             promises.push(sprite.load());
         }
 
-        return Promise.all(promises);
+        return Promise.all(promises).then(() => {
+            for (const a in this.actorRegistry) {
+                const actor = this.actorRegistry[a];
+                actor.load();
+            }
+
+            return Promise.resolve();
+        });
     }
 
     start(roomName?: string) {

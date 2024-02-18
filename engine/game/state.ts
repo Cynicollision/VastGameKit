@@ -11,6 +11,9 @@ export class GameState {
 
     private _eventQueue: GameEvent[] = [];
 
+    // allow properties to dynamically be assigned to GameState.
+    [x: string | number | symbol]: unknown;
+
     constructor(game: Game) {
         this._game = game;
     }
@@ -30,7 +33,7 @@ export class GameState {
         this._currentRoom = room;
     }
 
-    raiseEvent(eventName: string, data: any): void {
+    raiseEvent(eventName: string, data?: any): void {
         this._eventQueue.push(new GameEvent(eventName, data));
     }
 

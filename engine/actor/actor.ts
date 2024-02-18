@@ -41,6 +41,7 @@ export class Actor {
     private keyboardInputEventHandlerRegistry: { [type: string]: ActorKeyboardInputCallback } = {};
     private pointerInputEventHandlerRegistry: { [type: string]: ActorPointerInputCallback } = {};
 
+    private onLoadCallback: (actor: Actor) => void;
     private onCreateCallback: ActorLifecycleCallback;
     private onStepCallback: ActorLifecycleCallback;
     private onDrawCallback: ActorLifecycleDrawCallback;
@@ -69,53 +70,73 @@ export class Actor {
         this.sprite = options.sprite;
     }
 
-    setRectBoundary(height: number, width: number): RectBoundary {
-        const boundary = new RectBoundary(height, width);
+    setCircleBoundary(radius: number, originX: number = 0, originY: number = 0): CircleBoundary {
+        const boundary = new CircleBoundary(radius, originX, originY);
         this._boundary = boundary;
-        
+
         return boundary;
     }
 
-    setCircleBoundaryFromSprite(sprite?: Sprite): CircleBoundary {
+    setCircleBoundaryFromSprite(sprite?: Sprite, originX: number = 0, originY: number = 0): CircleBoundary {
         sprite = sprite || this.sprite;
 
         if (!sprite) {
             throw new GameError(`Actor ${this.name} attempting to set a CircleBoundary from a null Sprite.`);
         }
 
-        const boundary = CircleBoundary.fromSprite(sprite);
+        const boundary = CircleBoundary.fromSprite(sprite, originX, originY);
         this._boundary = boundary;
 
         return boundary;
     }
 
-    setRectBoundaryFromSprite(sprite?: Sprite): RectBoundary {
+    setRectBoundary(height: number, width: number, originX: number = 0, originY: number = 0): RectBoundary {
+        const boundary = new RectBoundary(height, width, originX, originY);
+        this._boundary = boundary;
+        
+        return boundary;
+    }
+
+    setRectBoundaryFromSprite(sprite?: Sprite, originX: number = 0, originY: number = 0): RectBoundary {
         sprite = sprite || this.sprite;
         
         if (!sprite) {
             throw new GameError(`Actor ${this.name} attempting to set a RectBoundary from a null Sprite.`);
         }
 
-        const boundary = RectBoundary.fromSprite(sprite);
+        const boundary = RectBoundary.fromSprite(sprite, originX, originY);
         this._boundary = boundary;
 
         return boundary;
     }
 
-    useBasicMotionBehavior(): void {
-        this.useBehavior(ActorInstanceBehaviorName.BasicMotion);
+    useBasicMotionBehavior(): Actor {
+        return this.useBehavior(ActorInstanceBehaviorName.BasicMotion);
     }
 
-    useBehavior(behaviorName: ActorInstanceBehaviorName): void {
+    useBehavior(behaviorName: ActorInstanceBehaviorName): Actor {
         if (this._behaviors[behaviorName]) {
             throw new GameError(`Actor ${this.name} is alreadying using Behavior ${behaviorName}.`)
         }
 
         this._behaviors.push(behaviorName);
+        return this;
     }
 
-    onCreate(callback: ActorLifecycleCallback): void {
+    onLoad(callback: (actor: Actor) => void): Actor {
+        this.onLoadCallback = callback;
+        return this;
+    }
+
+    load(): void {
+        if (this.onLoadCallback) {
+            this.onLoadCallback(this);
+        }
+    }
+
+    onCreate(callback: ActorLifecycleCallback): Actor {
         this.onCreateCallback = callback;
+        return this;
     }
 
     callCreate(self: ActorInstance, state: GameState): void {
@@ -124,12 +145,13 @@ export class Actor {
         }
     }
 
-    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void {
+    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): Actor {
         if (this.collisionHandlerRegistry[actorName]) {
             throw new GameError(`Actor ${this.name} already has a collision handler for Actor ${actorName}.`)
         }
 
         this.collisionHandlerRegistry[actorName] = callback;
+        return this;
     }
 
     getCollisionActorNames(): string[] {
@@ -148,8 +170,9 @@ export class Actor {
         }
     }
 
-    onGameEvent(eventName: string, callback: ActorLifecycleEventCallback): void {
+    onGameEvent(eventName: string, callback: ActorLifecycleEventCallback): Actor {
         this.gameEventHandlerRegistry[eventName] = callback;
+        return this;
     }
 
     callGameEvent(self: ActorInstance, state: GameState, event: GameEvent): void {
@@ -160,8 +183,9 @@ export class Actor {
         }
     }
 
-    onKeyboardInput(key: string, callback: ActorKeyboardInputCallback): void {
+    onKeyboardInput(key: string, callback: ActorKeyboardInputCallback): Actor {
         this.keyboardInputEventHandlerRegistry[key] = callback;
+        return this;
     }
 
     callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardInputEvent): void {
@@ -171,8 +195,9 @@ export class Actor {
         }
     }
 
-    onPointerInput(type: string, callback: ActorPointerInputCallback): void {
+    onPointerInput(type: string, callback: ActorPointerInputCallback): Actor {
         this.pointerInputEventHandlerRegistry[type] = callback;
+        return this;
     }
 
     callPointerInput(self: ActorInstance, state: GameState, event: PointerInputEvent): void {
@@ -184,8 +209,9 @@ export class Actor {
         }
     }
 
-    onStep(callback: ActorLifecycleCallback): void {
+    onStep(callback: ActorLifecycleCallback): Actor {
         this.onStepCallback = callback;
+        return this;
     }
 
     callStep(self: ActorInstance, state: GameState): void {
@@ -194,8 +220,9 @@ export class Actor {
         }
     }
 
-    onDraw(callback: ActorLifecycleDrawCallback): void {
+    onDraw(callback: ActorLifecycleDrawCallback): Actor {
         this.onDrawCallback = callback;
+        return this;
     }
 
     callDraw(self: ActorInstance, state: GameState, canvas: GameCanvas): void {
@@ -204,8 +231,9 @@ export class Actor {
         }
     }
     
-    onDestroy(callback: ActorLifecycleCallback): void {
+    onDestroy(callback: ActorLifecycleCallback): Actor {
         this.onDestroyCallback = callback;
+        return this;
     }
 
     callDestroy(self: ActorInstance, state: GameState): void {

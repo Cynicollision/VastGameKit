@@ -1,4 +1,4 @@
-import { ActorInstance, ActorInstanceStatus } from './../actor';
+import { ActorInstance, ActorInstanceStatus, Boundary } from './../actor';
 import { Background, BackgroundOptions } from './background';
 import { RoomCamera } from './camera';
 import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
@@ -44,7 +44,6 @@ export type LayerOptions = {
 
 export class Layer {
     private actorInstanceRegistry: { [index: number]: ActorInstance } = {};
-    private actorInstanceRegistryByActor: { [actorName: string]: ActorInstance[] } = {};
 
     private gameEventHandlerRegistry: { [eventName: string]: LayerLifecycleEventCallback } = {};
     private keyboardInputEventHandlerRegistry: { [type: string]: LayerKeyboardInputCallback } = {};
@@ -101,7 +100,6 @@ export class Layer {
     init(): void {
         this._status = LayerStatus.New;
         this.actorInstanceRegistry = {};
-        this.actorInstanceRegistryByActor = {};
     }
 
     activate(): void {
@@ -112,8 +110,9 @@ export class Layer {
         this._status = LayerStatus.Destroyed;
     }
 
-    onCreate(callback: LayerLifecycleCallback): void {
+    onCreate(callback: LayerLifecycleCallback): Layer {
         this.onCreateCallback = callback;
+        return this;
     }
 
     callCreate(state: GameState): void {
@@ -122,8 +121,9 @@ export class Layer {
         }
     }
 
-    onGameEvent(eventName: string, callback: LayerLifecycleEventCallback): void {
+    onGameEvent(eventName: string, callback: LayerLifecycleEventCallback): Layer {
         this.gameEventHandlerRegistry[eventName] = callback;
+        return this;
     }
 
     callGameEvent(state: GameState, event: GameEvent): void {
@@ -135,8 +135,9 @@ export class Layer {
         }
     }
 
-    onKeyboardInput(key: string, callback: LayerKeyboardInputCallback): void {
+    onKeyboardInput(key: string, callback: LayerKeyboardInputCallback): Layer {
         this.keyboardInputEventHandlerRegistry[key] = callback;
+        return this;
     }
 
     callKeyboardInput(state: GameState, event: KeyboardInputEvent): void {
@@ -146,8 +147,9 @@ export class Layer {
         }
     }
 
-    onPointerInput(type: string, callback: LayerPointerInputCallback): void {
+    onPointerInput(type: string, callback: LayerPointerInputCallback): Layer {
         this.pointerInputEventHandlerRegistry[type] = callback;
+        return this;
     }
 
     callPointerInput(state: GameState, event: PointerInputEvent): void {
@@ -159,8 +161,9 @@ export class Layer {
         }
     }
 
-    onStep(callback: LayerLifecycleCallback): void {
+    onStep(callback: LayerLifecycleCallback): Layer {
         this.onStepCallback = callback;
+        return this;
     }
 
     step(state: GameState): void {
@@ -175,7 +178,7 @@ export class Layer {
 
         const raisedEvents = state.getQueuedEvents();
 
-        for (const instance of this.getActorInstances()) {
+        for (const instance of this.getInstances()) {
 
             if (instance.status === ActorInstanceStatus.Destroyed) {
                 this.deleteInstance(instance);
@@ -186,9 +189,9 @@ export class Layer {
                 instance.actor.callCreate(instance, state);
             }
             else if (instance.status === ActorInstanceStatus.Active) {
-                instance.applyBeforeStepBehaviors(state);
+                instance.callBeforeStepBehaviors(state);
                 instance.callStep(state);
-                instance.applyAfterStepBehaviors(state);
+                instance.callAfterStepBehaviors(state);
 
                 for (const event of raisedEvents) {
                     instance.actor.callGameEvent(instance, state, event);
@@ -212,8 +215,9 @@ export class Layer {
         }
     }
 
-    onDraw(callback: LayerLifecycleDrawCallback): void {
+    onDraw(callback: LayerLifecycleDrawCallback): Layer {
         this.onDrawCallback = callback;
+        return this;
     }
 
     draw(state: GameState, canvas: GameCanvas): void {
@@ -231,8 +235,9 @@ export class Layer {
         }
     }
 
-    onDestroy(callback: LayerLifecycleCallback): void {
+    onDestroy(callback: LayerLifecycleCallback): Layer {
         this.onDestroyCallback = callback;
+        return this;
     }
 
     callDestroy(state: GameState): void {
@@ -241,13 +246,15 @@ export class Layer {
         }
     }
     
-    setBackground(colorOrSprite: string | Sprite, options: BackgroundOptions = {}): void {
+    setBackground(colorOrSprite: string | Sprite, options: BackgroundOptions = {}): Layer {
         if (typeof colorOrSprite === 'string') {
             this.background = Background.fromColor(this, colorOrSprite, options);
         }
         else {
             this.background = Background.fromSprite(this, colorOrSprite, options);
         }
+
+        return this;
     }
 
     follow(view: RoomCamera, offsetX = 0, offsetY = 0): void {
@@ -264,33 +271,81 @@ export class Layer {
         const spawnY = (y || 0) + this.y;
 
         const newInstance = ActorInstance.spawn(instanceId, actor, this, spawnX, spawnY);
-
-        if (!this.actorInstanceRegistryByActor[actorName]) {
-            this.actorInstanceRegistryByActor[actorName] = [];
-        }
-
-        this.actorInstanceRegistryByActor[actorName].push(newInstance);
         this.actorInstanceRegistry[instanceId] = newInstance;
 
         return newInstance;
     }
 
-    deleteInstance(instance: ActorInstance): void {
-        delete this.actorInstanceRegistry[instance.id];
-        this.actorInstanceRegistryByActor[instance.actor.name] = [];
-    }
+    createInstancesFromMap(gridSize: number, map: string[], instanceKey: {[char: string]: string }): ActorInstance[] {
+        const instances = [];
 
-    getActorInstances(actorName?: string): ActorInstance[] {
-        if (actorName) {
-            return this.actorInstanceRegistryByActor[actorName] || [];
-        }
-
-        const instances: ActorInstance[] = [];
-
-        for (const a in this.actorInstanceRegistry) {
-            instances.push(this.actorInstanceRegistry[a]);
+        for (let i = 0; i < map.length; i++) {
+            for (let j = 0; j < map[i].length; j++) {
+                const actorName = instanceKey[map[i][j]];
+                if (actorName) {
+                    instances.push(this.createInstance(actorName, j * gridSize, i * gridSize));
+                }
+            }
         }
 
         return instances;
+    }
+
+    deleteInstance(instance: ActorInstance): void {
+        delete this.actorInstanceRegistry[instance.id];
+    }
+
+    getInstances(actorName?: string): ActorInstance[] {
+        const instances: ActorInstance[] = [];
+
+        for (const a in this.actorInstanceRegistry) {
+            const instance = this.actorInstanceRegistry[a];
+            if (!actorName || actorName === instance.actor.name) {
+                instances.push(this.actorInstanceRegistry[a]);
+            }
+        }
+
+        return instances;
+    }
+
+    getInstancesWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid: boolean = false): ActorInstance[] {
+        const instances = [];
+
+        for (const a in this.actorInstanceRegistry) {
+            const instance = this.actorInstanceRegistry[a];
+            if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(x, y))) {
+                if (!solid || solid && instance.actor.solid) {
+                    instances.push(instance);
+                }
+            }
+        }
+
+        return instances;
+    }
+
+    getInstancesAtPosition(x: number, y: number, solid: boolean = false): ActorInstance[] {
+        const instances = [];
+
+        for (const a in this.actorInstanceRegistry) {
+            const instance = this.actorInstanceRegistry[a];
+            if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(x, y)) {
+                if (!solid || solid && instance.actor.solid) {
+                    instances.push(instance);
+                }
+            }
+        }
+
+        return instances;
+    }
+
+    isPositionFree(x: number, y: number, solid: boolean = false): boolean {
+        for (const a in this.actorInstanceRegistry) {
+            const instance = this.actorInstanceRegistry[a];
+            if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(x, y)) {
+                return !(!solid || solid && instance.actor.solid);
+            }
+        }
+
+        return true;
     }
 }
