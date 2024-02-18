@@ -17,7 +17,7 @@ act1.useBasicMotionBehavior();
 // Actor1
 act1.onCreate((self, state) => {
     console.log('act1.onCreate');
-    act1.setBoundaryFromSprite(); // TODO make possible to do outside of lifecycle, i.e. load image if its not already loaded
+    act1.setRectBoundaryFromSprite(); // TODO make possible to do outside of lifecycle, i.e. load image if its not already loaded
 
     self.stats = { health: 100 };
 });
@@ -101,7 +101,7 @@ hud1.setBackground('#0A0');
 
 const button = game.defineActor('button');
 button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
-button.onCreate((self, state) => button.setBoundaryFromSprite());
+button.onCreate((self, state) => button.setRectBoundaryFromSprite());
 button.onPointerInput('mousedown', (self, state, event) => {
     if (self.animation.stopped) {
         self.animation.start(0, 1, 500);
@@ -125,7 +125,7 @@ game.defaultRoom.onStart((self, state) => {
     self.camera.follow(player, { centerOnInstanceBoundary: true });
 
     self.defaultLayer.createInstance('coin', 600, 500);
-    game.getActor('coin').setBoundaryFromSprite();
+    game.getActor('coin').setCircleBoundaryFromSprite();
 });
 
 game.defaultRoom.defaultLayer.onGameEvent('something', (self, state, event) => {

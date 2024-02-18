@@ -1,6 +1,6 @@
 import { ActorInstance } from './actorInstance';
 import { ActorInstanceBehaviorName } from './actorInstanceBehavior';
-import { Boundary, RectBoundary } from './boundary';
+import { Boundary, CircleBoundary, RectBoundary } from './boundary';
 import { Game, GameError, GameEvent, GameState } from './../game';
 import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { Sprite } from './../sprite';
@@ -76,11 +76,24 @@ export class Actor {
         return boundary;
     }
 
-    setBoundaryFromSprite(sprite?: Sprite): RectBoundary {
+    setCircleBoundaryFromSprite(sprite?: Sprite): CircleBoundary {
+        sprite = sprite || this.sprite;
+
+        if (!sprite) {
+            throw new GameError(`Actor ${this.name} attempting to set a CircleBoundary from a null Sprite.`);
+        }
+
+        const boundary = CircleBoundary.fromSprite(sprite);
+        this._boundary = boundary;
+
+        return boundary;
+    }
+
+    setRectBoundaryFromSprite(sprite?: Sprite): RectBoundary {
         sprite = sprite || this.sprite;
         
         if (!sprite) {
-            throw new GameError(`Actor ${this.name} attempting to set a Boundary from a null Sprite.`);
+            throw new GameError(`Actor ${this.name} attempting to set a RectBoundary from a null Sprite.`);
         }
 
         const boundary = RectBoundary.fromSprite(sprite);

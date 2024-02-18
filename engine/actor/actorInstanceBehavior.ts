@@ -1,7 +1,7 @@
 import { ActorLifecycleCallback } from './actor';
 import { ActorInstance } from './actorInstance';
 import { GameState } from './../game';
-import { MathUtil } from './../util/math';
+import { Geometry } from './../util';
 
 export enum ActorInstanceBehaviorName {
     BasicMotion = 'BasicMotion',
@@ -33,8 +33,8 @@ export class ActorInstanceMotionBehavior implements ActorInstanceBehavior {
             // TODO get new position, see if free from solid actorInstances
             //  how to get position "to" that instance, if one is detected?
             // also move to new method: applyMotion(speed, direction, relative);
-            self.x += MathUtil.getLengthDirectionX(this.speed, this.direction);
-            self.y += MathUtil.getLengthDirectionY(this.speed, this.direction);
+            self.x += Geometry.getLengthDirectionX(this.speed, this.direction);
+            self.y += Geometry.getLengthDirectionY(this.speed, this.direction);
         }
     }
 

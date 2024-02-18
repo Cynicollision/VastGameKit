@@ -140,7 +140,7 @@ describe('Actor', () => {
 
         testActor.sprite = testGame.defineSprite('testSprite', TestImage.Source);
         testActor.sprite.load().then(() => {
-            const boundary = testActor.setBoundaryFromSprite();
+            const boundary = testActor.setRectBoundaryFromSprite();
 
             expect(testActor.boundary).toBe(boundary);
             expect(boundary.height).toBe(TestImage.Height);
