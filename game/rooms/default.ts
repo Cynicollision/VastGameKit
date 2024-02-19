@@ -35,8 +35,8 @@ export function buildDefaultRoom(game: Game) {
 
         const map = [
             'X                             X',
-            'X                             X',
             'X                    C        X',
+            'X                             X',
             'X                             X',
             'X                             X',
             'X                             X',
@@ -44,7 +44,7 @@ export function buildDefaultRoom(game: Game) {
             'X       C                     X',
             'X                  XX         X',
             'X                 XXXX        X',
-            'X                  XXX        X',
+            'X                  XX         X',
             'X                             X',
             'X                             X',
             'X                             X',

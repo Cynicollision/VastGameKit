@@ -1,10 +1,11 @@
 import { Game } from './../../engine/game';
 import { Direction } from './../../engine/actor';
+import { SpriteTransformation } from '../../engine/sprite/sprite';
 
 export function buildPlayerActor(game: Game) {
     
     game.defineActor('actPlayer', { 
-        sprite: game.defineSprite('sprPlayer', './resources/playerShip3_blue.png') 
+        sprite: game.defineSprite('sprPlayer', './resources/granite.png') 
     })
     .useBasicMotionBehavior()
     .onLoad(player => {
@@ -12,6 +13,7 @@ export function buildPlayerActor(game: Game) {
     })
     .onCreate((self, state) => {
         self.stats = { health: 100 };
+        self.animation.setTransform(SpriteTransformation.Opacity, 0.5);
         state.message = ' :)';
     })
     .onGameEvent('something', (self, state, event) => {

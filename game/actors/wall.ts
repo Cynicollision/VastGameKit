@@ -6,6 +6,6 @@ export function buildWallActor(game: Game) {
         sprite: game.defineSprite('granite', './resources/granite.png')
     })
     .onLoad(wall => {
-        wall.setCircleBoundaryFromSprite();
+        wall.setRectBoundaryFromSprite();
     });
 }

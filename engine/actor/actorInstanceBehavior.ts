@@ -43,35 +43,22 @@ export class ActorInstanceMotionBehavior implements ActorInstanceBehavior {
             let freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
             let freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
 
-            /** . */
-            const maxChecks = Math.floor(this.speed /2);
+            const maxChecks = this.speed;
             let current = 1;
             while (current < maxChecks && !freeAtNewPositionX && Math.abs(newX - self.x) > 1) {
-                current++;
-                if (newX > self.x) { 
-                    newX -= 1; 
-                }
-                else { 
-                    newX += 1; 
-                }
-
+                newX += self.x + newX > self.x ? -1 : 1;
+                newX = Math.floor(newX);
                 freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
+                current++;
             }
 
             current = 1;
-            while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY - self.y) > 1) {
-                current++;
-                if (newY > self.y) { 
-                    newY -= 1; 
-                }
-                else { 
-                    newY += 1; 
-                }
-                
+            while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY - self.y) > 1) { 
+                newY += self.y + newY > self.y ? -1 : 1;
+                newY = Math.floor(newY);
                 freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
+                current++;
             }
-
-            /** . */
 
             if (freeAtNewPositionX) {
                 self.x += newX;
