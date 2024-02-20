@@ -27,31 +27,27 @@ export class GameLifecycle {
     
     step(state: GameState): void {
 
-        if (state.currentRoom.status === RoomStatus.Starting) {
-            state.currentRoom.start(state);
-        }
-        else if (state.currentRoom.status === RoomStatus.Resuming) {
-            state.currentRoom.resume(state);
-        }
-        else if (state.currentRoom.status === RoomStatus.Suspended) {
-            state.currentRoom.suspend(state);
-            return;
+        switch (state.currentRoom.status) {
+            case RoomStatus.Starting:
+                state.currentRoom.start(state);
+                break;
+            case RoomStatus.Resuming:
+                state.currentRoom.resume(state);
+                break;
+            case RoomStatus.Suspended:
+                state.currentRoom.suspend(state);
+                break;
+            case RoomStatus.Running:
+                state.currentRoom.step(state);
+                break;
         }
 
-        state.currentRoom.step(state);
         state.flushEventQueue();
     }
 
     draw(state: GameState, canvas: GameCanvas): void {
-        canvas.setOrigin(-state.currentRoom.camera.x, -state.currentRoom.camera.y);
-        canvas.clear();
+        state.currentRoom.draw(state, canvas);
 
-        for (const layer of state.currentRoom.getLayersSortedFromBottom()) {
-            layer.draw(state, canvas);
-
-            for (const instance of layer.getInstances()) {
-                instance.draw(state, canvas);
-            }
-        }
+        state.drawTransition(canvas);
     }
 }

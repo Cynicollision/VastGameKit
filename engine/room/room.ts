@@ -1,4 +1,5 @@
 import { Game, GameError, GameState } from './../game';
+import { GameCanvas } from './../device';
 import { Layer, LayerOptions, LayerStatus } from './layer';
 import { RoomCamera } from './camera';
 
@@ -96,6 +97,18 @@ export class Room {
             }
             else {
                 layer.step(state);
+            }
+        }
+    }
+
+    draw(state: GameState, canvas: GameCanvas): void {
+        canvas.setOrigin(-this.camera.x, -this.camera.y);
+        canvas.clear();
+
+        for (const layer of this.getLayersSortedFromBottom()) {
+            layer.draw(state, canvas);
+            for (const instance of layer.getInstances()) {
+                instance.draw(state, canvas);
             }
         }
     }

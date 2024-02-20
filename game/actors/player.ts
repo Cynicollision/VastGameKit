@@ -1,6 +1,6 @@
 import { Game } from './../../engine/game';
 import { Direction } from './../../engine/actor';
-import { SpriteTransformation } from '../../engine/sprite/sprite';
+import { SpriteTransformation } from './../../engine/sprite/sprite';
 
 export function buildPlayerActor(game: Game) {
     
@@ -17,7 +17,8 @@ export function buildPlayerActor(game: Game) {
         state.message = ' :)';
     })
     .onGameEvent('something', (self, state, event) => {
-        state.goToRoom(state.currentRoom.name === 'default' ? 'room1' : 'default');
+        const nextRoom = state.currentRoom.name === 'default' ? 'room1' : 'default';
+        state.transitionToRoom(nextRoom, { durationMs: 500 });
         event.cancel();
     })
     .onCollision('actCoin', (self, other, state) => {

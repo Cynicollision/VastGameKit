@@ -1,7 +1,7 @@
-import { CanvasDrawOptions, GameCanvas } from './../device';
+import { CanvasDrawImageOptions, GameCanvas } from './../device';
 import { Sprite, SpriteTransformation } from './sprite';
 
-export type SpriteDrawOptions = CanvasDrawOptions & {
+export type SpriteDrawOptions = CanvasDrawImageOptions & {
     frame?: number;
 };
 

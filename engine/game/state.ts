@@ -1,6 +1,7 @@
 import { Game } from './game';
+import { GameCanvas } from './../device';
 import { GameEvent } from './event';
-import { Room } from './../room';
+import { Room, RoomTransition, RoomTransitionFactory, RoomTransitionOptions, RoomTransitionType } from './../room';
 
 export class GameState {
     private _currentRoom: Room;
@@ -10,6 +11,7 @@ export class GameState {
     get game() { return this._game; }
 
     private _eventQueue: GameEvent[] = [];
+    private _transition: RoomTransition;
 
     // allow properties to dynamically be assigned to GameState.
     [x: string | number | symbol]: unknown;
@@ -19,18 +21,33 @@ export class GameState {
     }
 
     init(roomName: string): void {
-        this._currentRoom = this.game.getRoom(roomName);
-        this._currentRoom.init();
+        this.setCurrentRoom(this.game.getRoom(roomName));
     }
 
     goToRoom(roomName: string): void {
+        this.suspendCurrentRoom();
+        this.setCurrentRoom(this.game.getRoom(roomName));
+    }
+
+    transitionToRoom(roomName: string, options: RoomTransitionOptions = {}, transitionType: RoomTransitionType = RoomTransitionType.Fade): void {
+        this.suspendCurrentRoom();
+        this._transition = RoomTransitionFactory.new(transitionType, options);
+        this._transition.start(() => {
+            this.setCurrentRoom(this.game.getRoom(roomName));
+        }, () => {
+            this._transition = null;
+        });
+    }
+
+    private setCurrentRoom(room: Room): void {
+        room.init();
+        this._currentRoom = room;
+    }
+
+    private suspendCurrentRoom(): void {
         if (this._currentRoom) {
             this._currentRoom.suspend(this);
         }
-
-        const room = this.game.getRoom(roomName);
-        room.init();
-        this._currentRoom = room;
     }
 
     raiseEvent(eventName: string, data?: any): void {
@@ -46,5 +63,11 @@ export class GameState {
         this._eventQueue = [];
 
         return queue;
+    }
+
+    drawTransition(canvas: GameCanvas): void {
+        if (this._currentRoom && this._transition) {
+            this._transition.draw(this._currentRoom, canvas);
+        }
     }
 }
