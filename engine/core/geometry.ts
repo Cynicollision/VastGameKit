@@ -1,4 +1,4 @@
-import { MathUtil } from "./math";
+import { MathUtil } from './math';
 
 export class Geometry {
 

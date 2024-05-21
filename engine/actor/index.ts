@@ -1,4 +1,4 @@
 export { Actor, ActorOptions } from './actor';
-export { ActorInstance, ActorInstanceStatus } from './actorInstance';
-export { ActorInstanceBehavior, ActorInstanceBehaviorName, ActorInstanceMotionBehavior, Direction } from './actorInstanceBehavior';
-export { Boundary, PositionedBoundary, PositionedRectBoundary, RectBoundary } from './boundary';
+export { ActorInstance, ActorInstanceStatus } from './instance';
+export { ActorBehavior as ActorInstanceBehavior, ActorBehaviorName, ActorMotionBehavior } from './behavior';
+export { Boundary, PositionedBoundary, CircleBoundary, PositionedCircleBoundary, RectBoundary, PositionedRectBoundary } from './boundary';

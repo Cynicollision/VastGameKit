@@ -5,12 +5,9 @@ export class VastGameKit {
 
     static init(options: GameOptions): Game {
         try {
-            const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
-            const canvas = GameCanvasHtml2D.initForElement(canvasElement);
+            const canvas = GameCanvasHtml2D.initForElementId(options.canvasElementId);
             const inputHandler = BrowserDocumentInputHandler.initForElement(document.body);
-            const game = new Game(options, canvas, inputHandler);
-
-            return game;
+            return Game.init(canvas, inputHandler, options);
         }
         catch (error) {
             const message = error.message ? error.message : error;

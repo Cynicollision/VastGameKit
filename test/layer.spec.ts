@@ -1,93 +1,93 @@
 import { ActorInstance, ActorInstanceStatus, RectBoundary } from './../engine/actor';
-import { Game, GameEvent, GameState } from './../engine/game';
+import { Game, GameController, GameEvent } from './../engine/game';
 import { KeyboardInputEvent, PointerInputEvent } from './../engine/device';
-import { Layer, LayerStatus , Room } from './../engine/room';
+import { Layer, LayerStatus , Scene } from '../engine/scene';
 import { TestUtil } from './testUtil';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 
 describe('Layer', () => {
     let testGame: Game;
-    let testState: GameState;
-    let testRoom: Room;
+    let testController: GameController;
+    let testScene: Scene;
     let testLayer: Layer;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testState = TestUtil.getTestState(testGame);
-        testRoom = testGame.defineRoom('testRoom');
-        testLayer = testRoom.createLayer('testLayer');
+        testController = TestUtil.getTestController(testGame);
+        testScene = testGame.defineScene('testScene');
+        testLayer = testScene.createLayer('testLayer');
 
         testGame.defineActor('testActor').setRectBoundary(20, 20);
         testGame.defineActor('testActor2').setRectBoundary(20, 20);
     });
 
     it('defines the default layer', () => {
-        expect(testRoom.defaultLayer).not.toBeNull();
+        expect(testScene.defaultLayer).not.toBeNull();
     });
 
     it('creates ActorInstances', () => {
-        testRoom.defaultLayer.createInstance('testActor', 0, 0);
-        const layerInstances = testRoom.defaultLayer.getInstances();
+        testScene.defaultLayer.createInstance('testActor', 0, 0);
+        const layerInstances = testScene.defaultLayer.getInstances();
 
         expect(layerInstances.length).toBe(1);
         expect(layerInstances[0].actor.name).toBe('testActor');
     });
 
     it('deletes ActorInstances from its registries', () => {
-        const instance: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 0, 0);
-        let currentCount = testRoom.defaultLayer.getInstances().length;
+        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 0, 0);
+        let currentCount = testScene.defaultLayer.getInstances().length;
         expect(currentCount).toBe(1);
 
-        testRoom.defaultLayer.deleteInstance(instance);
+        testScene.defaultLayer.deleteInstance(instance);
 
-        currentCount = testRoom.defaultLayer.getInstances().length;
+        currentCount = testScene.defaultLayer.getInstances().length;
         expect(currentCount).toBe(0);
     });
 
     it('checks if a position is free of any ActorInstances', () => {
-        const instance: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 10, 10);
+        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
 
-        expect(testRoom.defaultLayer.isPositionFree(0, 0)).toBeTrue()
-        expect(testRoom.defaultLayer.isPositionFree(20, 20)).toBeFalse();
-        expect(testRoom.defaultLayer.isPositionFree(31, 31)).toBeTrue();
+        expect(testScene.defaultLayer.isPositionFree(0, 0)).toBeTrue()
+        expect(testScene.defaultLayer.isPositionFree(20, 20)).toBeFalse();
+        expect(testScene.defaultLayer.isPositionFree(31, 31)).toBeTrue();
     });
 
     it('checks if a position is free of solid ActorInstances', () => {
-        const instance: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 10, 10);
+        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
         instance.actor.solid = true;
 
-        expect(testRoom.defaultLayer.isPositionFree(20, 20, true)).toBeFalse();
+        expect(testScene.defaultLayer.isPositionFree(20, 20, true)).toBeFalse();
 
         instance.actor.solid = false;
 
-        expect(testRoom.defaultLayer.isPositionFree(20, 20, true)).toBeTrue();
+        expect(testScene.defaultLayer.isPositionFree(20, 20, true)).toBeTrue();
     });
 
     it('gets ActorInstances at a position', () => {
-        const instance1: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 10, 10);
+        const instance1: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
         instance1.actor.solid = true;
 
-        const instance2: ActorInstance = testRoom.defaultLayer.createInstance('testActor2', 15, 15);
+        const instance2: ActorInstance = testScene.defaultLayer.createInstance('testActor2', 15, 15);
         instance2.actor.solid = false;
 
-        expect(testRoom.defaultLayer.getInstancesAtPosition(5, 5).length).toBe(0);
-        expect(testRoom.defaultLayer.getInstancesAtPosition(20, 20).length).toBe(2);
-        expect(testRoom.defaultLayer.getInstancesAtPosition(20, 20, true).length).toBe(1);
+        expect(testScene.defaultLayer.getInstancesAtPosition(5, 5).length).toBe(0);
+        expect(testScene.defaultLayer.getInstancesAtPosition(20, 20).length).toBe(2);
+        expect(testScene.defaultLayer.getInstancesAtPosition(20, 20, true).length).toBe(1);
     });
 
     it('gets ActorInstances within a Boundary at a position', () => {
-        const instance1: ActorInstance = testRoom.defaultLayer.createInstance('testActor', 20, 20);
+        const instance1: ActorInstance = testScene.defaultLayer.createInstance('testActor', 20, 20);
         instance1.actor.solid = true;
 
-        const instance2: ActorInstance = testRoom.defaultLayer.createInstance('testActor2', 25, 25);
+        const instance2: ActorInstance = testScene.defaultLayer.createInstance('testActor2', 25, 25);
         instance2.actor.solid = false;
 
         const boundary = new RectBoundary(8, 8);
 
-        expect(testRoom.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 4, 4).length).toBe(0);
-        expect(testRoom.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 16, 16).length).toBe(1);
-        expect(testRoom.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 19, 19).length).toBe(2);
-        expect(testRoom.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 19, 19, true).length).toBe(1);
+        expect(testScene.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 4, 4).length).toBe(0);
+        expect(testScene.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 16, 16).length).toBe(1);
+        expect(testScene.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 19, 19).length).toBe(2);
+        expect(testScene.defaultLayer.getInstancesWithinBoundaryAtPosition(boundary, 19, 19, true).length).toBe(1);
     });
 
     describe('lifecycle callbacks', () => {
@@ -100,7 +100,7 @@ describe('Layer', () => {
 
             expect(createCalled).toBeFalse();
 
-            testLayer.callCreate(testState);
+            testLayer.callCreate(testController);
 
             expect(createCalled).toBeTrue();
         });
@@ -113,7 +113,7 @@ describe('Layer', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testLayer.callGameEvent(testState, new GameEvent('testEvent'));
+            testLayer.callGameEvent(testController, new GameEvent('testEvent'));
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -128,7 +128,7 @@ describe('Layer', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testLayer.callPointerInput(testState, new PointerInputEvent('pointertest', 20, 40));
+            testLayer.callPointerInput(testController, new PointerInputEvent('pointertest', 20, 40));
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -144,7 +144,7 @@ describe('Layer', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testLayer.callKeyboardInput(testState, new KeyboardInputEvent('testkey', 'testkeytype'));
+            testLayer.callKeyboardInput(testController, new KeyboardInputEvent('testkey', 'testkeytype'));
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -158,7 +158,7 @@ describe('Layer', () => {
 
             expect(stepCalled).toBeFalse();
 
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(stepCalled).toBeTrue();
         });
@@ -171,7 +171,7 @@ describe('Layer', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testLayer.draw(testState, testGame.canvas);
+            testLayer.draw(testController, testGame.canvas);
 
             expect(drawCalled).toBeTrue();
         });
@@ -184,7 +184,7 @@ describe('Layer', () => {
 
             expect(destroyCalled).toBeFalse();
 
-            testLayer.callDestroy(testState);
+            testLayer.callDestroy(testController);
 
             expect(destroyCalled).toBeTrue();
         });
@@ -225,7 +225,7 @@ describe('Layer', () => {
 
             expect(actorOnCreatedCalled).toBeFalse();
             expect(instance.status).toBe(ActorInstanceStatus.New);
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(actorOnCreatedCalled).toBeTrue();
             expect(instance.status).toBe(ActorInstanceStatus.Active);
@@ -233,12 +233,12 @@ describe('Layer', () => {
 
         it('propagates GameEvents to active ActorInstances', () => {
             const instance = testLayer.createInstance('testActor');
-            testLayer.step(testState);
+            testLayer.step(testController);
 
-            testState.raiseEvent('testEvent', { value: 'testvalue' });
+            testController.raiseEvent('testEvent', { value: 'testvalue' });
             expect(actorOnGameEventCalled).toBeFalse();
             expect(actorOnGameEventData).toBeNull();
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(actorOnGameEventCalled).toBeTrue();
             expect(actorOnGameEventData.value).toBe('testvalue');
@@ -248,13 +248,13 @@ describe('Layer', () => {
             const instance = testLayer.createInstance('testActor');
             const mockBehavior = new MockActorInstanceBehavior();
             instance.useBehavior(mockBehavior);
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(actorOnStepCalled).toBeFalse();
             expect(mockBehavior.beforeStepCallCount).toBe(0);
             expect(mockBehavior.afterStepCallCount).toBe(0);
 
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(actorOnStepCalled).toBeTrue();
             expect(mockBehavior.beforeStepCallCount).toBe(1);
@@ -268,7 +268,7 @@ describe('Layer', () => {
             expect(instance.status).toBe(ActorInstanceStatus.Destroyed);
             expect(testLayer.getInstances().length).toBe(1);
 
-            testLayer.step(testState);
+            testLayer.step(testController);
 
             expect(actorOnDestroyCalled).toBeTrue();
             expect(testLayer.getInstances().length).toBe(0);

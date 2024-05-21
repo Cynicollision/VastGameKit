@@ -1,5 +1,6 @@
-import { GameEvent } from "./../game";
+import { GameEvent } from './../game';
 
+// TODO separate files per class
 export class InputEventHandler<T> {
     callback: (event: T) => void;
     isAlive: boolean = true;

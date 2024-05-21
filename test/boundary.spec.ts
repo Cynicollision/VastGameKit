@@ -1,5 +1,4 @@
-import { CircleBoundary } from './../engine/actor/boundary';
-import { RectBoundary } from './../engine/actor';
+import { CircleBoundary, RectBoundary } from './../engine/actor';
 
 describe('RectBoundary', () => {
 

@@ -1,31 +1,15 @@
-import { ActorLifecycleCallback } from './actor';
-import { ActorInstance } from './actorInstance';
-import { GameState } from './../game';
-import { Geometry } from './../util';
+import { GameController } from './../../game';
+import { Geometry } from './../../core';
+import { ActorInstance } from './../instance';
+import { ActorBehavior } from './../behavior';
 
-export enum ActorInstanceBehaviorName {
-    BasicMotion = 'BasicMotion',
-}
-
-export enum Direction {
-    Right = 0,
-    Down = 90,
-    Left = 180,
-    Up = 270,
-}
-
-export type ActorInstanceBehavior = {
-    beforeStep?: ActorLifecycleCallback;
-    afterStep?: ActorLifecycleCallback;
-};
-
-export class ActorInstanceMotionBehavior implements ActorInstanceBehavior {
+export class ActorMotionBehavior implements ActorBehavior {
     direction: number = 0;
     speed: number = 0;
     previousX: number = 0;
     previousY: number = 0;
 
-    beforeStep(self: ActorInstance, state: GameState): void {
+    beforeStep(self: ActorInstance, gc: GameController): void {
         this.previousX = self.x;
         this.previousY = self.y;
 
@@ -69,13 +53,13 @@ export class ActorInstanceMotionBehavior implements ActorInstanceBehavior {
         }
     }
 
-    afterStep(self: ActorInstance, state: GameState): void {
+    afterStep(self: ActorInstance, gc: GameController): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
                 const otherInstances = self.layer.getInstances(actorName);
                 for (const other of otherInstances) {
                     if (self !== other && self.collidesWith(other)) {
-                        self.actor.callCollision(self, other, state);
+                        self.actor.callCollision(self, other, gc);
                     }
                 }
             }

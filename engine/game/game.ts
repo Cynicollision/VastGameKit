@@ -1,34 +1,27 @@
 import { Actor, ActorOptions } from './../actor';
 import { GameAudio, GameAudioOptions, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
+import { GameController } from './controller';
+import { GameError } from './gameError';
 import { GameLifecycle } from './lifecycle';
-import { GameState } from './state';
-import { Room, RoomOptions } from './../room';
+import { Scene, SceneOptions } from './../scene';
 import { Sprite, SpriteOptions } from './../sprite';
 
 export type GameOptions = {
     canvasElementId: string;
+    canvasScale?: number; // TODO: implement
     targetFPS?: number;
-    defaultRoomOptions?: RoomOptions;
+    defaultSceneOptions?: SceneOptions;
 };
 
-export class GameError extends Error {
-    private _innerError: Error;
-    get innerError() { return this._innerError; }
-
-    constructor(message: string, innerError?: Error) {
-        super(message);
-        this._innerError = innerError;
-    }
-}
-
 export class Game {  
+    private static readonly DefaultCanvasScale = 1;
+    private static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
-    static readonly DefaultRoomName = 'default';
 
-    private readonly actorRegistry: { [name: string]: Actor } = {};
-    private readonly roomRegistry: { [name: string]: Room } = {};
-    private readonly audioRegistry: { [name: string]: GameAudio } = {};
-    private readonly spriteRegistry: { [name: string]: Sprite } = {};
+    private readonly actorMap: { [name: string]: Actor } = {};
+    private readonly audioMap: { [name: string]: GameAudio } = {};
+    private readonly sceneMap: { [name: string]: Scene } = {};
+    private readonly spriteMap: { [name: string]: Sprite } = {};
 
     private readonly _options: GameOptions;
     get options() { return this._options; }
@@ -39,15 +32,25 @@ export class Game {
     private readonly _inputHandler: GameInputHandler;
     get input() { return this._inputHandler; }
 
-    private readonly _defaultRoom: Room;
-    get defaultRoom() { return this._defaultRoom; }
+    private readonly _defaultScene: Scene;
+    get defaultScene() { return this._defaultScene; }
 
-    constructor(config: GameOptions, canvas: GameCanvas, inputHandler: GameInputHandler) {
-        this._options = config;
-        this._options.targetFPS = config.targetFPS || Game.DefaultTargetFPS;
+    private constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
-        this._defaultRoom = this.defineRoom(Game.DefaultRoomName, config.defaultRoomOptions);
+        this._options = this.applyGameOptions(options);
+        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        
+    }
+
+    static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
+        return new Game(canvas, inputHandler, options);
+    }
+
+    applyGameOptions(options: GameOptions): GameOptions {
+        options.targetFPS = options.targetFPS || Game.DefaultTargetFPS;
+        options.canvasScale = options.canvasScale || Game.DefaultCanvasScale;
+        return options;
     }
 
     nextActorInstanceID = (() => {
@@ -56,92 +59,94 @@ export class Game {
     })();
 
     defineActor(actorName: string, options: ActorOptions = {}): Actor {
-        if (this.actorRegistry[actorName]) {
+        if (this.actorMap[actorName]) {
             throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
         }
         
         const actor = Actor.define(actorName, this, options);
-        this.actorRegistry[actorName] = actor;
+        this.actorMap[actorName] = actor;
 
         return actor;
     }
 
     getActor(actorName: string): Actor {
-        if (!this.actorRegistry[actorName]) {
+        if (!this.actorMap[actorName]) {
             throw new GameError(`Actor retrieved by name that does not exist: ${actorName}.`);
         }
 
-        return this.actorRegistry[actorName];
+        return this.actorMap[actorName];
     }
 
-    defineRoom(roomName: string, options: RoomOptions = {}): Room {
-        if (this.roomRegistry[roomName]) {
-            throw new GameError(`Room defined with existing Room name: ${roomName}.`);
+    defineScene(sceneName: string, options: SceneOptions = {}): Scene {
+        if (this.sceneMap[sceneName]) {
+            throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }
 
-        const room = Room.define(roomName, this, options);
-        this.roomRegistry[roomName] = room;
+        const scene = Scene.define(sceneName, this, options);
+        this.sceneMap[sceneName] = scene;
 
-        return room;
+        return scene;
     }
 
-    getRoom(roomName: string): Room {
-        if (!this.roomRegistry[roomName]) {
-            throw new GameError(`Room retrieved by name that does not exist: ${roomName}.`);
+    getScene(sceneName: string): Scene {
+        if (!this.sceneMap[sceneName]) {
+            throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
         }
 
-        return this.roomRegistry[roomName];
+        return this.sceneMap[sceneName];
     }
 
     defineAudio(audioName: string, source: string, options?: GameAudioOptions): GameAudio {
-        if (this.audioRegistry[audioName]) {
+        if (this.audioMap[audioName]) {
             throw new GameError(`Audio defined with existing Audio name: ${audioName}.`);
         }
 
-        const audio = GameAudio.fromSource(audioName, source);
-        this.audioRegistry[audioName] = audio;
+        const audio = GameAudio.fromSource(audioName, source, options);
+        this.audioMap[audioName] = audio;
 
         return audio;
     }
 
     getAudio(audioName: string): GameAudio {
-        if (!this.audioRegistry[audioName]) {
+        if (!this.audioMap[audioName]) {
             throw new GameError(`Audio retrieved by name that does not exist: ${audioName}.`);
         }
 
-        return this.audioRegistry[audioName];
+        return this.audioMap[audioName];
     }
 
     defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
-        if (this.spriteRegistry[spriteName]) {
+        if (this.spriteMap[spriteName]) {
             throw new GameError(`Sprite defined with existing Sprite name: ${spriteName}.`);
         }
 
         const newSprite = Sprite.fromSource(spriteName, imageSource, options);
-        this.spriteRegistry[spriteName] = newSprite;
+        this.spriteMap[spriteName] = newSprite;
 
         return newSprite;
     }
 
     getSprite(spriteName: string): Sprite {
-        if (!this.spriteRegistry[spriteName]) {
+        if (!this.spriteMap[spriteName]) {
             throw new GameError(`Sprite retrieved by name that does not exist: ${spriteName}.`);
         }
 
-        return this.spriteRegistry[spriteName];
+        return this.spriteMap[spriteName];
     }
 
     load() {
         const promises: Promise<void | string>[] = [];
 
-        for (const s in this.spriteRegistry) {
-            const sprite = this.spriteRegistry[s];
+        // TODO: add audio loading.
+
+        for (const s in this.spriteMap) {
+            const sprite = this.spriteMap[s];
             promises.push(sprite.load());
         }
 
         return Promise.all(promises).then(() => {
-            for (const a in this.actorRegistry) {
-                const actor = this.actorRegistry[a];
+            for (const a in this.actorMap) {
+                const actor = this.actorMap[a];
                 actor.load();
             }
 
@@ -149,22 +154,16 @@ export class Game {
         });
     }
 
-    start(roomName?: string) {
-        const state = new GameState(this);
-        state.init(roomName || Game.DefaultRoomName);
+    start(sceneName?: string) {
+        const state = new GameController(this);
+        state.goToScene(sceneName || Game.DefaultSceneName);
         this.run(state, this.canvas, this.input);
     }
 
-    private run(state: GameState, canvas: GameCanvas, inputHandler: GameInputHandler) {
+    private run(gc: GameController, canvas: GameCanvas, inputHandler: GameInputHandler) {
         const lifecycle = new GameLifecycle();
-
-        inputHandler.registerPointerInputHandler((event: PointerInputEvent) =>{
-            lifecycle.pointerEvent(event, state);
-        });
-
-        inputHandler.registerKeyboardInputHandler((event: KeyboardInputEvent) => {
-            lifecycle.keyboardEvent(event, state);
-        });
+        inputHandler.registerPointerInputHandler((ev: PointerInputEvent) => lifecycle.pointerEvent(ev, gc));
+        inputHandler.registerKeyboardInputHandler((ev: KeyboardInputEvent) => lifecycle.keyboardEvent(ev, gc));
 
         let offset: number = 0;
         let previous: number = window.performance.now();
@@ -175,11 +174,11 @@ export class Game {
             offset += (Math.min(1, (current - previous) / 1000));
 
             while (offset > stepSize) {
-                lifecycle.step(state);
+                lifecycle.step(gc);
                 offset -= stepSize;
             }
 
-            lifecycle.draw(state, canvas);
+            lifecycle.draw(gc, canvas);
             previous = current;
             requestAnimationFrame(gameLoop);
         };

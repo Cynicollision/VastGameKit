@@ -1,8 +1,8 @@
 import { Actor } from './actor';
-import { ActorInstanceBehavior, ActorInstanceBehaviorName, ActorInstanceMotionBehavior } from './actorInstanceBehavior';
+import { ActorBehavior, ActorBehaviorName, ActorMotionBehavior } from './behavior';
 import { GameCanvas } from './../device';
-import { GameState } from './../game';
-import { Layer } from './../room';
+import { GameController } from './../game';
+import { Layer } from './../scene';
 import { SpriteAnimation } from './../sprite';
 
 export enum ActorInstanceStatus {
@@ -12,7 +12,7 @@ export enum ActorInstanceStatus {
 }
 
 export class ActorInstance {
-    readonly behaviors: ActorInstanceBehavior[] = [];
+    readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;
     readonly layer: Layer;
@@ -23,14 +23,12 @@ export class ActorInstance {
     private _status: ActorInstanceStatus;
     get status() { return this._status; }
 
-    private _motion: ActorInstanceMotionBehavior;
+    private _motion: ActorMotionBehavior;
     get motion() { return this._motion; }
 
+    state: { [name: string]: unknown } = {};
     x: number = 0;
     y: number = 0;
-
-    // allow properties to dynamically be assigned to ActorInstances.
-    [x: string | number | symbol]: unknown;
 
     static spawn(id: number, actor: Actor, layer: Layer, x: number, y: number): ActorInstance {
         const instance = new ActorInstance(id, actor, layer);
@@ -57,31 +55,30 @@ export class ActorInstance {
         this._status = ActorInstanceStatus.New;
     }
 
-    private initBehavior(behaviorName: ActorInstanceBehaviorName): void {
-        if (behaviorName === ActorInstanceBehaviorName.BasicMotion) {
-            const motion = new ActorInstanceMotionBehavior();
+    private initBehavior(behaviorName: ActorBehaviorName): void {
+        if (behaviorName === ActorBehaviorName.BasicMotion) {
+            const motion = new ActorMotionBehavior();
             this._motion = motion;
             this.useBehavior(motion);
         }
     }
 
-    useBehavior(behavior: ActorInstanceBehavior) {
+    useBehavior(behavior: ActorBehavior) {
         this.behaviors.push(behavior);
     }
 
-    callBeforeStepBehaviors(state: GameState): void {
+    callBeforeStepBehaviors(gc: GameController): void {
         for (const behavior of this.behaviors) {
             if (behavior.beforeStep) {
-                
-                behavior.beforeStep(this, state);
+                behavior.beforeStep(this, gc);
             }
         }
     }
 
-    callAfterStepBehaviors(state: GameState): void {
+    callAfterStepBehaviors(gc: GameController): void {
         for (const behavior of this.behaviors) {
             if (behavior.afterStep) {
-                behavior.afterStep(this, state);
+                behavior.afterStep(this, gc);
             }
         }
     }
@@ -94,16 +91,16 @@ export class ActorInstance {
         this._status = ActorInstanceStatus.Destroyed;
     }
 
-    draw(state: GameState, canvas: GameCanvas): void {
+    draw(gc: GameController, canvas: GameCanvas): void {
         if (this._animation) {
             this._animation.draw(canvas, this.x + this.layer.x, this.y + this.layer.y);
         }
 
-        this.actor.callDraw(this, state, canvas);
+        this.actor.callDraw(this, gc, canvas);
     }
 
-    callStep(state: GameState): void {
-        this.actor.callStep(this, state);
+    callStep(gc: GameController): void {
+        this.actor.callStep(this, gc);
     }
 
     collidesWith(other: ActorInstance): boolean {

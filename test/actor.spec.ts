@@ -1,22 +1,22 @@
 
 import { Actor } from './../engine/actor';
-import { Game, GameEvent, GameState } from './../engine/game';
+import { Game, GameController, GameEvent } from './../engine/game';
 import { KeyboardInputEvent, PointerInputEvent } from './../engine/device';
-import { Room } from './../engine/room';
+import { Scene } from '../engine/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
     let testGame: Game;
-    let testState: GameState;
+    let testController: GameController;
     let testActor: Actor;
-    let testRoom: Room;
+    let testScene: Scene;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testState = TestUtil.getTestState(testGame);
+        testController = TestUtil.getTestController(testGame);
         testActor = testGame.defineActor('testActor');
-        testRoom = testGame.defineRoom('testRoom');
+        testScene = testGame.defineScene('testScene');
     });
 
     it('defines an on-load callback', () => {
@@ -45,7 +45,7 @@ describe('Actor', () => {
 
             expect(createCalled).toBeFalse();
             
-            testActor.callCreate(null, testState)
+            testActor.callCreate(null, testController)
 
             expect(createCalled).toBeTrue();
         });
@@ -53,7 +53,7 @@ describe('Actor', () => {
         it('defines a collsion handler callback', () => {
             let collisionHandlerCalled = false;
             testGame.defineActor('actor2');
-            const instance2 = testRoom.defaultLayer.createInstance('actor2');
+            const instance2 = testScene.defaultLayer.createInstance('actor2');
 
             testActor.onCollision('actor2', (self, other, state) => {
                 collisionHandlerCalled = true;
@@ -61,7 +61,7 @@ describe('Actor', () => {
 
             expect(collisionHandlerCalled).toBeFalse();
 
-            testActor.callCollision(null, instance2, testState);
+            testActor.callCollision(null, instance2, testController);
             
             expect(collisionHandlerCalled).toBeTrue();
         });
@@ -74,7 +74,7 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, testState, new GameEvent('testEvent'));
+            testActor.callGameEvent(null, testController, new GameEvent('testEvent'));
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -89,7 +89,7 @@ describe('Actor', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testActor.callPointerInput(null, testState, new PointerInputEvent('pointertest', 20, 40));
+            testActor.callPointerInput(null, testController, new PointerInputEvent('pointertest', 20, 40));
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -105,7 +105,7 @@ describe('Actor', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testActor.callKeyboardInput(null, testState, new KeyboardInputEvent('testkey', 'testkeytype'));
+            testActor.callKeyboardInput(null, testController, new KeyboardInputEvent('testkey', 'testkeytype'));
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -119,7 +119,7 @@ describe('Actor', () => {
 
             expect(stepCalled).toBeFalse();
 
-            testActor.callStep(null, testState);
+            testActor.callStep(null, testController);
 
             expect(stepCalled).toBeTrue();
         });
@@ -132,7 +132,7 @@ describe('Actor', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testActor.callDraw(null, testState, testGame.canvas);
+            testActor.callDraw(null, testController, testGame.canvas);
 
             expect(drawCalled).toBeTrue();
         });
@@ -145,7 +145,7 @@ describe('Actor', () => {
 
             expect(destroyCalled).toBeFalse();
 
-            testActor.callDestroy(null, testState);
+            testActor.callDestroy(null, testController);
 
             expect(destroyCalled).toBeTrue();
         });
@@ -179,7 +179,7 @@ describe('Actor', () => {
         expect(dataFromEvent).toBeNull();
 
         const event = new GameEvent('testEvent', { value: 123 });
-        testActor.callGameEvent(null, TestUtil.getTestState(testGame), event);
+        testActor.callGameEvent(null, TestUtil.getTestController(testGame), event);
 
         expect(handlerCalled).toBeTrue();
         expect(dataFromEvent).toBe(123);

@@ -1,26 +1,26 @@
 import { Actor, ActorInstance } from './../engine/actor';
 import { Game } from './../engine/game';
-import { RoomCamera } from './../engine/room';
+import { SceneCamera } from '../engine/scene';
 import { TestUtil } from './testUtil';
 
-describe('RoomCamera', () => {
+describe('SceneCamera', () => {
     let testGame: Game;
-    let testCamera: RoomCamera;
+    let testCamera: SceneCamera;
     let testActor: Actor;
     let testInstance: ActorInstance;
 
     beforeEach(() => {
-        testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultRoomOptions: { height: 1000, width: 2000 } });
-        testCamera = testGame.defaultRoom.camera;
+        testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
+        testCamera = testGame.defaultScene.camera;
         testActor = testGame.defineActor('testActor');
         testActor.setRectBoundary(100, 200);
 
-        testInstance = testGame.defaultRoom.defaultLayer.createInstance('testActor');
+        testInstance = testGame.defaultScene.defaultLayer.createInstance('testActor');
     });
 
     describe('follows an ActorInstance', () => {
 
-        it('with default options, stays within the room at no offset and with no centering', () => {
+        it('with default options, stays within the scene at no offset and with no centering', () => {
             testInstance.x = -50;
             testInstance.y = -100;
 
@@ -35,7 +35,7 @@ describe('RoomCamera', () => {
             testInstance.x = 50;
             testInstance.y = 100;
 
-            testCamera.follow(testInstance, { offsetX: 0, offsetY: 0, centerOnInstanceBoundary: false, stayWithinRoom: false });
+            testCamera.follow(testInstance, { offsetX: 0, offsetY: 0, centerOnInstanceBoundary: false, stayWithinScene: false });
             testCamera.updatePosition();
 
             expect(testCamera.x).toBe(50);
@@ -46,7 +46,7 @@ describe('RoomCamera', () => {
             testInstance.x = 50;
             testInstance.y = 100;
 
-            testCamera.follow(testInstance, { offsetX: 100, offsetY: 100, centerOnInstanceBoundary: false, stayWithinRoom: false });
+            testCamera.follow(testInstance, { offsetX: 100, offsetY: 100, centerOnInstanceBoundary: false, stayWithinScene: false });
             testCamera.updatePosition();
 
             expect(testCamera.x).toBe(-50);
@@ -57,7 +57,7 @@ describe('RoomCamera', () => {
             testInstance.x = 300;
             testInstance.y = 400;
 
-            testCamera.follow(testInstance, { offsetX: 0, offsetY: 0, centerOnInstanceBoundary: true, stayWithinRoom: false });
+            testCamera.follow(testInstance, { offsetX: 0, offsetY: 0, centerOnInstanceBoundary: true, stayWithinScene: false });
             testCamera.updatePosition();
 
             expect(testCamera.x).toBe(testInstance.x - testGame.canvas.width / 2 + testActor.boundary.width / 2);
@@ -70,7 +70,7 @@ describe('RoomCamera', () => {
             testInstance.x = 300;
             testInstance.y = 400;
 
-            testCamera.follow(testInstance, { offsetX: 120, offsetY: 130, centerOnInstanceBoundary: true, stayWithinRoom: false });
+            testCamera.follow(testInstance, { offsetX: 120, offsetY: 130, centerOnInstanceBoundary: true, stayWithinScene: false });
             testCamera.updatePosition();
 
             expect(testCamera.x).toBe(-120 + testInstance.x - testGame.canvas.width / 2 + testActor.boundary.width / 2);
@@ -79,27 +79,27 @@ describe('RoomCamera', () => {
             expect(testCamera.y).toBe(-80);
         });
 
-        it('centered around the ActorInstance\'s Boundary, staying within the room minimum bounds', () => {
+        it('centered around the ActorInstance\'s Boundary, staying within the scene minimum bounds', () => {
             testInstance.x = 300;
             testInstance.y = 400;
 
-            testCamera.follow(testInstance, { offsetX: 120, offsetY: 130, centerOnInstanceBoundary: true, stayWithinRoom: true });
+            testCamera.follow(testInstance, { offsetX: 120, offsetY: 130, centerOnInstanceBoundary: true, stayWithinScene: true });
             testCamera.updatePosition();
 
             expect(testCamera.x).toBe(0);
             expect(testCamera.y).toBe(0);
         });
 
-        it('centered around the ActorInstance\'s Boundary, staying within the room maximum bounds', () => {
-            testInstance.x = testGame.defaultRoom.width;
-            testInstance.y = testGame.defaultRoom.height;
+        it('centered around the ActorInstance\'s Boundary, staying within the scene maximum bounds', () => {
+            testInstance.x = testGame.defaultScene.width;
+            testInstance.y = testGame.defaultScene.height;
 
-            testCamera.follow(testInstance, { centerOnInstanceBoundary: true, stayWithinRoom: true });
+            testCamera.follow(testInstance, { centerOnInstanceBoundary: true, stayWithinScene: true });
             testCamera.updatePosition();
 
-            expect(testCamera.x).toBe(testGame.defaultRoom.width - testGame.canvas.width);
+            expect(testCamera.x).toBe(testGame.defaultScene.width - testGame.canvas.width);
             expect(testCamera.x).toBe(1400);
-            expect(testCamera.y).toBe(testGame.defaultRoom.height - testGame.canvas.height);
+            expect(testCamera.y).toBe(testGame.defaultScene.height - testGame.canvas.height);
             expect(testCamera.y).toBe(200);
         });
     });

@@ -25,13 +25,13 @@ describe('Game', () => {
         expect(actor.name).toBe('testActor');
     });
 
-    it('defines Rooms', () => {
-        game.defineRoom('testRoom');
+    it('defines Scenes', () => {
+        game.defineScene('testScene');
 
-        const room = game.getRoom('testRoom');
+        const scene = game.getScene('testScene');
 
-        expect(room).toBeDefined();
-        expect(room.name).toBe('testRoom');
+        expect(scene).toBeDefined();
+        expect(scene.name).toBe('testScene');
     });
 
     it('defines Audio', () => {

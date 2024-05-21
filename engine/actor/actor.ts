@@ -1,7 +1,7 @@
-import { ActorInstance } from './actorInstance';
-import { ActorInstanceBehaviorName } from './actorInstanceBehavior';
+import { ActorInstance } from './instance';
+import { ActorBehaviorName } from './behavior';
 import { Boundary, CircleBoundary, RectBoundary } from './boundary';
-import { Game, GameError, GameEvent, GameState } from './../game';
+import { Game, GameError, GameEvent, GameController } from './../game';
 import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { Sprite } from './../sprite';
 
@@ -12,27 +12,27 @@ export type ActorOptions = {
 };
 
 export type ActorLifecycleCallback = {
-    (self: ActorInstance, state: GameState): void;
+    (self: ActorInstance, gc: GameController): void;
 };
 
 export type ActorLifecycleCollisionCallback = {
-    (self: ActorInstance, other: ActorInstance, state: GameState): void;
+    (self: ActorInstance, other: ActorInstance, gs: GameController): void;
 };
 
 export type ActorLifecycleEventCallback = {
-    (self: ActorInstance, state: GameState, event: GameEvent): void;
+    (self: ActorInstance, gc: GameController, event: GameEvent): void;
 };
 
 export type ActorKeyboardInputCallback = {
-    (self: ActorInstance, state: GameState, event: KeyboardInputEvent): void;
+    (self: ActorInstance, gc: GameController, event: KeyboardInputEvent): void;
 };
 
 export type ActorPointerInputCallback = {
-    (self: ActorInstance, state: GameState, event: PointerInputEvent): void;
+    (self: ActorInstance, gc: GameController, event: PointerInputEvent): void;
 };
 
 export type ActorLifecycleDrawCallback = {
-    (self: ActorInstance, state: GameState, canvas: GameCanvas): void;
+    (self: ActorInstance, gc: GameController, canvas: GameCanvas): void;
 };
 
 export class Actor {
@@ -52,7 +52,7 @@ export class Actor {
     solid: boolean;
     sprite: Sprite;
 
-    private _behaviors: ActorInstanceBehaviorName[] = [];
+    private _behaviors: ActorBehaviorName[] = [];
     get behaviors() { return this._behaviors; }
 
     private _boundary: Boundary;
@@ -111,10 +111,10 @@ export class Actor {
     }
 
     useBasicMotionBehavior(): Actor {
-        return this.useBehavior(ActorInstanceBehaviorName.BasicMotion);
+        return this.useBehavior(ActorBehaviorName.BasicMotion);
     }
 
-    useBehavior(behaviorName: ActorInstanceBehaviorName): Actor {
+    useBehavior(behaviorName: ActorBehaviorName): Actor {
         if (this._behaviors[behaviorName]) {
             throw new GameError(`Actor ${this.name} is alreadying using Behavior ${behaviorName}.`)
         }
@@ -139,9 +139,9 @@ export class Actor {
         return this;
     }
 
-    callCreate(self: ActorInstance, state: GameState): void {
+    callCreate(self: ActorInstance, gc: GameController): void {
         if (this.onCreateCallback) {
-            this.onCreateCallback(self, state);
+            this.onCreateCallback(self, gc);
         }
     }
 
@@ -164,9 +164,9 @@ export class Actor {
         return actorNames;
     }
 
-    callCollision(self: ActorInstance, other: ActorInstance, state: GameState): void {
+    callCollision(self: ActorInstance, other: ActorInstance, gc: GameController): void {
         if (this.collisionHandlerRegistry[other.actor.name]) {
-            this.collisionHandlerRegistry[other.actor.name](self, other, state);
+            this.collisionHandlerRegistry[other.actor.name](self, other, gc);
         }
     }
 
@@ -175,10 +175,10 @@ export class Actor {
         return this;
     }
 
-    callGameEvent(self: ActorInstance, state: GameState, event: GameEvent): void {
+    callGameEvent(self: ActorInstance, gc: GameController, event: GameEvent): void {
         if (!event.isCancelled) {
             if (this.gameEventHandlerRegistry[event.name]) {
-                this.gameEventHandlerRegistry[event.name](self, state, event);
+                this.gameEventHandlerRegistry[event.name](self, gc, event);
             }
         }
     }
@@ -188,10 +188,10 @@ export class Actor {
         return this;
     }
 
-    callKeyboardInput(self: ActorInstance, state: GameState, event: KeyboardInputEvent): void {
+    callKeyboardInput(self: ActorInstance, gc: GameController, event: KeyboardInputEvent): void {
         const handler: ActorKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
         if (handler) {
-            handler(self, state, event);
+            handler(self, gc, event);
         }
     }
 
@@ -200,11 +200,11 @@ export class Actor {
         return this;
     }
 
-    callPointerInput(self: ActorInstance, state: GameState, event: PointerInputEvent): void {
+    callPointerInput(self: ActorInstance, gc: GameController, event: PointerInputEvent): void {
         if (!event.isCancelled) {
             const handler: ActorPointerInputCallback = this.pointerInputEventHandlerRegistry[event.type];
             if (handler) {
-                handler(self, state, event);
+                handler(self, gc, event);
             }
         }
     }
@@ -214,9 +214,9 @@ export class Actor {
         return this;
     }
 
-    callStep(self: ActorInstance, state: GameState): void {
+    callStep(self: ActorInstance, gc: GameController): void {
         if (this.onStepCallback) {
-            this.onStepCallback(self, state);
+            this.onStepCallback(self, gc);
         }
     }
 
@@ -225,9 +225,9 @@ export class Actor {
         return this;
     }
 
-    callDraw(self: ActorInstance, state: GameState, canvas: GameCanvas): void {
+    callDraw(self: ActorInstance, gc: GameController, canvas: GameCanvas): void {
         if (this.onDrawCallback) {
-            this.onDrawCallback(self, state, canvas);
+            this.onDrawCallback(self, gc, canvas);
         }
     }
     
@@ -236,9 +236,9 @@ export class Actor {
         return this;
     }
 
-    callDestroy(self: ActorInstance, state: GameState): void {
+    callDestroy(self: ActorInstance, gc: GameController): void {
         if (this.onDestroyCallback) {
-            this.onDestroyCallback(self, state);
+            this.onDestroyCallback(self, gc);
         }
     }
 }

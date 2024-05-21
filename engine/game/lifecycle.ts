@@ -1,53 +1,51 @@
 import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
-import { GameState } from './state';
-import { RoomStatus } from './../room';
+import { GameController } from './controller';
+import { SceneStatus } from './../scene';
 
 export class GameLifecycle {
 
-    keyboardEvent(event: KeyboardInputEvent, state: GameState): void {
-        for (const layer of state.currentRoom.getLayersSortedFromTop()) {
+    keyboardEvent(event: KeyboardInputEvent, gc: GameController): void {
+        for (const layer of gc.currentScene.getLayersSortedFromTop()) {
             for (const instance of layer.getInstances()) {
-                instance.actor.callKeyboardInput(instance, state, event);
+                instance.actor.callKeyboardInput(instance, gc, event);
             }
         }
     }
 
-    pointerEvent(event: PointerInputEvent, state: GameState): void {
-        event.x += state.currentRoom.camera.x;
-        event.y += state.currentRoom.camera.y;
+    pointerEvent(event: PointerInputEvent, gc: GameController): void {
+        event.x += gc.currentScene.camera.x;
+        event.y += gc.currentScene.camera.y;
 
-        for (const layer of state.currentRoom.getLayersSortedFromTop()) {
+        for (const layer of gc.currentScene.getLayersSortedFromTop()) {
             for (const instance of layer.getInstances()) {
                 if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(event.x, event.y)) {
-                    instance.actor.callPointerInput(instance, state, event);
+                    instance.actor.callPointerInput(instance, gc, event);
                 }
             }
         }
     }
     
-    step(state: GameState): void {
+    step(gc: GameController): void {
 
-        switch (state.currentRoom.status) {
-            case RoomStatus.Starting:
-                state.currentRoom.start(state);
+        switch (gc.currentScene.status) {
+            case SceneStatus.Starting:
+                gc.currentScene.start(gc);
                 break;
-            case RoomStatus.Resuming:
-                state.currentRoom.resume(state);
+            case SceneStatus.Resuming:
+                gc.currentScene.resume(gc);
                 break;
-            case RoomStatus.Suspended:
-                state.currentRoom.suspend(state);
+            case SceneStatus.Suspended:
+                gc.currentScene.suspend(gc);
                 break;
-            case RoomStatus.Running:
-                state.currentRoom.step(state);
+            case SceneStatus.Running:
+                gc.currentScene.step(gc);
                 break;
         }
 
-        state.flushEventQueue();
+        gc.flushEventQueue();
     }
 
-    draw(state: GameState, canvas: GameCanvas): void {
-        state.currentRoom.draw(state, canvas);
-
-        state.drawTransition(canvas);
+    draw(gc: GameController, canvas: GameCanvas): void {
+        gc.draw(canvas);
     }
 }

@@ -8,7 +8,7 @@ import { buildDefaultRoom } from './rooms/default';
 
 const game = VastGameKit.init({
     canvasElementId: 'gameCanvas',
-    defaultRoomOptions: {
+    defaultSceneOptions: {
         height: 1000, 
         width: 2000, 
         persistent: true

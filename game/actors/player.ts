@@ -1,5 +1,5 @@
 import { Game } from './../../engine/game';
-import { Direction } from './../../engine/actor';
+import { Direction } from './../../engine/core';
 import { SpriteTransformation } from './../../engine/sprite/sprite';
 
 export function buildPlayerActor(game: Game) {
@@ -11,65 +11,67 @@ export function buildPlayerActor(game: Game) {
     .onLoad(player => {
         player.setRectBoundaryFromSprite();
     })
-    .onCreate((self, state) => {
-        self.stats = { health: 100 };
+    .onCreate((self, gc) => {
+        self.state.stats = { health: 100 };
         self.animation.setTransform(SpriteTransformation.Opacity, 0.5);
-        state.message = ' :)';
+        gc.state.message = ' :)';
     })
     .onGameEvent('something', (self, state, event) => {
-        const nextRoom = state.currentRoom.name === 'default' ? 'room1' : 'default';
-        state.transitionToRoom(nextRoom, { durationMs: 500 });
+        const nextRoom = state.currentScene.name === 'default' ? 'room1' : 'default';
+        state.transitionToScene(nextRoom, { durationMs: 500 });
         event.cancel();
     })
-    .onCollision('actCoin', (self, other, state) => {
+    .onCollision('actCoin', (self, other, gc) => {
         //other.destroy();
     })
-    .onKeyboardInput('w', (self, state, event) => {
-        self.moveUp = event.type === 'keydown';
+    .onKeyboardInput('w', (self, gc, ev) => {
+        // TODO: define in (new) ActorKeyboardControlBehavior
+        self.state.moveUp = ev.type === 'keydown';
     })
-    .onKeyboardInput('a', (self, state, event) => {
-        self.moveLeft = event.type === 'keydown';
+    .onKeyboardInput('a', (self, gc, ev) => {
+        self.state.moveLeft = ev.type === 'keydown';
     })
-    .onKeyboardInput('s', (self, state, event) => {
-        self.moveDown = event.type === 'keydown';
+    .onKeyboardInput('s', (self, gc, ev) => {
+        self.state.moveDown = ev.type === 'keydown';
     })
-    .onKeyboardInput('d', (self, state, event) => {
-        self.moveRight = event.type === 'keydown';
+    .onKeyboardInput('d', (self, gc, ev) => {
+        self.state.moveRight = ev.type === 'keydown';
     })
-    .onPointerInput('mousedown', (self, state, event) => {
+    .onPointerInput('mousedown', (self, gc, ev) => {
         console.log('you clicked me');
-        state.raiseEvent('something', { foo: 'bar'});
+        gc.raiseEvent('something', { foo: 'bar'});
     })
-    .onStep((self, state) => {
-        if (self.moveUp || self.moveLeft || self.moveRight || self.moveDown) {
+    .onStep((self, gc) => {
+        // TODO: ActorKeyboardControlBehavior
+        if (self.state.moveUp || self.state.moveLeft || self.state.moveRight || self.state.moveDown) {
             self.motion.speed = 6;
         }
         else {
             self.motion.speed = 0;
         }
     
-        if (self.moveUp && self.moveLeft) {
+        if (self.state.moveUp && self.state.moveLeft) {
             self.motion.direction = 225;
         }
-        else if (self.moveUp && self.moveRight) {
+        else if (self.state.moveUp && self.state.moveRight) {
             self.motion.direction = 315;
         }
-        else if (self.moveDown && self.moveLeft) {
+        else if (self.state.moveDown && self.state.moveLeft) {
             self.motion.direction = 135;
         }
-        else if (self.moveDown && self.moveRight) {
+        else if (self.state.moveDown && self.state.moveRight) {
             self.motion.direction = 45;
         }
-        else if (self.moveUp) {
+        else if (self.state.moveUp) {
             self.motion.direction = Direction.Up;
         }
-        else if (self.moveLeft) {
+        else if (self.state.moveLeft) {
             self.motion.direction = Direction.Left;
         }
-        else if (self.moveRight) {
+        else if (self.state.moveRight) {
             self.motion.direction = Direction.Right;
         }
-        else if (self.moveDown) {
+        else if (self.state.moveDown) {
             self.motion.direction = Direction.Down;
         }
     });

@@ -1,73 +1,73 @@
-import { Room, RoomStatus } from './../engine/room';
-import { Game, GameState } from './../engine/game';
-import { LayerStatus } from './../engine/room';
+import { Scene, SceneStatus } from '../engine/scene';
+import { Game, GameController } from './../engine/game';
+import { LayerStatus } from '../engine/scene';
 import { TestUtil } from './testUtil';
 
-describe('Room', () => {
+describe('Scene', () => {
     let testGame: Game;
-    let testRoom: Room;
+    let testScene: Scene;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testRoom = testGame.defineRoom('testRoom');
+        testScene = testGame.defineScene('testScene');
 
         testGame.defineActor('testActor');
     });
 
     it('defines the default layer', () => {
-        expect(testRoom.defaultLayer).toBeDefined();
-        expect(testRoom.defaultLayer.name).toBe(Room.DefaultLayerName);
+        expect(testScene.defaultLayer).toBeDefined();
+        expect(testScene.defaultLayer.name).toBe(Scene.DefaultLayerName);
     });
 
     it('creates Layers', () => {
-        testRoom.createLayer('testLayer');
-        const testLayer =  testRoom.getLayer('testLayer');
+        testScene.createLayer('testLayer');
+        const testLayer =  testScene.getLayer('testLayer');
 
         expect(testLayer).toBeDefined();
         expect(testLayer.name).toBe('testLayer');
     });
 
     it('destroys Layers', () => {
-        const testLayer = testRoom.createLayer('testLayer');
+        const testLayer = testScene.createLayer('testLayer');
         expect(testLayer.status).toBe(LayerStatus.New);
 
-        testRoom.destroyLayer('testLayer');
+        testScene.destroyLayer('testLayer');
 
         expect(testLayer.status).toBe(LayerStatus.Destroyed);
     });
 
     it('gets layers sorted from bottom to top', () => {
-        const layer2 = testRoom.createLayer('layer2', { depth: -10 });
-        const layer3 = testRoom.createLayer('layer3', { depth: 20 });
+        const layer2 = testScene.createLayer('layer2', { depth: -10 });
+        const layer3 = testScene.createLayer('layer3', { depth: 20 });
 
-        const sortedLayers = testRoom.getLayersSortedFromBottom();
+        const sortedLayers = testScene.getLayersSortedFromBottom();
 
         expect(sortedLayers[0].depth).toBe(layer3.depth);
-        expect(sortedLayers[1].depth).toBe(testRoom.defaultLayer.depth);
+        expect(sortedLayers[1].depth).toBe(testScene.defaultLayer.depth);
         expect(sortedLayers[2].depth).toBe(layer2.depth);
     });
 
     it('gets layers sorted from top to bottom', () => {
-        const layer2 = testRoom.createLayer('layer2', { depth: -10 });
-        const layer3 = testRoom.createLayer('layer3', { depth: 20 });
+        const layer2 = testScene.createLayer('layer2', { depth: -10 });
+        const layer3 = testScene.createLayer('layer3', { depth: 20 });
 
-        const sortedLayers = testRoom.getLayersSortedFromTop();
+        const sortedLayers = testScene.getLayersSortedFromTop();
         
         expect(sortedLayers[0].depth).toBe(layer2.depth);
-        expect(sortedLayers[1].depth).toBe(testRoom.defaultLayer.depth);
+        expect(sortedLayers[1].depth).toBe(testScene.defaultLayer.depth);
         expect(sortedLayers[2].depth).toBe(layer3.depth);
     });
 
     describe('step lifecycle', () => {
-        let state: GameState;
+        let gc: GameController;
 
         beforeEach(() => {
-            state = new GameState(testGame);
+            gc = new GameController(testGame);
         });
 
         it('for destroyed Layers, calls onDestroy callbacks and deletes them from the registry', () => {
-            const layer = testRoom.createLayer('testLayer');
-            expect(testRoom.getLayers().length).toBe(2);
+            const layer = testScene.createLayer('testLayer');
+            expect(testScene.getLayers().length).toBe(2);
             expect(layer.status).toBe(LayerStatus.New);
 
             let onDestoryCalled = false;
@@ -76,37 +76,37 @@ describe('Room', () => {
             expect(onDestoryCalled).toBeFalse();
             expect(layer.status).toBe(LayerStatus.Destroyed);
 
-            testRoom.step(state);
+            testScene.step(gc);
 
             expect(onDestoryCalled).toBeTrue();
-            expect(testRoom.getLayers().length).toBe(1);
+            expect(testScene.getLayers().length).toBe(1);
         });
 
         it('for new Layers, calls onCreate callbacks and activates them', () => {
-            const testLayer = testRoom.createLayer('testLayer');
+            const testLayer = testScene.createLayer('testLayer');
             expect(testLayer.status).toBe(LayerStatus.New);
 
             let onCreateCalled = false;
             testLayer.onCreate(() => onCreateCalled = true);
             expect(onCreateCalled).toBeFalse();
 
-            testRoom.step(state);
+            testScene.step(gc);
             
             expect(onCreateCalled).toBe(true);
             expect(testLayer.status).toBe(LayerStatus.Active);
         });
 
         it('for active Layers, calls onStep callbacks', () => {
-            const testLayer = testRoom.createLayer('testLayer');
+            const testLayer = testScene.createLayer('testLayer');
             expect(testLayer.status).toBe(LayerStatus.New);
-            testRoom.step(state);
+            testScene.step(gc);
             expect(testLayer.status).toBe(LayerStatus.Active);
 
             let onStepCalled = false;
             testLayer.onStep(() => onStepCalled = true);
             expect(onStepCalled).toBeFalse();
 
-            testRoom.step(state);
+            testScene.step(gc);
 
             expect(onStepCalled).toBe(true);
             expect(testLayer.status).toBe(LayerStatus.Active);
@@ -116,61 +116,61 @@ describe('Room', () => {
     describe('status', () => {
 
         it('begins as NotStarted', () => {
-            expect(testRoom.status).toBe(RoomStatus.NotStarted);
+            expect(testScene.status).toBe(SceneStatus.NotStarted);
         });
 
         it('when NotStarted, on initialize, changes to Starting', () => {
-            expect(testRoom.status).toBe(RoomStatus.NotStarted);
+            expect(testScene.status).toBe(SceneStatus.NotStarted);
 
-            testRoom.init();
+            testScene.init();
 
-            expect(testRoom.status).toBe(RoomStatus.Starting);
+            expect(testScene.status).toBe(SceneStatus.Starting);
         });
 
-        it('when Starting, on room start, changes to Running', () => {
-            const state = TestUtil.getTestState(testGame);
-            testRoom.start(state);
+        it('when Starting, on scene start, changes to Running', () => {
+            const state = TestUtil.getTestController(testGame);
+            testScene.start(state);
 
-            expect(testRoom.status).toBe(RoomStatus.Running);
+            expect(testScene.status).toBe(SceneStatus.Running);
         });
 
-        it('when Running, on room suspend, changes to Suspended', () => {
-            const state = new GameState(testGame);
-            testRoom.suspend(state);
+        it('when Running, on scene suspend, changes to Suspended', () => {
+            const state = new GameController(testGame);
+            testScene.suspend(state);
 
-            expect(testRoom.status).toBe(RoomStatus.Suspended);
+            expect(testScene.status).toBe(SceneStatus.Suspended);
         });
 
         it('when Suspended, on initialize, if not persistent, changes to Starting', () => {
-            const state = new GameState(testGame);
-            testRoom.options.persistent = false;
-            testRoom.suspend(state);
-            expect(testRoom.status).toBe(RoomStatus.Suspended);
+            const state = new GameController(testGame);
+            testScene.options.persistent = false;
+            testScene.suspend(state);
+            expect(testScene.status).toBe(SceneStatus.Suspended);
 
-            testRoom.init();
+            testScene.init();
 
-            expect(testRoom.status).toBe(RoomStatus.Starting);
+            expect(testScene.status).toBe(SceneStatus.Starting);
         });
 
         it('when Suspended, on initialize, if persistent, changes to Resuming', () => {
-            testRoom.options.persistent = true;
-            testRoom.suspend(new GameState(testGame));
+            testScene.options.persistent = true;
+            testScene.suspend(new GameController(testGame));
 
-            testRoom.init();
+            testScene.init();
 
-            expect(testRoom.status).toBe(RoomStatus.Resuming);
+            expect(testScene.status).toBe(SceneStatus.Resuming);
         });
 
-        it('when Resuming, on room start, changes to Running', () => {
-            const state = new GameState(testGame);
-            testRoom.options.persistent = true;
-            testRoom.suspend(state);
-            testRoom.init();
-            expect(testRoom.status).toBe(RoomStatus.Resuming);
+        it('when Resuming, on scene start, changes to Running', () => {
+            const state = new GameController(testGame);
+            testScene.options.persistent = true;
+            testScene.suspend(state);
+            testScene.init();
+            expect(testScene.status).toBe(SceneStatus.Resuming);
 
-            testRoom.start(state);
+            testScene.start(state);
 
-            expect(testRoom.status).toBe(RoomStatus.Running);
+            expect(testScene.status).toBe(SceneStatus.Running);
         });
     });
 });
