@@ -1,7 +1,7 @@
 import { Game } from './game';
-import { GameCanvas } from './../device';
+import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameEvent } from './gameEvent';
-import { Scene, SceneTransition, SceneTransitionFactory, SceneTransitionOptions, SceneTransitionType } from './../scene';
+import { Scene, SceneStatus, SceneTransition, SceneTransitionFactory, SceneTransitionOptions, SceneTransitionType } from './../scene';
 
 export class GameController {
     private _currentScene: Scene;
@@ -57,6 +57,47 @@ export class GameController {
         const queue = this._eventQueue;
         this._eventQueue = [];
         return queue;
+    }
+
+    onKeyboardEvent(event: KeyboardInputEvent): void {
+        for (const layer of this._currentScene.getLayersSortedFromTop()) {
+            for (const instance of layer.getInstances()) {
+                instance.actor.callKeyboardInput(instance, this, event);
+            }
+        }
+    }
+
+    onPointerEvent(event: PointerInputEvent): void {
+        event.x += this._currentScene.camera.x;
+        event.y += this._currentScene.camera.y;
+
+        for (const layer of this._currentScene.getLayersSortedFromTop()) {
+            for (const instance of layer.getInstances()) {
+                if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(event.x, event.y)) {
+                    instance.actor.callPointerInput(instance, this, event);
+                }
+            }
+        }
+    }
+
+    step(): void {
+        // TODO: move to Scene.step
+        switch (this._currentScene.status) {
+            case SceneStatus.Starting:
+                this._currentScene.start(this);
+                break;
+            case SceneStatus.Resuming:
+                this._currentScene.resume(this);
+                break;
+            case SceneStatus.Suspended:
+                this._currentScene.suspend(this); // TODO this seems unnecessary
+                break;
+            case SceneStatus.Running:
+                this._currentScene.step(this);
+                break;
+        }
+
+        this.flushEventQueue();
     }
 
     draw(canvas: GameCanvas): void {

@@ -1,6 +1,6 @@
 import { Game } from './../../engine/game';
 import { Direction } from './../../engine/core';
-import { SpriteTransformation } from './../../engine/sprite/sprite';
+import { SpriteTransformation } from './../../engine/sprite';
 
 export function buildPlayerActor(game: Game) {
     

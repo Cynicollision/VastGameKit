@@ -2,7 +2,6 @@ import { Actor, ActorOptions } from './../actor';
 import { GameAudio, GameAudioOptions, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { GameController } from './controller';
 import { GameError } from './gameError';
-import { GameLifecycle } from './lifecycle';
 import { Scene, SceneOptions } from './../scene';
 import { Sprite, SpriteOptions } from './../sprite';
 
@@ -23,6 +22,9 @@ export class Game {
     private readonly sceneMap: { [name: string]: Scene } = {};
     private readonly spriteMap: { [name: string]: Sprite } = {};
 
+    private readonly _controller: GameController;
+    get controller() { return this._controller;}
+
     private readonly _options: GameOptions;
     get options() { return this._options; }
 
@@ -38,9 +40,9 @@ export class Game {
     private constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
+        this._controller = new GameController(this);
         this._options = this.applyGameOptions(options);
-        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        
+        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);  
     }
 
     static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
@@ -153,17 +155,11 @@ export class Game {
             return Promise.resolve();
         });
     }
-
+    
     start(sceneName?: string) {
-        const state = new GameController(this);
-        state.goToScene(sceneName || Game.DefaultSceneName);
-        this.run(state, this.canvas, this.input);
-    }
-
-    private run(gc: GameController, canvas: GameCanvas, inputHandler: GameInputHandler) {
-        const lifecycle = new GameLifecycle();
-        inputHandler.registerPointerInputHandler((ev: PointerInputEvent) => lifecycle.pointerEvent(ev, gc));
-        inputHandler.registerKeyboardInputHandler((ev: KeyboardInputEvent) => lifecycle.keyboardEvent(ev, gc));
+        this._controller.goToScene(sceneName || Game.DefaultSceneName);
+        this._inputHandler.registerPointerInputHandler((ev: PointerInputEvent) => this._controller.onPointerEvent(ev));
+        this._inputHandler.registerKeyboardInputHandler((ev: KeyboardInputEvent) => this._controller.onKeyboardEvent(ev));
 
         let offset: number = 0;
         let previous: number = window.performance.now();
@@ -174,11 +170,11 @@ export class Game {
             offset += (Math.min(1, (current - previous) / 1000));
 
             while (offset > stepSize) {
-                lifecycle.step(gc);
+                this._controller.step();
                 offset -= stepSize;
             }
 
-            lifecycle.draw(gc, canvas);
+            this._controller.draw(this._canvas);
             previous = current;
             requestAnimationFrame(gameLoop);
         };
