@@ -16,7 +16,7 @@ export class ActorMotionBehavior implements ActorBehavior {
         if (this.speed !== 0) {
             let newX = Geometry.getLengthDirectionX(this.speed, this.direction);
             let newY = Geometry.getLengthDirectionY(this.speed, this.direction);
-
+            
             if (!self.actor.boundary) {
                 self.x += newX;
                 self.y += newY;
@@ -29,7 +29,7 @@ export class ActorMotionBehavior implements ActorBehavior {
 
             const maxChecks = this.speed;
             let current = 1;
-            while (current < maxChecks && !freeAtNewPositionX && Math.abs(newX - self.x) > 1) {
+            while (current < maxChecks && !freeAtNewPositionX && Math.abs(newX) > 1) {
                 newX += self.x + newX > self.x ? -1 : 1;
                 newX = Math.floor(newX);
                 freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
@@ -37,19 +37,29 @@ export class ActorMotionBehavior implements ActorBehavior {
             }
 
             current = 1;
-            while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY - self.y) > 1) { 
+            while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY) > 1) { 
                 newY += self.y + newY > self.y ? -1 : 1;
                 newY = Math.floor(newY);
                 freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
                 current++;
             }
 
-            if (freeAtNewPositionX) {
-                self.x += newX;
+            if (newX !== 0 || newY !== 0) {
+                console.log('>> new (X,Y) = '+newX + ', '+newY);
             }
-            if (freeAtNewPositionY) {
-                self.y += newY;
+
+            if (freeAtNewPositionX && newX !== 0) {
+                self.x = Math.floor(self.x + Math.floor(newX));
             }
+            if (freeAtNewPositionY && newY !== 0) {
+                self.y = Math.floor(self.y + Math.round(newY));
+            }
+            //if (freeAtNewPositionX) {
+                
+            //}
+            //if (freeAtNewPositionY) {
+                
+            //}
         }
     }
 

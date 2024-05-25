@@ -81,9 +81,7 @@ export class SpriteAnimation {
 
             const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(animationFrame);
             
-            canvas.drawImage(this.sprite.image, srcX, srcY, x, y, this.sprite.width, this.sprite.height, options);
+            canvas.drawImage(this.sprite.image, srcX, srcY, this.sprite.width, this.sprite.height, x, y, this.sprite.width, this.sprite.height, options);
         }
-    }
-
-    
+    } 
 }

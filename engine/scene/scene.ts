@@ -1,7 +1,8 @@
 import { Game, GameController, GameError } from './../game';
-import { GameCanvas } from './../device';
+import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
 import { Layer, LayerOptions, LayerStatus } from './layer';
 import { SceneCamera } from './camera';
+import { SceneCameraOptions } from '.';
 
 export enum SceneStatus {
     NotStarted = 'NotStarted',
@@ -22,6 +23,7 @@ export type SceneOptions = {
 };
 
 export class Scene {
+    static readonly DefaultCameraName = 'default';
     static readonly DefaultLayerName = 'default';
 
     private layerMap: { [name: string]: Layer } = {};
@@ -30,7 +32,9 @@ export class Scene {
     private onResumeCallback: SceneLifecycleCallback;
     private onSuspendCallback: SceneLifecycleCallback;
 
-    readonly camera: SceneCamera;
+    readonly cameras: SceneCamera[] = [];
+
+    readonly defaultCamera: SceneCamera;
     readonly defaultLayer: Layer;
     readonly game: Game;
     readonly height: number;
@@ -54,7 +58,8 @@ export class Scene {
         this.height = options.height || game.canvas.height;
         this.width = options.width || game.canvas.width;
 
-        this.camera = new SceneCamera(this);
+        // TODO: rename createLayer -> layer, etc. - keep 'destroy'
+        this.defaultCamera = this.camera(Scene.DefaultCameraName);
         this.defaultLayer = this.createLayer(Scene.DefaultLayerName);
 
         this._status = SceneStatus.NotStarted;
@@ -70,6 +75,19 @@ export class Scene {
         }
     }
 
+    camera(name: string, options: SceneCameraOptions = {}): SceneCamera {
+        if (this.cameras[name]) {
+            return this.cameras[name];
+        }
+
+        const camera = new SceneCamera(name, this, options);
+        this.cameras[name] = camera;
+
+        return camera;
+    }
+
+    // TODO: layer(), layers()
+
     onStart(callback: SceneLifecycleCallback): Scene {
         this.onStartCallback = callback;
         return this;
@@ -83,8 +101,63 @@ export class Scene {
         this._status = SceneStatus.Running;
     }
 
+    propogateKeyboardEvent(gc: GameController, event: KeyboardInputEvent): void {
+        for (const layer of this.getLayersSortedFromTop()) {
+            for (const instance of layer.getInstances()) {
+                instance.actor.callKeyboardInput(instance, gc, event);
+            }
+        }
+    }
+
+    propogatePointerEvent(gc: GameController, event: PointerInputEvent): void {
+
+        // TODO: better handling of camera "priority"
+        let translatedEvent = null;
+        for (const cameraName in this.cameras) {
+            if (cameraName === Scene.DefaultCameraName) {
+                continue;
+            }
+
+            const camera = this.camera(cameraName);
+            if (camera.portContainsPosition(event.x, event.y)) {
+                translatedEvent = this.scalePointerEventToCamera(event, camera);
+                break;
+            }
+        }
+
+        if (!translatedEvent && this.defaultCamera.portContainsPosition(event.x, event.y)) {
+            translatedEvent = this.scalePointerEventToCamera(event, this.defaultCamera);
+        }
+
+        const propogateEvent = translatedEvent || event;
+
+        for (const layer of this.getLayersSortedFromTop()) {
+            for (const instance of layer.getInstances()) {
+                if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(propogateEvent.x, propogateEvent.y)) {
+                    instance.actor.callPointerInput(instance, gc, propogateEvent);
+                }
+            }
+        }
+    }
+
+    private scalePointerEventToCamera(event: PointerInputEvent, camera: SceneCamera): PointerInputEvent {
+        const translatedEvent = event.translate(-camera.portX, -camera.portY);
+
+        translatedEvent.x *= (camera.width / camera.portWidth);
+        translatedEvent.y *= (camera.height / camera.portHeight);
+
+        translatedEvent.x += camera.x;
+        translatedEvent.y += camera.y;
+
+        return translatedEvent;
+    }
+
     step(gc: GameController): void {
-        this.camera.updatePosition();
+
+        for (const cameraName in this.cameras) {
+            const camera = this.cameras[cameraName];
+            camera.updatePosition();
+        }
 
         for (const layer of this.getLayersSortedFromBottom()) {
             if (layer.status === LayerStatus.Destroyed) {
@@ -102,14 +175,20 @@ export class Scene {
     }
 
     draw(gc: GameController, canvas: GameCanvas): void {
-        canvas.setOrigin(-this.camera.x, -this.camera.y);
         canvas.clear();
 
+        const sceneCanvas = canvas.subCanvas('scene', { width: this.width, height: this.height });
+        sceneCanvas.clear();
+
         for (const layer of this.getLayersSortedFromBottom()) {
-            layer.draw(gc, canvas);
-            for (const instance of layer.getInstances()) {
-                instance.draw(gc, canvas);
-            }
+            layer.draw(gc, sceneCanvas);
+        }
+
+        for (const cameraName in this.cameras) {
+            const camera = this.cameras[cameraName];
+            const cameraCanvas = canvas.subCanvas(this.name + '_' + camera.name, { width: camera.width, height: camera.height });
+            cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, this.width, this.height, 0, 0, this.width, this.height);
+            canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
         }
     }
 

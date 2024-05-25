@@ -7,7 +7,6 @@ import { Sprite, SpriteOptions } from './../sprite';
 
 export type GameOptions = {
     canvasElementId: string;
-    canvasScale?: number; // TODO: implement
     targetFPS?: number;
     defaultSceneOptions?: SceneOptions;
 };
@@ -40,9 +39,9 @@ export class Game {
     private constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
-        this._controller = new GameController(this);
         this._options = this.applyGameOptions(options);
-        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);  
+        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this._controller = new GameController(this, this._defaultScene);
     }
 
     static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
@@ -51,7 +50,6 @@ export class Game {
 
     applyGameOptions(options: GameOptions): GameOptions {
         options.targetFPS = options.targetFPS || Game.DefaultTargetFPS;
-        options.canvasScale = options.canvasScale || Game.DefaultCanvasScale;
         return options;
     }
 
@@ -59,6 +57,18 @@ export class Game {
         let currentID = 0;
         return (() => ++currentID);
     })();
+
+    // TODO: maybe?
+    actor(actorName: string, options: ActorOptions = {}) {
+        if (this.actorMap[actorName]) {
+            return this.actorMap[actorName];
+        }
+
+        const actor = Actor.define(actorName, this, options);
+        this.actorMap[actorName] = actor;
+
+        return actor;
+    }
 
     defineActor(actorName: string, options: ActorOptions = {}): Actor {
         if (this.actorMap[actorName]) {
@@ -155,9 +165,9 @@ export class Game {
             return Promise.resolve();
         });
     }
-    
-    start(sceneName?: string) {
-        this._controller.goToScene(sceneName || Game.DefaultSceneName);
+
+    start() {
+        // TODO: track whether started previously, skip rest(?)
         this._inputHandler.registerPointerInputHandler((ev: PointerInputEvent) => this._controller.onPointerEvent(ev));
         this._inputHandler.registerKeyboardInputHandler((ev: KeyboardInputEvent) => this._controller.onKeyboardEvent(ev));
 

@@ -31,6 +31,6 @@ export class SceneFadeTransition implements SceneTransition {
         const increment = (this.durationMs / 1000) / (scene.game.options.targetFPS / 4);
         this.currentValue += this.transitionIn ? increment : -increment;
         this.currentValue = MathUtil.clamp(Math.round(this.currentValue * 100) / 100, 0, 1);
-        canvas.fillArea(this.color, scene.camera.x, scene.camera.y, scene.game.canvas.width, scene.game.canvas.height, { opacity: this.currentValue });
+        canvas.fillArea(this.color, 0, 0, scene.game.canvas.width, scene.game.canvas.height, { opacity: this.currentValue });
     }
 }

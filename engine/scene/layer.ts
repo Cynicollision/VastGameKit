@@ -42,6 +42,7 @@ export type LayerOptions = {
     y?: number;
 };
 
+// TODO rename: SceneLayer?
 export class Layer {
     private actorInstanceRegistry: { [index: number]: ActorInstance } = {};
 
@@ -192,7 +193,7 @@ export class Layer {
                 instance.callStep(gc);
                 instance.callAfterStepBehaviors(gc);
 
-                // TODO: remore loop. add instance.actor.hasEventHandler(ev.name)
+                // TODO: remove loop. add instance.actor.hasEventHandler(ev.name)
                 //  add to instanceEventTargets
                 //  call in next loop
                 for (const ev of raisedEvents) {
@@ -229,6 +230,10 @@ export class Layer {
 
         if (this.background) {
             this.background.draw(canvas);
+        }
+
+        for (const instance of this.getInstances()) {
+            instance.draw(gc, canvas);
         }
 
         if (this.onDrawCallback) {

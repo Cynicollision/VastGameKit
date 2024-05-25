@@ -74,5 +74,8 @@ export function buildPlayerActor(game: Game) {
         else if (self.state.moveDown) {
             self.motion.direction = Direction.Down;
         }
+    })
+    .onDraw((self, gc, canvas) => {
+        canvas.drawText(`(${self.x},${self.y})`, self.x + 100, self.y + 10);
     });
 }

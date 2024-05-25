@@ -23,13 +23,16 @@ export function buildDefaultRoom(game: Game) {
 
     hud.onCreate((self, gc) => {
         self.createInstance('button', 16, 16);
-        self.follow(self.scene.camera);
+        self.follow(self.scene.defaultCamera);
     });
 
     game.defaultScene.onStart((self, gc) => {
         console.log('defaultRoom.onStart');
         const player = self.defaultLayer.createInstance('actPlayer', 256, 256);
-        self.camera.follow(player, { centerOnInstanceBoundary: true });
+        self.defaultCamera.follow(player, { centerOnInstanceBoundary: true });
+        self.defaultCamera.portY = 100;
+
+        self.camera('camera2', { x: 400, y: 0, portX: 500, portY: 0, width: 400, height: 800, portWidth: 200, portHeight: 400 });
 
         
 

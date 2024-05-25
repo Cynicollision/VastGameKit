@@ -1,6 +1,6 @@
 import { Sprite } from './../../engine/sprite';
 import { CanvasDrawImageOptions, GameCanvas } from './../../engine/device';
-import { CanvasDrawTextOptions, CanvasFillOptions } from './../../engine/device/canvas';
+import { CanvasDrawTextOptions, CanvasFillOptions, GameCanvasOptions } from './../../engine/device/canvas';
 
 export class MockGameCanvas implements GameCanvas {
     height: number = 800;
@@ -8,7 +8,9 @@ export class MockGameCanvas implements GameCanvas {
 
     clear(): void {
     }
-    drawImage(image: CanvasImageSource, srcX: number, srcY: number, destX: number, destY: number, width: number, height: number, options: CanvasDrawImageOptions): void {
+    drawCanvas(canvas: GameCanvas, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void {
+    }
+    drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void {
     }
     drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void {
     }
@@ -18,6 +20,9 @@ export class MockGameCanvas implements GameCanvas {
     }
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void {
     }
-    setOrigin(x: number, y: number): void {
+    // setOrigin(x: number, y: number): void {
+    // }
+    subCanvas(name: string, _options: GameCanvasOptions): GameCanvas {
+        return new MockGameCanvas();
     }
 }

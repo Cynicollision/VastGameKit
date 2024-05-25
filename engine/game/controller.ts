@@ -15,8 +15,9 @@ export class GameController {
 
     state: { [name: string]: unknown } = {};
 
-    constructor(game: Game) {
+    constructor(game: Game, scene: Scene) {
         this._game = game;
+        this.setCurrentScene(scene);
     }
 
     goToScene(sceneName: string): void {
@@ -40,9 +41,7 @@ export class GameController {
     }
 
     private suspendCurrentScene(): void {
-        if (this._currentScene) {
-            this._currentScene.suspend(this);
-        }
+        this._currentScene.suspend(this);
     }
 
     raiseEvent(eventName: string, data?: any): void {
@@ -60,24 +59,11 @@ export class GameController {
     }
 
     onKeyboardEvent(event: KeyboardInputEvent): void {
-        for (const layer of this._currentScene.getLayersSortedFromTop()) {
-            for (const instance of layer.getInstances()) {
-                instance.actor.callKeyboardInput(instance, this, event);
-            }
-        }
+        this._currentScene.propogateKeyboardEvent(this, event);
     }
 
     onPointerEvent(event: PointerInputEvent): void {
-        event.x += this._currentScene.camera.x;
-        event.y += this._currentScene.camera.y;
-
-        for (const layer of this._currentScene.getLayersSortedFromTop()) {
-            for (const instance of layer.getInstances()) {
-                if (instance.actor.boundary && instance.actor.boundary.atPosition(layer.x + instance.x, layer.y + instance.y).containsPosition(event.x, event.y)) {
-                    instance.actor.callPointerInput(instance, this, event);
-                }
-            }
-        }
+        this._currentScene.propogatePointerEvent(this, event);
     }
 
     step(): void {
@@ -101,12 +87,10 @@ export class GameController {
     }
 
     draw(canvas: GameCanvas): void {
-        if (this.currentScene) {
-            this.currentScene.draw(this, canvas);
+        this._currentScene.draw(this, canvas);
 
-            if (this._transition) {
-                this._transition.draw(this.currentScene, canvas);
-            }
+        if (this._transition) {
+            this._transition.draw(this.currentScene, canvas);
         }
     }
 }

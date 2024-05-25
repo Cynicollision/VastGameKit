@@ -62,7 +62,7 @@ describe('Scene', () => {
         let gc: GameController;
 
         beforeEach(() => {
-            gc = new GameController(testGame);
+            gc = TestUtil.getTestController(testGame);
         });
 
         it('for destroyed Layers, calls onDestroy callbacks and deletes them from the registry', () => {
@@ -128,23 +128,23 @@ describe('Scene', () => {
         });
 
         it('when Starting, on scene start, changes to Running', () => {
-            const state = TestUtil.getTestController(testGame);
-            testScene.start(state);
+            const gc = TestUtil.getTestController(testGame);
+            testScene.start(gc);
 
             expect(testScene.status).toBe(SceneStatus.Running);
         });
 
         it('when Running, on scene suspend, changes to Suspended', () => {
-            const state = new GameController(testGame);
-            testScene.suspend(state);
+            const gc = TestUtil.getTestController(testGame);
+            testScene.suspend(gc);
 
             expect(testScene.status).toBe(SceneStatus.Suspended);
         });
 
         it('when Suspended, on initialize, if not persistent, changes to Starting', () => {
-            const state = new GameController(testGame);
+            const gc = TestUtil.getTestController(testGame);
             testScene.options.persistent = false;
-            testScene.suspend(state);
+            testScene.suspend(gc);
             expect(testScene.status).toBe(SceneStatus.Suspended);
 
             testScene.init();
@@ -154,7 +154,7 @@ describe('Scene', () => {
 
         it('when Suspended, on initialize, if persistent, changes to Resuming', () => {
             testScene.options.persistent = true;
-            testScene.suspend(new GameController(testGame));
+            testScene.suspend(TestUtil.getTestController(testGame));
 
             testScene.init();
 
@@ -162,13 +162,13 @@ describe('Scene', () => {
         });
 
         it('when Resuming, on scene start, changes to Running', () => {
-            const state = new GameController(testGame);
+            const gc = TestUtil.getTestController(testGame);
             testScene.options.persistent = true;
-            testScene.suspend(state);
+            testScene.suspend(gc);
             testScene.init();
             expect(testScene.status).toBe(SceneStatus.Resuming);
 
-            testScene.start(state);
+            testScene.start(gc);
 
             expect(testScene.status).toBe(SceneStatus.Running);
         });

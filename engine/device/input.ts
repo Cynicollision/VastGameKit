@@ -1,6 +1,5 @@
 import { GameEvent } from './../game';
 
-// TODO separate files per class
 export class InputEventHandler<T> {
     callback: (event: T) => void;
     isAlive: boolean = true;
@@ -36,6 +35,10 @@ export class PointerInputEvent extends GameEvent {
         this.type = type;
         this.x = x;
         this.y = y;
+    }
+
+    translate(diffX: number, diffY: number): PointerInputEvent {
+        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY);
     }
 }
 
