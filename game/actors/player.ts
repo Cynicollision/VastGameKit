@@ -1,6 +1,5 @@
+import { Direction, SpriteTransformation } from './../../engine/core/enum';
 import { Game } from './../../engine/game';
-import { Direction } from './../../engine/core/enum';
-import { SpriteTransformation } from './../../engine/sprite/sprite';
 
 export function buildPlayerActor(game: Game) {
     
@@ -16,32 +15,32 @@ export function buildPlayerActor(game: Game) {
         self.animation.setTransform(SpriteTransformation.Opacity, 0.5);
         gc.state.message = ' :)';
     })
-    .onGameEvent('something', (self, state, event) => {
-        const nextRoom = state.currentScene.name === 'default' ? 'room1' : 'default';
-        state.transitionToScene(nextRoom, { durationMs: 500 });
-        event.cancel();
+    .onGameEvent('something', (self, ev, sc) => {
+        const nextRoom = sc.scene.name === 'default' ? 'room1' : 'default';
+        sc.transitionToScene(nextRoom, { durationMs: 500 });
+        ev.cancel();
     })
-    .onCollision('actCoin', (self, other, gc) => {
+    .onCollision('actCoin', (self, other, sc) => {
         //other.destroy();
     })
-    .onKeyboardInput('w', (self, gc, ev) => {
+    .onKeyboardInput('w', (self, ev, sc) => {
         // TODO: define in (new) ActorKeyboardControlBehavior
         self.state.moveUp = ev.type === 'keydown';
     })
-    .onKeyboardInput('a', (self, gc, ev) => {
+    .onKeyboardInput('a', (self, ev, sc) => {
         self.state.moveLeft = ev.type === 'keydown';
     })
-    .onKeyboardInput('s', (self, gc, ev) => {
+    .onKeyboardInput('s', (self, ev, sc) => {
         self.state.moveDown = ev.type === 'keydown';
     })
-    .onKeyboardInput('d', (self, gc, ev) => {
+    .onKeyboardInput('d', (self, ev, sc) => {
         self.state.moveRight = ev.type === 'keydown';
     })
-    .onPointerInput('mousedown', (self, gc, ev) => {
+    .onPointerInput('mousedown', (self, ev, sc) => {
         console.log('you clicked me');
-        gc.raiseEvent('something', { foo: 'bar'});
+        sc.raiseEvent('something', { foo: 'bar'});
     })
-    .onStep((self, gc) => {
+    .onStep((self, sc) => {
         // TODO: ActorKeyboardControlBehavior
         if (self.state.moveUp || self.state.moveLeft || self.state.moveRight || self.state.moveDown) {
             self.motion.speed = 6;
@@ -75,7 +74,7 @@ export function buildPlayerActor(game: Game) {
             self.motion.direction = Direction.Down;
         }
     })
-    .onDraw((self, gc, canvas) => {
+    .onDraw((self, canvas, sc) => {
         canvas.drawText(`(${self.x},${self.y})`, self.x + 100, self.y + 10);
     });
 }

@@ -21,21 +21,38 @@ export type SceneCameraFollowOptions = {
     stayWithinScene?: boolean;
 };
 
-export class SceneCamera {
+export interface SceneCamera {
+    name: string
+    height: number;
+    portX: number;
+    portY: number;
+    portWidth: number;
+    portHeight: number;
+    width: number;
+    x: number;
+    y: number;
+    follow(instance: ActorInstance, options?: SceneCameraFollowOptions): void;
+}
+
+export class Camera {
     private readonly _scene: Scene;
     private _followInstance: ActorInstance;
     private _followOptions: SceneCameraFollowOptions = {};
     readonly name: string;
-    width: number = 0;
     height: number = 0;
-    x: number = 0;
-    y: number = 0;
     portX: number = 0;
     portY: number = 0;
     portWidth: number = 0;
     portHeight: number = 0;
+    width: number = 0;
+    x: number = 0;
+    y: number = 0;
+
+    static define(cameraName: string, scene: Scene, options: SceneCameraOptions = {}): SceneCamera {
+        return new Camera(cameraName, scene, options);
+    }
     
-    constructor(name: string, scene: Scene, options: SceneCameraOptions = {}) {
+    private constructor(name: string, scene: Scene, options: SceneCameraOptions = {}) {
         this.name = name;
         this._scene = scene;
         this.x = options.x || 0;
@@ -48,16 +65,16 @@ export class SceneCamera {
         this.portHeight = options.portHeight ? options.portHeight : scene.height;
     }
 
-    portContainsPosition(x: number, y: number): boolean {
-        return Geometry.rectangleContainsPosition(this.portX, this.portY, this.portWidth, this.portHeight, x, y);
-    }
-
     follow(instance: ActorInstance, options: SceneCameraFollowOptions = {}): void {
         this._followInstance = instance;
         this._followOptions.centerOnInstanceBoundary = options.centerOnInstanceBoundary !== undefined ? options.centerOnInstanceBoundary : false;
         this._followOptions.offsetX = options.offsetX || 0;
         this._followOptions.offsetY = options.offsetY || 0;
         this._followOptions.stayWithinScene = options.stayWithinScene !== undefined ? options.stayWithinScene : true;
+    }
+
+    portContainsPosition(x: number, y: number): boolean {
+        return Geometry.rectangleContainsPosition(this.portX, this.portY, this.portWidth, this.portHeight, x, y);
     }
 
     updatePosition(): void {

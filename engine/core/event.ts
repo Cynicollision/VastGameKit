@@ -8,6 +8,10 @@ export class GameEvent {
     private _data: any;
     get data() { return this._data; }
 
+    static raise(eventName: string, data?: any): GameEvent {
+        return new GameEvent(eventName, data);
+    }
+
     constructor(name: string, data?: any) {
         this._name = name;
         this._data = data;

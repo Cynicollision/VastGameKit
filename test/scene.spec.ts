@@ -1,10 +1,9 @@
+import { LayerStatus, SceneStatus } from './../engine/core/enum';
 import { Game } from './../engine/game';
-import { SceneController } from '../engine/scene/controller';
-import { LayerStatus } from '../engine/scene/layer';
-import { Scene, SceneStatus } from './../engine/scene/scene';
+import { Controller } from './../engine/scene/controller';
+import { Scene } from './../engine/scene/scene';
 import { TestUtil } from './testUtil';
 
-// TODO rename file
 describe('Scene', () => {
     let testGame: Game;
     let testScene: Scene;
@@ -22,7 +21,7 @@ describe('Scene', () => {
     });
 
     it('creates Layers', () => {
-        testScene.createLayer('testLayer');
+        testScene.defineLayer('testLayer');
         const testLayer =  testScene.getLayer('testLayer');
 
         expect(testLayer).toBeDefined();
@@ -30,7 +29,7 @@ describe('Scene', () => {
     });
 
     it('destroys Layers', () => {
-        const testLayer = testScene.createLayer('testLayer');
+        const testLayer = testScene.defineLayer('testLayer');
         expect(testLayer.status).toBe(LayerStatus.New);
 
         testScene.destroyLayer('testLayer');
@@ -39,8 +38,8 @@ describe('Scene', () => {
     });
 
     it('gets layers sorted from bottom to top', () => {
-        const layer2 = testScene.createLayer('layer2', { depth: -10 });
-        const layer3 = testScene.createLayer('layer3', { depth: 20 });
+        const layer2 = testScene.defineLayer('layer2', { depth: -10 });
+        const layer3 = testScene.defineLayer('layer3', { depth: 20 });
 
         const sortedLayers = testScene.getLayersSortedFromBottom();
 
@@ -50,8 +49,8 @@ describe('Scene', () => {
     });
 
     it('gets layers sorted from top to bottom', () => {
-        const layer2 = testScene.createLayer('layer2', { depth: -10 });
-        const layer3 = testScene.createLayer('layer3', { depth: 20 });
+        const layer2 = testScene.defineLayer('layer2', { depth: -10 });
+        const layer3 = testScene.defineLayer('layer3', { depth: 20 });
 
         const sortedLayers = testScene.getLayersSortedFromTop();
         
@@ -61,14 +60,14 @@ describe('Scene', () => {
     });
 
     describe('step lifecycle', () => {
-        let gc: SceneController;
+        let sc: Controller;
 
         beforeEach(() => {
-            gc = TestUtil.getTestController(testGame);
+            sc = TestUtil.getTestController(testGame);
         });
 
         it('for destroyed Layers, calls onDestroy callbacks and deletes them from the registry', () => {
-            const layer = testScene.createLayer('testLayer');
+            const layer = testScene.defineLayer('testLayer');
             expect(testScene.getLayers().length).toBe(2);
             expect(layer.status).toBe(LayerStatus.New);
 
@@ -78,37 +77,37 @@ describe('Scene', () => {
             expect(onDestoryCalled).toBeFalse();
             expect(layer.status).toBe(LayerStatus.Destroyed);
 
-            testScene.step(gc);
+            testScene.step([], sc);
 
             expect(onDestoryCalled).toBeTrue();
             expect(testScene.getLayers().length).toBe(1);
         });
 
         it('for new Layers, calls onCreate callbacks and activates them', () => {
-            const testLayer = testScene.createLayer('testLayer');
+            const testLayer = testScene.defineLayer('testLayer');
             expect(testLayer.status).toBe(LayerStatus.New);
 
             let onCreateCalled = false;
             testLayer.onCreate(() => onCreateCalled = true);
             expect(onCreateCalled).toBeFalse();
 
-            testScene.step(gc);
+            testScene.step([], sc);
             
             expect(onCreateCalled).toBe(true);
             expect(testLayer.status).toBe(LayerStatus.Active);
         });
 
         it('for active Layers, calls onStep callbacks', () => {
-            const testLayer = testScene.createLayer('testLayer');
+            const testLayer = testScene.defineLayer('testLayer');
             expect(testLayer.status).toBe(LayerStatus.New);
-            testScene.step(gc);
+            testScene.step([], sc);
             expect(testLayer.status).toBe(LayerStatus.Active);
 
             let onStepCalled = false;
             testLayer.onStep(() => onStepCalled = true);
             expect(onStepCalled).toBeFalse();
 
-            testScene.step(gc);
+            testScene.step([], sc);
 
             expect(onStepCalled).toBe(true);
             expect(testLayer.status).toBe(LayerStatus.Active);

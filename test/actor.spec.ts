@@ -5,14 +5,14 @@ import { GameEvent } from './../engine/core/event';
 import { KeyboardInputEvent } from './../engine/device/keyboard';
 import { PointerInputEvent } from './../engine/device/pointer';
 import { Game } from './../engine/game';
-import { SceneController } from './../engine/scene/controller';
-import { Scene } from '../engine/scene/scene';
+import { Controller } from './../engine/scene/controller';
+import { Scene } from './../engine/scene/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
     let testGame: Game;
-    let testController: SceneController;
+    let testController: Controller;
     let testActor: Actor;
     let testScene: Scene;
 
@@ -78,7 +78,7 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, testController, new GameEvent('testEvent'));
+            testActor.callGameEvent(null, GameEvent.raise('testEvent'), testController);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -86,14 +86,14 @@ describe('Actor', () => {
         it('defines a pointer event handler callback', () => {
             let pointerEventCalled = false;
             let pointerEventCoords = null;
-            testActor.onPointerInput('pointertest', (self, state, event) => {
+            testActor.onPointerInput('pointertest', (self, ev, sc) => {
                 pointerEventCalled = true;
-                pointerEventCoords = [event.x, event.y];
+                pointerEventCoords = [ev.x, ev.y];
             });
 
             expect(pointerEventCalled).toBeFalse();
 
-            testActor.callPointerInput(null, testController, new PointerInputEvent('pointertest', 20, 40));
+            testActor.callPointerInput(null, new PointerInputEvent('pointertest', 20, 40), testController);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -102,14 +102,14 @@ describe('Actor', () => {
         it('defines a keyboard event handler callback', () => {
             let keyboardEventCalled = false;
             let keyboardEventType = null;
-            testActor.onKeyboardInput('testkey', (self, state, event) => {
+            testActor.onKeyboardInput('testkey', (self, event, sc) => {
                 keyboardEventCalled = true;
                 keyboardEventType = event.type;
             });
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testActor.callKeyboardInput(null, testController, new KeyboardInputEvent('testkey', 'testkeytype'));
+            testActor.callKeyboardInput(null, new KeyboardInputEvent('testkey', 'testkeytype'), testController);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -136,7 +136,7 @@ describe('Actor', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testActor.callDraw(null, testController, testGame.canvas);
+            testActor.callDraw(null, testGame.canvas, testController);
 
             expect(drawCalled).toBeTrue();
         });
@@ -174,7 +174,7 @@ describe('Actor', () => {
         let handlerCalled = false;
         let dataFromEvent = null;
 
-        testActor.onGameEvent('testEvent', (self, state, event) => {
+        testActor.onGameEvent('testEvent', (self, ev, sc) => {
             handlerCalled = true;
             dataFromEvent = event.data.value;
         });
@@ -182,8 +182,8 @@ describe('Actor', () => {
         expect(handlerCalled).toBeFalse();
         expect(dataFromEvent).toBeNull();
 
-        const event = new GameEvent('testEvent', { value: 123 });
-        testActor.callGameEvent(null, TestUtil.getTestController(testGame), event);
+        const event = GameEvent.raise('testEvent', { value: 123 });
+        testActor.callGameEvent(null, event, testController);
 
         expect(handlerCalled).toBeTrue();
         expect(dataFromEvent).toBe(123);

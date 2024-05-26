@@ -1,10 +1,10 @@
-import { Scene } from '../engine/scene/scene';
+import { Scene, SceneDefinition } from './../engine/scene/scene';
 import { Game, GameOptions } from './../engine/game';
-import { SceneController } from '../engine/scene/controller';
+import { Controller } from './../engine/scene/controller';
 import { Sprite, SpriteOptions } from './../engine/sprite/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestImage } from './mocks/testImage';
-import { GameInputHandler } from '../engine/device/input';
+import { GameInputHandler } from './../engine/device/input';
 
 export class TestUtil {
 
@@ -21,15 +21,15 @@ export class TestUtil {
         return Game.init(new MockGameCanvas(), this.getMockInputHandler(), options);
     }
 
-    static getTestController(game: Game): SceneController {
-        return new SceneController(game, this.getTestScene(game));
+    static getTestController(game: Game): Controller {
+        return new Controller(game, <Scene>this.getTestScene(game));
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
         return Sprite.fromSource('testSprite', TestImage.Source, options);
     }
 
-    static getTestScene(game: Game): Scene {
+    static getTestScene(game: Game): SceneDefinition {
         return Scene.define('testScene', game);
     }
 }

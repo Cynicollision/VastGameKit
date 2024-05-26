@@ -6,23 +6,6 @@ export interface InputHandler<T extends GameEvent> {
     subscribe(callback: (event: T) => void): InputEventSubscription<T>;
 }
 
-export class InputEventSubscription<T> {
-    callback: (event: T) => void;
-    isAlive: boolean = true;
-
-    constructor(callback: (event: T) => void) {
-        this.callback = callback;
-    }
-
-    get isActive(): boolean {
-        return this.isAlive;
-    }
-
-    dispose(): void {
-        this.isAlive = false;
-    }
-}
-
 export class GameInputHandler {
     private _keyboardHandler: KeyboardInputHandler;
     get keyboard() { return this._keyboardHandler; }
@@ -39,5 +22,22 @@ export class GameInputHandler {
     constructor(keyboardHandler: KeyboardInputHandler, pointerHandler: PointerInputHandler) {
         this._keyboardHandler = keyboardHandler;
         this._pointerHandler = pointerHandler;
+    }
+}
+
+export class InputEventSubscription<T> {
+    callback: (event: T) => void;
+    isAlive: boolean = true;
+
+    constructor(callback: (event: T) => void) {
+        this.callback = callback;
+    }
+
+    get isActive(): boolean {
+        return this.isAlive;
+    }
+
+    dispose(): void {
+        this.isAlive = false;
     }
 }

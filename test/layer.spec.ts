@@ -1,18 +1,18 @@
-import { ActorInstance, ActorInstanceStatus } from './../engine/actor/instance';
 import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
-import { GameEvent } from '../engine/core/event';
+import { InstanceStatus, LayerStatus } from './../engine/core/enum';
+import { GameEvent } from './../engine/core/event';
 import { KeyboardInputEvent } from './../engine/device/keyboard';
 import { PointerInputEvent } from './../engine/device/pointer';
 import { Game } from './../engine/game';
-import { SceneController } from '../engine/scene/controller';
-import { Layer, LayerStatus } from '../engine/scene/layer';
-import { Scene } from '../engine/scene/scene';
+import { Controller } from './../engine/scene/controller';
+import { Layer,  } from './../engine/scene/layer';
+import { Scene } from './../engine/scene/scene';
 import { TestUtil } from './testUtil';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 
 describe('Layer', () => {
     let testGame: Game;
-    let testController: SceneController;
+    let testController: Controller;
     let testScene: Scene;
     let testLayer: Layer;
 
@@ -20,7 +20,7 @@ describe('Layer', () => {
         testGame = TestUtil.getTestGame();
         testController = TestUtil.getTestController(testGame);
         testScene = testGame.defineScene('testScene');
-        testLayer = testScene.createLayer('testLayer');
+        testLayer = <Layer>testScene.defineLayer('testLayer');
 
         testGame.defineActor('testActor').setRectBoundary(20, 20);
         testGame.defineActor('testActor2').setRectBoundary(20, 20);
@@ -38,19 +38,8 @@ describe('Layer', () => {
         expect(layerInstances[0].actor.name).toBe('testActor');
     });
 
-    it('deletes ActorInstances from its registries', () => {
-        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 0, 0);
-        let currentCount = testScene.defaultLayer.getInstances().length;
-        expect(currentCount).toBe(1);
-
-        testScene.defaultLayer.deleteInstance(instance);
-
-        currentCount = testScene.defaultLayer.getInstances().length;
-        expect(currentCount).toBe(0);
-    });
-
     it('checks if a position is free of any ActorInstances', () => {
-        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
+        const instance = testScene.defaultLayer.createInstance('testActor', 10, 10);
 
         expect(testScene.defaultLayer.isPositionFree(0, 0)).toBeTrue()
         expect(testScene.defaultLayer.isPositionFree(20, 20)).toBeFalse();
@@ -58,7 +47,7 @@ describe('Layer', () => {
     });
 
     it('checks if a position is free of solid ActorInstances', () => {
-        const instance: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
+        const instance = testScene.defaultLayer.createInstance('testActor', 10, 10);
         instance.actor.solid = true;
 
         expect(testScene.defaultLayer.isPositionFree(20, 20, true)).toBeFalse();
@@ -69,10 +58,10 @@ describe('Layer', () => {
     });
 
     it('gets ActorInstances at a position', () => {
-        const instance1: ActorInstance = testScene.defaultLayer.createInstance('testActor', 10, 10);
+        const instance1 = testScene.defaultLayer.createInstance('testActor', 10, 10);
         instance1.actor.solid = true;
 
-        const instance2: ActorInstance = testScene.defaultLayer.createInstance('testActor2', 15, 15);
+        const instance2 = testScene.defaultLayer.createInstance('testActor2', 15, 15);
         instance2.actor.solid = false;
 
         expect(testScene.defaultLayer.getInstancesAtPosition(5, 5).length).toBe(0);
@@ -81,10 +70,10 @@ describe('Layer', () => {
     });
 
     it('gets ActorInstances within a Boundary at a position', () => {
-        const instance1: ActorInstance = testScene.defaultLayer.createInstance('testActor', 20, 20);
+        const instance1 = testScene.defaultLayer.createInstance('testActor', 20, 20);
         instance1.actor.solid = true;
 
-        const instance2: ActorInstance = testScene.defaultLayer.createInstance('testActor2', 25, 25);
+        const instance2 = testScene.defaultLayer.createInstance('testActor2', 25, 25);
         instance2.actor.solid = false;
 
         const boundary = new RectBoundary(8, 8);
@@ -118,7 +107,7 @@ describe('Layer', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testLayer.callGameEvent(testController, new GameEvent('testEvent'));
+            testLayer.callGameEvent(GameEvent.raise('testEvent'), testController);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -126,14 +115,14 @@ describe('Layer', () => {
         it('defines a pointer event handler callback', () => {
             let pointerEventCalled = false;
             let pointerEventCoords = null;
-            testLayer.onPointerInput('pointertest', (self, state, event) => {
+            testLayer.onPointerInput('pointertest', (self, ev, sc) => {
                 pointerEventCalled = true;
-                pointerEventCoords = [event.x, event.y];
+                pointerEventCoords = [ev.x, ev.y];
             });
 
             expect(pointerEventCalled).toBeFalse();
 
-            testLayer.callPointerInput(testController, new PointerInputEvent('pointertest', 20, 40));
+            testLayer.callPointerInput(new PointerInputEvent('pointertest', 20, 40), testController);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -142,14 +131,14 @@ describe('Layer', () => {
         it('defines a keyboard event handler callback', () => {
             let keyboardEventCalled = false;
             let keyboardEventType = null;
-            testLayer.onKeyboardInput('testkey', (self, state, event) => {
+            testLayer.onKeyboardInput('testkey', (self, ev, sc) => {
                 keyboardEventCalled = true;
-                keyboardEventType = event.type;
+                keyboardEventType = ev.type;
             });
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testLayer.callKeyboardInput(testController, new KeyboardInputEvent('testkey', 'testkeytype'));
+            testLayer.callKeyboardInput(new KeyboardInputEvent('testkey', 'testkeytype'), testController);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -161,10 +150,10 @@ describe('Layer', () => {
                 stepCalled = true;
             });
 
+            testLayer.activate();
             expect(stepCalled).toBeFalse();
 
-            testLayer.step(testController);
-
+            testLayer.step([], testController);
             expect(stepCalled).toBeTrue();
         });
 
@@ -176,7 +165,7 @@ describe('Layer', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testLayer.draw(testController, testGame.canvas);
+            testLayer.draw(testGame.canvas, testController);
 
             expect(drawCalled).toBeTrue();
         });
@@ -213,9 +202,9 @@ describe('Layer', () => {
                 .onCreate((self, state) => {
                     actorOnCreatedCalled = true;
                 })
-                .onGameEvent('testEvent', (self, state, event) => {
+                .onGameEvent('testEvent', (self, ev, sc) => {
                     actorOnGameEventCalled = true;
-                    actorOnGameEventData = event.data;
+                    actorOnGameEventData = ev.data;
                 })
                 .onStep((self, state) => {
                     actorOnStepCalled = true;
@@ -223,27 +212,33 @@ describe('Layer', () => {
                 .onDestroy((self, state) => {
                     actorOnDestroyCalled = true;
                 });
+
+            testScene.init();
+            testController.goToScene('testScene');
+            testScene.start(testController);
+            testLayer.activate();
         });
 
         it('activates new ActorInstances and calls Actor callbacks', () => {
             const instance = testLayer.createInstance('testActor');
 
             expect(actorOnCreatedCalled).toBeFalse();
-            expect(instance.status).toBe(ActorInstanceStatus.New);
-            testLayer.step(testController);
+            expect(instance.status).toBe(InstanceStatus.New);
+            testLayer.step([], testController);
 
             expect(actorOnCreatedCalled).toBeTrue();
-            expect(instance.status).toBe(ActorInstanceStatus.Active);
+            expect(instance.status).toBe(InstanceStatus.Active);
         });
 
         it('propagates GameEvents to active ActorInstances', () => {
             const instance = testLayer.createInstance('testActor');
-            testLayer.step(testController);
+            instance.activate();
 
             testController.raiseEvent('testEvent', { value: 'testvalue' });
             expect(actorOnGameEventCalled).toBeFalse();
             expect(actorOnGameEventData).toBeNull();
-            testLayer.step(testController);
+
+            testController.step();
 
             expect(actorOnGameEventCalled).toBeTrue();
             expect(actorOnGameEventData.value).toBe('testvalue');
@@ -253,13 +248,13 @@ describe('Layer', () => {
             const instance = testLayer.createInstance('testActor');
             const mockBehavior = new MockActorInstanceBehavior();
             instance.useBehavior(mockBehavior);
-            testLayer.step(testController);
+            testLayer.step([], testController);
 
             expect(actorOnStepCalled).toBeFalse();
             expect(mockBehavior.beforeStepCallCount).toBe(0);
             expect(mockBehavior.afterStepCallCount).toBe(0);
 
-            testLayer.step(testController);
+            testLayer.step([], testController);
 
             expect(actorOnStepCalled).toBeTrue();
             expect(mockBehavior.beforeStepCallCount).toBe(1);
@@ -270,20 +265,13 @@ describe('Layer', () => {
             const instance = testLayer.createInstance('testActor');
             instance.destroy();
             expect(actorOnDestroyCalled).toBeFalse();
-            expect(instance.status).toBe(ActorInstanceStatus.Destroyed);
+            expect(instance.status).toBe(InstanceStatus.Destroyed);
             expect(testLayer.getInstances().length).toBe(1);
 
-            testLayer.step(testController);
+            testLayer.step([], testController);
 
             expect(actorOnDestroyCalled).toBeTrue();
             expect(testLayer.getInstances().length).toBe(0);
-        });
-    });
-
-    describe('draw lifecycle', () => {
-
-        xit('needs tests', () => {
-            // TODO
         });
     });
 
@@ -296,6 +284,14 @@ describe('Layer', () => {
         it('when activated, changes to Active', () => {
             testLayer.activate();
             expect(testLayer.status).toBe(LayerStatus.Active);
+        });
+
+        it('when inactivated, changes to Inactive', () => {
+            expect(testLayer.status).toBe(InstanceStatus.New);
+
+            testLayer.inactivate();
+
+            expect(testLayer.status).toBe(InstanceStatus.Inactive);
         });
 
         it('when destroyed, changes to Destroyed', () => {

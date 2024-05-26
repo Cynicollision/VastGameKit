@@ -1,7 +1,7 @@
-import { ActorBehavior } from './../behavior';
-import { ActorInstance } from './../instance';
 import { Geometry } from './../../core/geometry';
 import { SceneController } from './../../scene/controller';
+import { ActorBehavior } from './../actor';
+import { ActorInstance } from './../instance';
 
 export class ActorMotionBehavior implements ActorBehavior {
     direction: number = 0;
@@ -44,22 +44,12 @@ export class ActorMotionBehavior implements ActorBehavior {
                 current++;
             }
 
-            if (newX !== 0 || newY !== 0) {
-                console.log('>> new (X,Y) = '+newX + ', '+newY);
-            }
-
             if (freeAtNewPositionX && newX !== 0) {
                 self.x = Math.round(self.x + Math.round(newX));
             }
             if (freeAtNewPositionY && newY !== 0) {
                 self.y = Math.round(self.y + Math.round(newY));
             }
-            //if (freeAtNewPositionX) {
-                
-            //}
-            //if (freeAtNewPositionY) {
-                
-            //}
         }
     }
 

@@ -1,3 +1,4 @@
+import { GameError } from '../core/error';
 import { Sprite } from './../sprite/sprite';
 
 export type GameCanvasOptions = {
@@ -52,33 +53,17 @@ export class GameCanvasHtml2D implements GameCanvas {
     get width() { return this._canvas.width; }
 
     static initForElement(canvasElement: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
-        const gameCanvas = new GameCanvasHtml2D();
-        gameCanvas._canvas = canvasElement;
-
-        if (!gameCanvas._canvas) {
-            throw new Error(`Attempted to attach to invalid canvas element.`);
-        }
-
-        gameCanvas._canvas.height = options.height || gameCanvas._canvas.height;
-        gameCanvas._canvas.width = options.width || gameCanvas._canvas.width;
-        return gameCanvas;
+        return new GameCanvasHtml2D(canvasElement, options);
     }
 
-    private constructor() {}
-
-    subCanvas(name: string, options: GameCanvasOptions): GameCanvas {
-        if (this.subCanvasMap[name]) {
-            return this.subCanvasMap[name];
+    private constructor(canvasElement: HTMLCanvasElement, options: GameCanvasOptions) {
+        if (!canvasElement) {
+            throw new GameError(`Attempted to attach to invalid canvas element.`);
         }
 
-        const subCanvas = new GameCanvasHtml2D();
-        subCanvas._canvas = document.createElement('canvas');
-        subCanvas._canvas.height = options.height;
-        subCanvas._canvas.width = options.width;
-
-        this.subCanvasMap[name] = subCanvas;
-
-        return subCanvas;
+        this._canvas = canvasElement;
+        this._canvas.height = options.height || this._canvas.height;
+        this._canvas.width = options.width || this._canvas.width;
     }
 
     clear(): void {
@@ -151,5 +136,16 @@ export class GameCanvasHtml2D implements GameCanvas {
         if (previousOpacity !== null) {
             this.canvasContext2D.globalAlpha = previousOpacity;
         }
+    }
+
+    subCanvas(name: string, options: GameCanvasOptions): GameCanvas {
+        if (this.subCanvasMap[name]) {
+            return this.subCanvasMap[name];
+        }
+        
+        const subCanvas = new GameCanvasHtml2D(document.createElement('canvas'), options);
+        this.subCanvasMap[name] = subCanvas;
+
+        return subCanvas;
     }
 }

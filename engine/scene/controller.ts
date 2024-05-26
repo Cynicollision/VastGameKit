@@ -1,18 +1,27 @@
-
+import { SceneTransitionType } from './../core/enum';
 import { GameEvent } from './../core/event';
 import { GameCanvas } from './../device/canvas';
 import { KeyboardInputEvent } from './../device/keyboard';
 import { PointerInputEvent } from './../device/pointer';
 import { Game } from './../game';
-import { Scene, SceneStatus } from './scene';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions, SceneTransitionType } from './transition';
+import { Scene, SceneDefinition } from './scene';
+import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
-export class SceneController {
-    private _currentScene: Scene;
-    get currentScene() { return this._currentScene; }
+export interface SceneController {
+    game: Game;
+    scene: SceneDefinition;
+    state: { [name: string]: unknown };
+    goToScene(sceneName: string): void;
+    raiseEvent(eventName: string, data?: any): void;
+    transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;
+}
 
+export class Controller implements SceneController {
     private _game: Game;
     get game() { return this._game; }
+
+    private _scene: Scene;
+    get scene(): SceneDefinition { return this._scene; }
 
     private _eventQueue: GameEvent[] = [];
     private _transition: SceneTransition;
@@ -24,77 +33,63 @@ export class SceneController {
         this.setCurrentScene(scene);
     }
 
-    goToScene(sceneName: string): void {
-        this.suspendCurrentScene();
-        this.setCurrentScene(this.game.getScene(sceneName));
-    }
-
-    transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, transitionType: SceneTransitionType = SceneTransitionType.Fade): void {
-        this.suspendCurrentScene();
-        this._transition = SceneTransitionFactory.new(transitionType, options);
-        this._transition.start(() => {
-            this.setCurrentScene(this.game.getScene(sceneName));
-        }, () => {
-            this._transition = null;
-        });
-    }
-
-    private setCurrentScene(scene: Scene): void {
-        this._currentScene = scene;
-        scene.init();
-    }
-
-    private suspendCurrentScene(): void {
-        this._currentScene.suspend(this);
-    }
-
-    raiseEvent(eventName: string, data?: any): void {
-        this._eventQueue.push(new GameEvent(eventName, data));
-    }
-
-    getQueuedEvents(): GameEvent[] {
-        return this._eventQueue;
-    }
-
-    flushEventQueue(): GameEvent[] {
+    private flushEventQueue(): GameEvent[] {
         const queue = this._eventQueue;
         this._eventQueue = [];
         return queue;
     }
 
-    onKeyboardEvent(event: KeyboardInputEvent): void {
-        this._currentScene.propogateKeyboardEvent(this, event);
+    private setCurrentScene(scene: Scene): void {
+        this._scene = scene;
+        scene.init();
     }
 
-    onPointerEvent(event: PointerInputEvent): void {
-        this._currentScene.propogatePointerEvent(this, event);
-    }
-
-    step(): void {
-        // TODO: move to Scene.step
-        switch (this._currentScene.status) {
-            case SceneStatus.Starting:
-                this._currentScene.start(this);
-                break;
-            case SceneStatus.Resuming:
-                this._currentScene.resume(this);
-                break;
-            case SceneStatus.Suspended:
-                this._currentScene.suspend(this); // TODO this seems unnecessary
-                break;
-            case SceneStatus.Running:
-                this._currentScene.step(this);
-                break;
-        }
-
-        this.flushEventQueue();
+    private suspendCurrentScene(): void {
+        this._scene.suspend(this);
     }
 
     draw(canvas: GameCanvas): void {
-        this._currentScene.draw(this, canvas);
+        this._scene.draw(canvas, this);
 
         if (this._transition) {
-            this._transition.draw(this.currentScene, canvas);
+            this._transition.draw(this.scene, canvas);
         }
+    }
+
+    // TODO: allow data to be passed to next scene
+    goToScene(sceneName: string): void {
+        this.suspendCurrentScene();
+        const scene = <Scene>this.game.getScene(sceneName);
+        this.setCurrentScene(scene);
+    }
+
+    raiseEvent(eventName: string, data?: any): void {
+        const event = GameEvent.raise(eventName, data);
+        this._eventQueue.push(event);
+    }
+
+    onKeyboardEvent(event: KeyboardInputEvent): void {
+        this._scene.propogateKeyboardEvent(event, this);
+    }
+
+    onPointerEvent(event: PointerInputEvent): void {
+        this._scene.propogatePointerEvent(event, this);
+    }
+
+    step(): void {
+        const events = this.flushEventQueue();
+        this._scene.step(events, this)
+    }
+
+    // TODO: allow data to be passed to next scene
+    transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, transitionType: SceneTransitionType = SceneTransitionType.Fade): void {
+        this.suspendCurrentScene();
+        this._transition = SceneTransitionFactory.new(transitionType, options);
+        this._transition.start(() => {
+            const scene = <Scene>this.game.getScene(sceneName);
+            this.setCurrentScene(scene);
+        }, () => {
+            this._transition = null;
+        });
     }
 }

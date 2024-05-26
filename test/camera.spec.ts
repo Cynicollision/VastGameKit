@@ -1,22 +1,39 @@
 import { Actor } from './../engine/actor/actor';
 import { ActorInstance } from './../engine/actor/instance';
 import { Game } from './../engine/game';
-import { SceneCamera } from '../engine/scene/camera';
+import { Camera } from './../engine/scene/camera';
 import { TestUtil } from './testUtil';
 
 describe('SceneCamera', () => {
     let testGame: Game;
-    let testCamera: SceneCamera;
+    let testCamera: Camera;
     let testActor: Actor;
     let testInstance: ActorInstance;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
-        testCamera = testGame.defaultScene.defaultCamera;
+        testCamera = <Camera>testGame.defaultScene.defaultCamera;
         testActor = testGame.defineActor('testActor');
         testActor.setRectBoundary(100, 200);
 
         testInstance = testGame.defaultScene.defaultLayer.createInstance('testActor');
+    });
+
+    describe('defines valid dimensions', () => {
+        it('to equal the scene size by default', () => {
+            expect(testCamera.height).toBe(testGame.defaultScene.height);
+            expect(testCamera.width).toBe(testGame.defaultScene.width);
+            expect(testCamera.portHeight).toBe(testGame.defaultScene.height);
+            expect(testCamera.portWidth).toBe(testGame.defaultScene.width);
+        });
+
+        it('to be the specified dimensions for a new camera', () => {
+            const camera2 = testGame.defaultScene.defineCamera('camera2', { height: 200, width: 300, portHeight: 400, portWidth: 600 });
+            expect(camera2.height).toBe(200);
+            expect(camera2.width).toBe(300);
+            expect(camera2.portHeight).toBe(400);
+            expect(camera2.portWidth).toBe(600);
+        });
     });
 
     describe('follows an ActorInstance', () => {

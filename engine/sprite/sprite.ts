@@ -1,10 +1,3 @@
-export enum SpriteTransformation {
-    Opacity = 0,
-    Frame = 1,
-    TileX = 2,
-    TileY = 3,
-}
-
 export type SpriteOptions = {
     height?: number;
     width?: number;

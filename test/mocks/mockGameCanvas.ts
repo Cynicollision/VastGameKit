@@ -19,8 +19,6 @@ export class MockGameCanvas implements GameCanvas {
     }
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void {
     }
-    // setOrigin(x: number, y: number): void {
-    // }
     subCanvas(name: string, _options: GameCanvasOptions): GameCanvas {
         return new MockGameCanvas();
     }
