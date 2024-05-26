@@ -1,6 +1,5 @@
-import { Sprite } from './../../engine/sprite';
-import { CanvasDrawImageOptions, GameCanvas } from './../../engine/device';
-import { CanvasDrawTextOptions, CanvasFillOptions, GameCanvasOptions } from './../../engine/device/canvas';
+import { Sprite } from './../../engine/sprite/sprite';
+import { CanvasDrawImageOptions, CanvasDrawTextOptions, CanvasFillOptions, GameCanvas, GameCanvasOptions } from './../../engine/device/canvas';
 
 export class MockGameCanvas implements GameCanvas {
     height: number = 800;

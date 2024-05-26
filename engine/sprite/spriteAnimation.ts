@@ -1,4 +1,4 @@
-import { CanvasDrawImageOptions, GameCanvas } from './../device';
+import { CanvasDrawImageOptions, GameCanvas } from './../device/canvas';
 import { Sprite, SpriteTransformation } from './sprite';
 
 export type SpriteDrawOptions = CanvasDrawImageOptions & {

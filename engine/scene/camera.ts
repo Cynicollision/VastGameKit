@@ -1,4 +1,4 @@
-import { ActorInstance } from './../actor';
+import { ActorInstance } from './../actor/instance';
 import { Geometry, MathUtil } from './../core';
 import { Scene } from './scene';
 

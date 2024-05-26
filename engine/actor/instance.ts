@@ -1,9 +1,9 @@
 import { Actor } from './actor';
 import { ActorBehavior, ActorBehaviorName, ActorMotionBehavior } from './behavior';
-import { GameCanvas } from './../device';
-import { GameController } from './../game';
-import { Layer } from './../scene';
-import { SpriteAnimation } from './../sprite';
+import { GameCanvas } from './../device/canvas';
+import { GameController } from './../game/controller';
+import { Layer } from './../scene/layer';
+import { SpriteAnimation } from './../sprite/spriteAnimation';
 
 export enum ActorInstanceStatus {
     New = 'New',

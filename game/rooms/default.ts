@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../engine/game/game';
 
 export function buildDefaultRoom(game: Game) {
 

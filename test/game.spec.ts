@@ -1,4 +1,4 @@
-import { Game } from './../engine/game';
+import { Game } from './../engine/game/game';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 

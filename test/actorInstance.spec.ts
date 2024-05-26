@@ -1,5 +1,6 @@
-import { ActorInstance, ActorInstanceStatus } from './../engine/actor';
-import { Game } from './../engine/game';
+
+import { ActorInstance, ActorInstanceStatus } from './../engine/actor/instance';
+import { Game } from './../engine/game/game';
 import { TestUtil } from './testUtil';
 
 describe('ActorInstance', () => {

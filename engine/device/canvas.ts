@@ -1,4 +1,4 @@
-import { Sprite } from './../sprite';
+import { Sprite } from './../sprite/sprite';
 
 export type GameCanvasOptions = {
     backgroundColor?: string;

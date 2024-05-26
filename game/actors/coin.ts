@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../engine/game/game';
 
 export function buildCoinActor(game: Game) {
     game.defineActor('actCoin', { 

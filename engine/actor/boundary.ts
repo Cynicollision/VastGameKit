@@ -1,6 +1,3 @@
-export { CircleBoundary, PositionedCircleBoundary } from './boundaries/circleBoundary';
-export { RectBoundary, PositionedRectBoundary } from './boundaries/rectangleBoundary';
-
 export interface Boundary {
     atPosition(x: number, y: number): PositionedBoundary;
     height: number;

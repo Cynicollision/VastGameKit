@@ -1,7 +1,8 @@
-import { ActorInstance, ActorInstanceBehavior } from './../../engine/actor';
-import { GameController } from './../../engine/game';
+import { ActorInstance } from './../../engine/actor/instance';
+import { ActorBehavior } from './../../engine/actor/behavior';
+import { GameController } from './../../engine/game/controller';
 
-export class MockActorInstanceBehavior implements ActorInstanceBehavior {
+export class MockActorInstanceBehavior implements ActorBehavior {
     beforeStepCallCount = 0;
     afterStepCallCount = 0;
 

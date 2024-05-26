@@ -1,4 +1,4 @@
-import { GameEvent } from './../game';
+import { GameEvent } from './../game/gameEvent';
 
 export class InputEventHandler<T> {
     callback: (event: T) => void;

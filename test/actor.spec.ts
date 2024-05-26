@@ -1,8 +1,10 @@
 
-import { Actor } from './../engine/actor';
-import { Game, GameController, GameEvent } from './../engine/game';
-import { KeyboardInputEvent, PointerInputEvent } from './../engine/device';
-import { Scene } from '../engine/scene';
+import { Actor } from './../engine/actor/actor';
+import { Game } from './../engine/game/game';
+import { GameController } from './../engine/game/controller';
+import { GameEvent } from './../engine/game/gameEvent';
+import { KeyboardInputEvent, PointerInputEvent } from './../engine/device/input';
+import { Scene } from '../engine/scene/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 

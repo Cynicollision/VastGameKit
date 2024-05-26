@@ -1,4 +1,4 @@
-import { GameCanvas } from './../device';
+import { GameCanvas } from './../device/canvas';
 import { Scene } from './scene';
 import { SceneFadeTransition } from './transitions/sceneFadeTransition';
 

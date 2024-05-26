@@ -1,4 +1,4 @@
-import { GameInputHandler, InputEventHandler, KeyboardInputEvent, PointerInputEvent } from './../../engine/device';
+import { GameInputHandler, InputEventHandler, KeyboardInputEvent, PointerInputEvent } from './../../engine/device/input';
 
 export class MockInputHandler implements GameInputHandler {
     private keyboardEventHandlers: InputEventHandler<KeyboardInputEvent>[] = [];

@@ -1,8 +1,10 @@
-import { Scene, SceneStatus } from '../engine/scene';
-import { Game, GameController } from './../engine/game';
-import { LayerStatus } from '../engine/scene';
+import { Scene, SceneStatus } from '../engine/scene/scene';
+import { Game } from './../engine/game/game';
+import { GameController } from './../engine/game/controller';
+import { LayerStatus } from '../engine/scene/layer';
 import { TestUtil } from './testUtil';
 
+// TODO rename file
 describe('Scene', () => {
     let testGame: Game;
     let testScene: Scene;

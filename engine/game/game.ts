@@ -1,9 +1,11 @@
-import { Actor, ActorOptions } from './../actor';
-import { GameAudio, GameAudioOptions, GameCanvas, GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device';
+import { Actor, ActorOptions } from './../actor/actor';
+import { GameAudio, GameAudioOptions } from './../device/audio';
+import { GameCanvas } from './../device/canvas';
+import { GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device/input';
 import { GameController } from './controller';
 import { GameError } from './gameError';
-import { Scene, SceneOptions } from './../scene';
-import { Sprite, SpriteOptions } from './../sprite';
+import { Scene, SceneOptions } from './../scene/scene';
+import { Sprite, SpriteOptions } from './../sprite/sprite';
 
 export type GameOptions = {
     canvasElementId: string;
@@ -57,18 +59,6 @@ export class Game {
         let currentID = 0;
         return (() => ++currentID);
     })();
-
-    // TODO: maybe?
-    actor(actorName: string, options: ActorOptions = {}) {
-        if (this.actorMap[actorName]) {
-            return this.actorMap[actorName];
-        }
-
-        const actor = Actor.define(actorName, this, options);
-        this.actorMap[actorName] = actor;
-
-        return actor;
-    }
 
     defineActor(actorName: string, options: ActorOptions = {}): Actor {
         if (this.actorMap[actorName]) {

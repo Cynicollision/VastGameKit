@@ -1,4 +1,4 @@
-import { GameController } from './../../game';
+import { GameController } from './../../game/controller';
 import { Geometry } from './../../core';
 import { ActorInstance } from './../instance';
 import { ActorBehavior } from './../behavior';

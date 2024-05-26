@@ -1,9 +1,15 @@
 import { ActorInstance } from './instance';
 import { ActorBehaviorName } from './behavior';
-import { Boundary, CircleBoundary, RectBoundary } from './boundary';
-import { Game, GameError, GameEvent, GameController } from './../game';
-import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
-import { Sprite } from './../sprite';
+import { Boundary } from './boundary';
+import { CircleBoundary } from './boundaries/circleBoundary';
+import { RectBoundary } from './boundaries/rectangleBoundary';
+import { Game } from './../game/game';
+import { GameError } from './../game/gameError';
+import { GameEvent } from './../game/gameEvent';
+import { GameController } from './../game/controller';
+import { GameCanvas } from './../device/canvas';
+import { KeyboardInputEvent, PointerInputEvent } from './../device/input';
+import { Sprite } from './../sprite/sprite';
 
 export type ActorOptions = {
     boundary?: Boundary;

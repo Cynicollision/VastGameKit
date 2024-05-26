@@ -1,7 +1,11 @@
-import { ActorInstance, ActorInstanceStatus, RectBoundary } from './../engine/actor';
-import { Game, GameController, GameEvent } from './../engine/game';
-import { KeyboardInputEvent, PointerInputEvent } from './../engine/device';
-import { Layer, LayerStatus , Scene } from '../engine/scene';
+import { ActorInstance, ActorInstanceStatus } from './../engine/actor/instance';
+import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
+import { Game } from './../engine/game/game';
+import { GameController } from './../engine/game/controller';
+import { GameEvent } from './../engine/game/gameEvent';
+import { KeyboardInputEvent, PointerInputEvent } from './../engine/device/input';
+import { Layer, LayerStatus } from '../engine/scene/layer';
+import { Scene } from '../engine/scene/scene';
 import { TestUtil } from './testUtil';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 

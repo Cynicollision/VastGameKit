@@ -1,5 +1,7 @@
-import { BrowserDocumentInputHandler, GameCanvasHtml2D } from './device';
-import { Game, GameError, GameOptions } from './game';
+import { GameCanvasHtml2D } from './device/canvas';
+import { BrowserDocumentInputHandler } from './device/input';
+import { Game, GameOptions } from './game/game';
+import { GameError } from './game/gameError';
 
 export class VastGameKit {
 

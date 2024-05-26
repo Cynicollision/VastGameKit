@@ -1,10 +1,13 @@
-import { ActorInstance, ActorInstanceStatus, Boundary } from '../actor';
+import { ActorInstance, ActorInstanceStatus } from '../actor/instance';
+import { Boundary } from '../actor/boundary';
 import { Background, BackgroundOptions } from './background';
 import { SceneCamera } from './camera';
-import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from '../device';
-import { GameController, GameEvent } from '../game';
+import { GameCanvas } from '../device/canvas';
+import { KeyboardInputEvent, PointerInputEvent } from '../device/input';
+import { GameController } from '../game/controller';
+import { GameEvent } from '../game/gameEvent';
 import { Scene } from './scene';
-import { Sprite } from '../sprite';
+import { Sprite } from '../sprite/sprite';
 
 export enum LayerStatus {
     New = 1,

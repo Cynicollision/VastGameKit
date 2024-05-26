@@ -1,8 +1,10 @@
-import { Game, GameController, GameError } from './../game';
-import { GameCanvas, KeyboardInputEvent, PointerInputEvent } from './../device';
+import { Game } from './../game/game';
+import { GameError } from './../game/gameError';
+import { GameController } from './../game/controller';
+import { GameCanvas } from './../device/canvas';
+import { KeyboardInputEvent, PointerInputEvent } from './../device/input';
 import { Layer, LayerOptions, LayerStatus } from './layer';
-import { SceneCamera } from './camera';
-import { SceneCameraOptions } from '.';
+import { SceneCamera, SceneCameraOptions } from './camera';
 
 export enum SceneStatus {
     NotStarted = 'NotStarted',
@@ -187,7 +189,7 @@ export class Scene {
         for (const cameraName in this.cameras) {
             const camera = this.cameras[cameraName];
             const cameraCanvas = canvas.subCanvas(this.name + '_' + camera.name, { width: camera.width, height: camera.height });
-            cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, this.width, this.height, 0, 0, this.width, this.height);
+            cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
         }
     }
