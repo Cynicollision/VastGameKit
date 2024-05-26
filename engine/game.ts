@@ -45,7 +45,7 @@ export class Game {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
-        this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this._defaultScene = <Scene>this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
         this._controller = new Controller(this, this._defaultScene);
     }
 
@@ -59,12 +59,12 @@ export class Game {
         return (() => ++currentID);
     })();
 
-    defineActor(actorName: string, options: ActorOptions = {}): Actor {
+    defineActor(actorName: string, options: ActorOptions = {}): ActorDefinition {
         if (this.actorMap[actorName]) {
             throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
         }
         
-        const actor = Actor.define(actorName, this, options);
+        const actor = <Actor>Actor.define(actorName, this, options);
         this.actorMap[actorName] = actor;
 
         return actor;
@@ -81,7 +81,7 @@ export class Game {
         return audio;
     }
 
-    defineScene(sceneName: string, options: SceneOptions = {}): Scene {
+    defineScene(sceneName: string, options: SceneOptions = {}): SceneDefinition {
         if (this.sceneMap[sceneName]) {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }

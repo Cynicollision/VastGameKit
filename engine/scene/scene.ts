@@ -105,17 +105,6 @@ export class Scene implements SceneDefinition {
 
         return translatedEvent;
     }
-
-    init(): void {
-        if (!this.options.persistent || this._status === SceneStatus.NotStarted) {
-            this.resetLayers();
-            this._status = SceneStatus.Starting;
-        }
-        else { 
-            this._status = SceneStatus.Resuming;
-        }
-    }
-
     defineCamera(cameraName: string, options: SceneCameraOptions = {}): SceneCamera {
         if (this.cameraMap[cameraName]) {
             throw new GameError((`Camera defined with existing Camera name: ${cameraName}.`)); 
@@ -194,6 +183,16 @@ export class Scene implements SceneDefinition {
 
     getLayersSortedFromTop(): Layer[] {
         return this.getLayers().sort((a, b) => a.depth - b.depth);
+    }
+
+    init(): void {
+        if (!this.options.persistent || this._status === SceneStatus.NotStarted) {
+            this.resetLayers();
+            this._status = SceneStatus.Starting;
+        }
+        else { 
+            this._status = SceneStatus.Resuming;
+        }
     }
 
     onResume(callback: SceneLifecycleCallback): SceneDefinition {

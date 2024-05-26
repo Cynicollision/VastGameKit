@@ -94,7 +94,7 @@ export class Actor implements ActorDefinition {
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
 
-    static define(name: string, game: Game, options: ActorOptions = {}): Actor {
+    static define(name: string, game: Game, options: ActorOptions = {}): ActorDefinition {
         return new Actor(name, game, options);
     }
 

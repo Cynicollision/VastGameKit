@@ -19,7 +19,7 @@ describe('Layer', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testController = TestUtil.getTestController(testGame);
-        testScene = testGame.defineScene('testScene');
+        testScene = <Scene>testGame.defineScene('testScene');
         testLayer = <Layer>testScene.defineLayer('testLayer');
 
         testGame.defineActor('testActor').setRectBoundary(20, 20);

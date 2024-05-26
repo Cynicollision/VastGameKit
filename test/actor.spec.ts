@@ -19,8 +19,8 @@ describe('Actor', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testController = TestUtil.getTestController(testGame);
-        testActor = testGame.defineActor('testActor');
-        testScene = testGame.defineScene('testScene');
+        testActor = <Actor>testGame.defineActor('testActor');
+        testScene = <Scene>testGame.defineScene('testScene');
     });
 
     it('defines an on-load callback', () => {

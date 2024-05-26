@@ -10,7 +10,7 @@ describe('Scene', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testScene = testGame.defineScene('testScene');
+        testScene = <Scene>testGame.defineScene('testScene');
 
         testGame.defineActor('testActor');
     });
