@@ -1,5 +1,6 @@
 import { ActorInstance } from './../actor/instance';
-import { Geometry, MathUtil } from './../core';
+import { Geometry } from './../core/geometry';
+import { MathUtil } from './../core/math';
 import { Scene } from './scene';
 
 export type SceneCameraOptions = {

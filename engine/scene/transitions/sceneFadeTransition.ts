@@ -1,4 +1,4 @@
-import { MathUtil } from './../../core';
+import { MathUtil } from './../../core/math';
 import { GameCanvas } from './../../device/canvas';
 import { Scene } from './../scene';
 import { SceneTransition, SceneTransitionOptions } from './../transition';

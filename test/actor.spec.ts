@@ -1,16 +1,18 @@
 
+
 import { Actor } from './../engine/actor/actor';
-import { Game } from './../engine/game/game';
-import { GameController } from './../engine/game/controller';
-import { GameEvent } from './../engine/game/gameEvent';
-import { KeyboardInputEvent, PointerInputEvent } from './../engine/device/input';
+import { GameEvent } from './../engine/core/event';
+import { KeyboardInputEvent } from './../engine/device/keyboard';
+import { PointerInputEvent } from './../engine/device/pointer';
+import { Game } from './../engine/game';
+import { SceneController } from './../engine/scene/controller';
 import { Scene } from '../engine/scene/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
     let testGame: Game;
-    let testController: GameController;
+    let testController: SceneController;
     let testActor: Actor;
     let testScene: Scene;
 

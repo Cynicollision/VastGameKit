@@ -1,5 +1,5 @@
 import { SpriteTransformation } from './../../engine/sprite/sprite';
-import { Game } from './../../engine/game/game';
+import { Game } from './../../engine/game';
 
 export function buildRoom1(game: Game) {
     const room1 = game.defineScene('room1', { persistent: false });

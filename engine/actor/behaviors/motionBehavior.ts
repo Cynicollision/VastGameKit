@@ -1,7 +1,7 @@
-import { GameController } from './../../game/controller';
-import { Geometry } from './../../core';
-import { ActorInstance } from './../instance';
 import { ActorBehavior } from './../behavior';
+import { ActorInstance } from './../instance';
+import { Geometry } from './../../core/geometry';
+import { SceneController } from './../../scene/controller';
 
 export class ActorMotionBehavior implements ActorBehavior {
     direction: number = 0;
@@ -9,7 +9,7 @@ export class ActorMotionBehavior implements ActorBehavior {
     previousX: number = 0;
     previousY: number = 0;
 
-    beforeStep(self: ActorInstance, gc: GameController): void {
+    beforeStep(self: ActorInstance, sc: SceneController): void {
         this.previousX = self.x;
         this.previousY = self.y;
 
@@ -31,7 +31,7 @@ export class ActorMotionBehavior implements ActorBehavior {
             let current = 1;
             while (current < maxChecks && !freeAtNewPositionX && Math.abs(newX) > 1) {
                 newX += self.x + newX > self.x ? -1 : 1;
-                newX = Math.floor(newX);
+                newX = Math.round(newX);
                 freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
                 current++;
             }
@@ -39,7 +39,7 @@ export class ActorMotionBehavior implements ActorBehavior {
             current = 1;
             while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY) > 1) { 
                 newY += self.y + newY > self.y ? -1 : 1;
-                newY = Math.floor(newY);
+                newY = Math.round(newY);
                 freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
                 current++;
             }
@@ -49,10 +49,10 @@ export class ActorMotionBehavior implements ActorBehavior {
             }
 
             if (freeAtNewPositionX && newX !== 0) {
-                self.x = Math.floor(self.x + Math.floor(newX));
+                self.x = Math.round(self.x + Math.round(newX));
             }
             if (freeAtNewPositionY && newY !== 0) {
-                self.y = Math.floor(self.y + Math.round(newY));
+                self.y = Math.round(self.y + Math.round(newY));
             }
             //if (freeAtNewPositionX) {
                 
@@ -63,13 +63,13 @@ export class ActorMotionBehavior implements ActorBehavior {
         }
     }
 
-    afterStep(self: ActorInstance, gc: GameController): void {
+    afterStep(self: ActorInstance, sc: SceneController): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
                 const otherInstances = self.layer.getInstances(actorName);
                 for (const other of otherInstances) {
                     if (self !== other && self.collidesWith(other)) {
-                        self.actor.callCollision(self, other, gc);
+                        self.actor.callCollision(self, other, sc);
                     }
                 }
             }

@@ -1,10 +1,11 @@
-import { Game } from './../game/game';
-import { GameError } from './../game/gameError';
-import { GameController } from './../game/controller';
+import { GameError } from './../core/error';
 import { GameCanvas } from './../device/canvas';
-import { KeyboardInputEvent, PointerInputEvent } from './../device/input';
-import { Layer, LayerOptions, LayerStatus } from './layer';
+import { KeyboardInputEvent } from './../device/keyboard';
+import { PointerInputEvent } from './../device/pointer';
+import { Game } from './../game';
 import { SceneCamera, SceneCameraOptions } from './camera';
+import { SceneController } from './controller';
+import { Layer, LayerOptions, LayerStatus } from './layer';
 
 export enum SceneStatus {
     NotStarted = 'NotStarted',
@@ -15,7 +16,7 @@ export enum SceneStatus {
 }
 
 export type SceneLifecycleCallback = {
-    (self: Scene, gc: GameController): void;
+    (self: Scene, gc: SceneController): void;
 };
 
 export type SceneOptions = {
@@ -88,14 +89,12 @@ export class Scene {
         return camera;
     }
 
-    // TODO: layer(), layers()
-
     onStart(callback: SceneLifecycleCallback): Scene {
         this.onStartCallback = callback;
         return this;
     }
 
-    start(gc: GameController): void {
+    start(gc: SceneController): void {
         if (this.onStartCallback) {
             this.onStartCallback(this, gc);
         }
@@ -103,7 +102,7 @@ export class Scene {
         this._status = SceneStatus.Running;
     }
 
-    propogateKeyboardEvent(gc: GameController, event: KeyboardInputEvent): void {
+    propogateKeyboardEvent(gc: SceneController, event: KeyboardInputEvent): void {
         for (const layer of this.getLayersSortedFromTop()) {
             for (const instance of layer.getInstances()) {
                 instance.actor.callKeyboardInput(instance, gc, event);
@@ -111,7 +110,7 @@ export class Scene {
         }
     }
 
-    propogatePointerEvent(gc: GameController, event: PointerInputEvent): void {
+    propogatePointerEvent(gc: SceneController, event: PointerInputEvent): void {
 
         // TODO: better handling of camera "priority"
         let translatedEvent = null;
@@ -154,7 +153,7 @@ export class Scene {
         return translatedEvent;
     }
 
-    step(gc: GameController): void {
+    step(gc: SceneController): void {
 
         for (const cameraName in this.cameras) {
             const camera = this.cameras[cameraName];
@@ -176,11 +175,11 @@ export class Scene {
         }
     }
 
-    draw(gc: GameController, canvas: GameCanvas): void {
-        canvas.clear();
+    draw(gc: SceneController, canvas: GameCanvas): void {
+        //canvas.clear();
 
         const sceneCanvas = canvas.subCanvas('scene', { width: this.width, height: this.height });
-        sceneCanvas.clear();
+        //sceneCanvas.clear();
 
         for (const layer of this.getLayersSortedFromBottom()) {
             layer.draw(gc, sceneCanvas);
@@ -189,6 +188,7 @@ export class Scene {
         for (const cameraName in this.cameras) {
             const camera = this.cameras[cameraName];
             const cameraCanvas = canvas.subCanvas(this.name + '_' + camera.name, { width: camera.width, height: camera.height });
+            //cameraCanvas.clear();
             cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
         }
@@ -199,7 +199,7 @@ export class Scene {
         return this;
     }
 
-    suspend(gc: GameController): void {
+    suspend(gc: SceneController): void {
         if (this.onSuspendCallback) {
             this.onSuspendCallback(this, gc);
         }
@@ -212,7 +212,7 @@ export class Scene {
         return this;
     }
 
-    resume(gc: GameController): void {
+    resume(gc: SceneController): void {
         if (this.onResumeCallback) {
             this.onResumeCallback(this, gc);
         }

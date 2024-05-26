@@ -1,11 +1,11 @@
-import { Actor, ActorOptions } from './../actor/actor';
-import { GameAudio, GameAudioOptions } from './../device/audio';
-import { GameCanvas } from './../device/canvas';
-import { GameInputHandler, KeyboardInputEvent, PointerInputEvent } from './../device/input';
-import { GameController } from './controller';
-import { GameError } from './gameError';
-import { Scene, SceneOptions } from './../scene/scene';
-import { Sprite, SpriteOptions } from './../sprite/sprite';
+import { Actor, ActorOptions } from './actor/actor';
+import { GameError } from './core/error';
+import { GameAudio, GameAudioOptions } from './device/audio';
+import { GameCanvas } from './device/canvas';
+import { GameInputHandler } from './device/input';
+import { SceneController } from './scene/controller';
+import { Scene, SceneOptions } from './scene/scene';
+import { Sprite, SpriteOptions } from './sprite/sprite';
 
 export type GameOptions = {
     canvasElementId: string;
@@ -14,7 +14,6 @@ export type GameOptions = {
 };
 
 export class Game {  
-    private static readonly DefaultCanvasScale = 1;
     private static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
@@ -23,7 +22,7 @@ export class Game {
     private readonly sceneMap: { [name: string]: Scene } = {};
     private readonly spriteMap: { [name: string]: Sprite } = {};
 
-    private readonly _controller: GameController;
+    private readonly _controller: SceneController;
     get controller() { return this._controller;}
 
     private readonly _options: GameOptions;
@@ -43,7 +42,7 @@ export class Game {
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
         this._defaultScene = this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this._controller = new GameController(this, this._defaultScene);
+        this._controller = new SceneController(this, this._defaultScene);
     }
 
     static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
@@ -158,15 +157,15 @@ export class Game {
 
     start() {
         // TODO: track whether started previously, skip rest(?)
-        this._inputHandler.registerPointerInputHandler((ev: PointerInputEvent) => this._controller.onPointerEvent(ev));
-        this._inputHandler.registerKeyboardInputHandler((ev: KeyboardInputEvent) => this._controller.onKeyboardEvent(ev));
+        this._inputHandler.keyboard.subscribe(ev => this._controller.onKeyboardEvent(ev));
+        this._inputHandler.pointer.subscribe(ev => this._controller.onPointerEvent(ev));
 
-        let offset: number = 0;
-        let previous: number = window.performance.now();
-        const stepSize: number = 1 / this.options.targetFPS;
+        let offset = 0;
+        let previous = window.performance.now();
+        const stepSize = 1 / this.options.targetFPS;
 
         const gameLoop: FrameRequestCallback = (): void => {
-            const current: number = window.performance.now();
+            const current = window.performance.now();
             offset += (Math.min(1, (current - previous) / 1000));
 
             while (offset > stepSize) {

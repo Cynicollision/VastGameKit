@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game/game';
+import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {
 
@@ -60,13 +60,6 @@ export function buildDefaultRoom(game: Game) {
         };
 
         self.defaultLayer.createInstancesFromMap(64, map, key);
-
-        // self.defaultLayer.createInstance('wall', 0, 64 * 1);
-        // self.defaultLayer.createInstance('wall', 0, 64 * 2);
-        // self.defaultLayer.createInstance('wall', 0, 64 * 3);
-        // self.defaultLayer.createInstance('wall', 0, 64 * 4);
-        // self.defaultLayer.createInstance('wall', 0, 64 * 5);
-        // self.defaultLayer.createInstance('wall', 0, 64 * 6);
     });
 
     game.defaultScene.defaultLayer.onGameEvent('something', (self, gc, ev) => {
@@ -75,7 +68,7 @@ export function buildDefaultRoom(game: Game) {
         //event.cancel();
     });
 
-    game.defaultScene.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'), { opacity: 0.5});
+    game.defaultScene.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'));
 
     game.defaultScene.defaultLayer.onCreate((self, gc) => {
         console.log('defaultRoom.defaultLayer.onCreate');

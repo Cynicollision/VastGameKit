@@ -1,13 +1,14 @@
-import { ActorInstance, ActorInstanceStatus } from '../actor/instance';
-import { Boundary } from '../actor/boundary';
+import { ActorInstance, ActorInstanceStatus } from './../actor/instance';
+import { Boundary } from './../actor/boundary';
+import { GameEvent } from './../core/event';
+import { GameCanvas } from './../device/canvas';
+import { KeyboardInputEvent } from './../device/keyboard';
+import { PointerInputEvent } from './../device/pointer';
+import { Sprite } from './../sprite/sprite';
 import { Background, BackgroundOptions } from './background';
 import { SceneCamera } from './camera';
-import { GameCanvas } from '../device/canvas';
-import { KeyboardInputEvent, PointerInputEvent } from '../device/input';
-import { GameController } from '../game/controller';
-import { GameEvent } from '../game/gameEvent';
+import { SceneController } from './controller';
 import { Scene } from './scene';
-import { Sprite } from '../sprite/sprite';
 
 export enum LayerStatus {
     New = 1,
@@ -16,23 +17,23 @@ export enum LayerStatus {
 }
 
 type LayerLifecycleCallback = {
-    (self: Layer, gc: GameController): void;
+    (self: Layer, gc: SceneController): void;
 };
 
 type LayerLifecycleEventCallback = {
-    (self: Layer, gc: GameController, ev: GameEvent): void;
+    (self: Layer, gc: SceneController, ev: GameEvent): void;
 };
 
 type LayerKeyboardInputCallback = {
-    (self: Layer, gc: GameController, ev: KeyboardInputEvent): void;
+    (self: Layer, gc: SceneController, ev: KeyboardInputEvent): void;
 };
 
 type LayerPointerInputCallback = {
-    (self: Layer, gc: GameController, ev: PointerInputEvent): void;
+    (self: Layer, gc: SceneController, ev: PointerInputEvent): void;
 };
 
 type LayerLifecycleDrawCallback = {
-    (self: Layer, gc: GameController, canvas: GameCanvas): void;
+    (self: Layer, gc: SceneController, canvas: GameCanvas): void;
 };
 
 export type LayerOptions = {
@@ -118,7 +119,7 @@ export class Layer {
         return this;
     }
 
-    callCreate(gc: GameController): void {
+    callCreate(gc: SceneController): void {
         if (this.onCreateCallback) {
             this.onCreateCallback(this, gc);
         }
@@ -129,7 +130,7 @@ export class Layer {
         return this;
     }
 
-    callGameEvent(gc: GameController, ev: GameEvent): void {
+    callGameEvent(gc: SceneController, ev: GameEvent): void {
 
         if (!ev.isCancelled) {
             if (this.gameEventHandlerRegistry[ev.name]) {
@@ -143,7 +144,7 @@ export class Layer {
         return this;
     }
 
-    callKeyboardInput(gc: GameController, ev: KeyboardInputEvent): void {
+    callKeyboardInput(gc: SceneController, ev: KeyboardInputEvent): void {
         const handler: LayerKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[ev.key];
         if (handler) {
             handler(this, gc, ev);
@@ -155,7 +156,7 @@ export class Layer {
         return this;
     }
 
-    callPointerInput(gc: GameController, ev: PointerInputEvent): void {
+    callPointerInput(gc: SceneController, ev: PointerInputEvent): void {
         if (!ev.isCancelled) {
             const handler: LayerPointerInputCallback = this.pointerInputEventHandlerRegistry[ev.type];
             if (handler) {
@@ -169,7 +170,7 @@ export class Layer {
         return this;
     }
 
-    step(gc: GameController): void {
+    step(gc: SceneController): void {
 
         if (!this.active) {
             return;
@@ -226,7 +227,7 @@ export class Layer {
         return this;
     }
 
-    draw(gc: GameController, canvas: GameCanvas): void {
+    draw(gc: SceneController, canvas: GameCanvas): void {
         if (!this.visible) {
             return;
         }
@@ -249,7 +250,7 @@ export class Layer {
         return this;
     }
 
-    callDestroy(gc: GameController): void {
+    callDestroy(gc: SceneController): void {
         if (this.onDestroyCallback) {
             this.onDestroyCallback(this, gc);
         }

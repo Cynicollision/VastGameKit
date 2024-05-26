@@ -1,14 +1,15 @@
+import { GameError } from './core/error';
+import { Game, GameOptions } from './game';
 import { GameCanvasHtml2D } from './device/canvas';
-import { BrowserDocumentInputHandler } from './device/input';
-import { Game, GameOptions } from './game/game';
-import { GameError } from './game/gameError';
+import { GameInputHandler } from './device/input';
 
 export class VastGameKit {
 
     static init(options: GameOptions): Game {
         try {
-            const canvas = GameCanvasHtml2D.initForElementId(options.canvasElementId);
-            const inputHandler = BrowserDocumentInputHandler.initForElement(document.body);
+            const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
+            const canvas = GameCanvasHtml2D.initForElement(canvasElement);
+            const inputHandler = GameInputHandler.initForElement(document.body);
             return Game.init(canvas, inputHandler, options);
         }
         catch (error) {

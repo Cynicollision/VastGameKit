@@ -1,7 +1,7 @@
-import { Scene, SceneStatus } from '../engine/scene/scene';
-import { Game } from './../engine/game/game';
-import { GameController } from './../engine/game/controller';
+import { Game } from './../engine/game';
+import { SceneController } from '../engine/scene/controller';
 import { LayerStatus } from '../engine/scene/layer';
+import { Scene, SceneStatus } from './../engine/scene/scene';
 import { TestUtil } from './testUtil';
 
 // TODO rename file
@@ -61,7 +61,7 @@ describe('Scene', () => {
     });
 
     describe('step lifecycle', () => {
-        let gc: GameController;
+        let gc: SceneController;
 
         beforeEach(() => {
             gc = TestUtil.getTestController(testGame);

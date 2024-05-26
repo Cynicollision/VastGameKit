@@ -1,12 +1,13 @@
-import { Game } from './game';
-import { GameCanvas } from './../device/canvas';
-import { KeyboardInputEvent, PointerInputEvent } from './../device/input';
-import { GameEvent } from './gameEvent';
-import { Scene, SceneStatus } from './../scene/scene';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions, SceneTransitionType } from './../scene/transition';
 
-// TODO rename -> SceneController ?
-export class GameController {
+import { GameEvent } from './../core/event';
+import { GameCanvas } from './../device/canvas';
+import { KeyboardInputEvent } from './../device/keyboard';
+import { PointerInputEvent } from './../device/pointer';
+import { Game } from './../game';
+import { Scene, SceneStatus } from './scene';
+import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions, SceneTransitionType } from './transition';
+
+export class SceneController {
     private _currentScene: Scene;
     get currentScene() { return this._currentScene; }
 

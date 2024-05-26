@@ -1,8 +1,7 @@
-import { Boundary, PositionedBoundary } from './../boundary';
-import { Geometry } from '../../core';
 import { PositionedRectBoundary } from './rectangleBoundary';
+import { Boundary, PositionedBoundary } from './../boundary';
+import { Geometry } from '../../core/geometry';
 import { Sprite } from './../../sprite/sprite';
-
 
 export class CircleBoundary implements Boundary {
     private _originX: number;

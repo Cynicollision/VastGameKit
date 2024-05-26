@@ -1,7 +1,8 @@
+import { ActorMotionBehavior } from './behaviors/motionBehavior';
 import { Actor } from './actor';
-import { ActorBehavior, ActorBehaviorName, ActorMotionBehavior } from './behavior';
+import { ActorBehavior, ActorBehaviorName } from './behavior';
 import { GameCanvas } from './../device/canvas';
-import { GameController } from './../game/controller';
+import { SceneController } from './../scene/controller';
 import { Layer } from './../scene/layer';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 
@@ -67,7 +68,7 @@ export class ActorInstance {
         this.behaviors.push(behavior);
     }
 
-    callBeforeStepBehaviors(gc: GameController): void {
+    callBeforeStepBehaviors(gc: SceneController): void {
         for (const behavior of this.behaviors) {
             if (behavior.beforeStep) {
                 behavior.beforeStep(this, gc);
@@ -75,7 +76,7 @@ export class ActorInstance {
         }
     }
 
-    callAfterStepBehaviors(gc: GameController): void {
+    callAfterStepBehaviors(gc: SceneController): void {
         for (const behavior of this.behaviors) {
             if (behavior.afterStep) {
                 behavior.afterStep(this, gc);
@@ -91,7 +92,7 @@ export class ActorInstance {
         this._status = ActorInstanceStatus.Destroyed;
     }
 
-    draw(gc: GameController, canvas: GameCanvas): void {
+    draw(gc: SceneController, canvas: GameCanvas): void {
         if (this._animation) {
             this._animation.draw(canvas, this.x + this.layer.x, this.y + this.layer.y);
         }
@@ -99,7 +100,7 @@ export class ActorInstance {
         this.actor.callDraw(this, gc, canvas);
     }
 
-    callStep(gc: GameController): void {
+    callStep(gc: SceneController): void {
         this.actor.callStep(this, gc);
     }
 

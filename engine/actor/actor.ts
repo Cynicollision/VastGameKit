@@ -1,14 +1,16 @@
+
 import { ActorInstance } from './instance';
 import { ActorBehaviorName } from './behavior';
 import { Boundary } from './boundary';
 import { CircleBoundary } from './boundaries/circleBoundary';
 import { RectBoundary } from './boundaries/rectangleBoundary';
-import { Game } from './../game/game';
-import { GameError } from './../game/gameError';
-import { GameEvent } from './../game/gameEvent';
-import { GameController } from './../game/controller';
+import { GameError } from './../core/error';
+import { GameEvent } from './../core/event';
 import { GameCanvas } from './../device/canvas';
-import { KeyboardInputEvent, PointerInputEvent } from './../device/input';
+import { KeyboardInputEvent } from './../device/keyboard';
+import { PointerInputEvent } from './../device/pointer';
+import { Game } from './../game';
+import { SceneController } from './../scene/controller';
 import { Sprite } from './../sprite/sprite';
 
 export type ActorOptions = {
@@ -18,27 +20,27 @@ export type ActorOptions = {
 };
 
 export type ActorLifecycleCallback = {
-    (self: ActorInstance, gc: GameController): void;
+    (self: ActorInstance, gc: SceneController): void;
 };
 
 export type ActorLifecycleCollisionCallback = {
-    (self: ActorInstance, other: ActorInstance, gs: GameController): void;
+    (self: ActorInstance, other: ActorInstance, gs: SceneController): void;
 };
 
 export type ActorLifecycleEventCallback = {
-    (self: ActorInstance, gc: GameController, event: GameEvent): void;
+    (self: ActorInstance, gc: SceneController, event: GameEvent): void;
 };
 
 export type ActorKeyboardInputCallback = {
-    (self: ActorInstance, gc: GameController, event: KeyboardInputEvent): void;
+    (self: ActorInstance, gc: SceneController, event: KeyboardInputEvent): void;
 };
 
 export type ActorPointerInputCallback = {
-    (self: ActorInstance, gc: GameController, event: PointerInputEvent): void;
+    (self: ActorInstance, gc: SceneController, event: PointerInputEvent): void;
 };
 
 export type ActorLifecycleDrawCallback = {
-    (self: ActorInstance, gc: GameController, canvas: GameCanvas): void;
+    (self: ActorInstance, gc: SceneController, canvas: GameCanvas): void;
 };
 
 export class Actor {
@@ -145,7 +147,7 @@ export class Actor {
         return this;
     }
 
-    callCreate(self: ActorInstance, gc: GameController): void {
+    callCreate(self: ActorInstance, gc: SceneController): void {
         if (this.onCreateCallback) {
             this.onCreateCallback(self, gc);
         }
@@ -170,7 +172,7 @@ export class Actor {
         return actorNames;
     }
 
-    callCollision(self: ActorInstance, other: ActorInstance, gc: GameController): void {
+    callCollision(self: ActorInstance, other: ActorInstance, gc: SceneController): void {
         if (this.collisionHandlerRegistry[other.actor.name]) {
             this.collisionHandlerRegistry[other.actor.name](self, other, gc);
         }
@@ -181,7 +183,7 @@ export class Actor {
         return this;
     }
 
-    callGameEvent(self: ActorInstance, gc: GameController, event: GameEvent): void {
+    callGameEvent(self: ActorInstance, gc: SceneController, event: GameEvent): void {
         if (!event.isCancelled) {
             if (this.gameEventHandlerRegistry[event.name]) {
                 this.gameEventHandlerRegistry[event.name](self, gc, event);
@@ -194,7 +196,7 @@ export class Actor {
         return this;
     }
 
-    callKeyboardInput(self: ActorInstance, gc: GameController, event: KeyboardInputEvent): void {
+    callKeyboardInput(self: ActorInstance, gc: SceneController, event: KeyboardInputEvent): void {
         const handler: ActorKeyboardInputCallback = this.keyboardInputEventHandlerRegistry[event.key];
         if (handler) {
             handler(self, gc, event);
@@ -206,7 +208,7 @@ export class Actor {
         return this;
     }
 
-    callPointerInput(self: ActorInstance, gc: GameController, event: PointerInputEvent): void {
+    callPointerInput(self: ActorInstance, gc: SceneController, event: PointerInputEvent): void {
         if (!event.isCancelled) {
             const handler: ActorPointerInputCallback = this.pointerInputEventHandlerRegistry[event.type];
             if (handler) {
@@ -220,7 +222,7 @@ export class Actor {
         return this;
     }
 
-    callStep(self: ActorInstance, gc: GameController): void {
+    callStep(self: ActorInstance, gc: SceneController): void {
         if (this.onStepCallback) {
             this.onStepCallback(self, gc);
         }
@@ -231,7 +233,7 @@ export class Actor {
         return this;
     }
 
-    callDraw(self: ActorInstance, gc: GameController, canvas: GameCanvas): void {
+    callDraw(self: ActorInstance, gc: SceneController, canvas: GameCanvas): void {
         if (this.onDrawCallback) {
             this.onDrawCallback(self, gc, canvas);
         }
@@ -242,7 +244,7 @@ export class Actor {
         return this;
     }
 
-    callDestroy(self: ActorInstance, gc: GameController): void {
+    callDestroy(self: ActorInstance, gc: SceneController): void {
         if (this.onDestroyCallback) {
             this.onDestroyCallback(self, gc);
         }

@@ -1,6 +1,12 @@
-import { GameEvent } from './../game/gameEvent';
+import { GameEvent } from './../core/event';
+import { KeyboardInputHandler } from './keyboard';
+import { PointerInputHandler } from './pointer';
 
-export class InputEventHandler<T> {
+export interface InputHandler<T extends GameEvent> {
+    subscribe(callback: (event: T) => void): InputEventSubscription<T>;
+}
+
+export class InputEventSubscription<T> {
     callback: (event: T) => void;
     isAlive: boolean = true;
 
@@ -17,133 +23,21 @@ export class InputEventHandler<T> {
     }
 }
 
-export class PointerInputEvent extends GameEvent {
-    type: string;
-    x: number;
-    y: number;
+export class GameInputHandler {
+    private _keyboardHandler: KeyboardInputHandler;
+    get keyboard() { return this._keyboardHandler; }
 
-    static fromMouseEvent(ev: MouseEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, ev.offsetX, ev.offsetY);
-    }
+    private _pointerHandler: PointerInputHandler;
+    get pointer() { return this._pointerHandler; }
 
-    static fromTouchEvent(ev: TouchEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, getTouchEventX(ev), getTouchEventY(ev));
-    }
-
-    constructor(type: string, x: number, y: number) {
-        super(type);
-        this.type = type;
-        this.x = x;
-        this.y = y;
-    }
-
-    translate(diffX: number, diffY: number): PointerInputEvent {
-        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY);
-    }
-}
-
-export class KeyboardInputEvent extends GameEvent {
-    key: string;
-    type: string;
-
-    static fromKeyboardEvent(ev: KeyboardEvent): KeyboardInputEvent {
-        return new KeyboardInputEvent(ev.key, ev.type);
-    }
-
-    constructor(key: string, type: string) {
-        super(key);
-        this.key = key;
-        this.type = type;
-    }
-}
-
-export interface GameInputHandler {
-    currentX: number;
-    currentY: number;
-    registerPointerInputHandler(callback: (event: PointerInputEvent) => void): InputEventHandler<PointerInputEvent>;
-    registerKeyboardInputHandler(callback: (event: KeyboardInputEvent) => void): InputEventHandler<KeyboardInputEvent>;
-}
-
-export class BrowserDocumentInputHandler implements GameInputHandler {
-    private keyboardEventHandlers: InputEventHandler<KeyboardInputEvent>[] = [];
-    private pointerEventHandlers: InputEventHandler<PointerInputEvent>[] = [];
-
-    private _currentX: number;
-    private _currentY: number;
-
-    get currentX(): number {
-        return this._currentX;
-    }
-
-    get currentY(): number {
-        return this._currentY;
+    static initForElement(target: HTMLElement): GameInputHandler {
+        const keyboardHandler = KeyboardInputHandler.initForElement(target);
+        const pointerHandler = PointerInputHandler.initForElement(target);
+        return new GameInputHandler(keyboardHandler, pointerHandler);
     }
     
-    static initForElement(body: HTMLElement): BrowserDocumentInputHandler {
-        const inputHandler = new BrowserDocumentInputHandler();
-
-        function raiseKeyboardEvent(ev: KeyboardInputEvent): void {
-            inputHandler.keyboardEventHandlers.forEach((handler: InputEventHandler<KeyboardInputEvent>) => {
-                if (handler.isActive) {
-                    handler.callback(ev);
-                }
-            });
-        }
-
-        function raisePointerEvent(ev: PointerInputEvent): void {
-            inputHandler.pointerEventHandlers.forEach((handler: InputEventHandler<PointerInputEvent>) => {
-                if (handler.isActive) {
-                    handler.callback(ev);
-                }
-            });
-        }
-
-        body.onkeydown = body.onkeyup = function(this: GlobalEventHandlers, ev: KeyboardEvent): void {
-            raiseKeyboardEvent(KeyboardInputEvent.fromKeyboardEvent(ev));
-        };
-
-        body.onmousemove = function trackActiveMousePosition(this: GlobalEventHandlers, ev: MouseEvent): void {
-            inputHandler._currentX = ev.offsetX;
-            inputHandler._currentY = ev.offsetY;
-        };
-
-        body.ontouchmove = function trackActiveTouchPosition(ev: TouchEvent): void {
-            inputHandler._currentX = getTouchEventX(ev);
-            inputHandler._currentY = getTouchEventY(ev);
-        };
-
-        body.onmousedown = body.onmouseup = function(this: GlobalEventHandlers, ev: MouseEvent): void {
-            raisePointerEvent(PointerInputEvent.fromMouseEvent(ev));
-        };
-
-        body.ontouchstart = body.ontouchend = function (ev: TouchEvent) {
-            raisePointerEvent(PointerInputEvent.fromTouchEvent(ev));
-        };
-
-        return inputHandler;
+    constructor(keyboardHandler: KeyboardInputHandler, pointerHandler: PointerInputHandler) {
+        this._keyboardHandler = keyboardHandler;
+        this._pointerHandler = pointerHandler;
     }
-
-    registerPointerInputHandler(callback: (event: PointerInputEvent) => void): InputEventHandler<PointerInputEvent> {
-        const clickHandler = new InputEventHandler<PointerInputEvent>(callback);
-        this.pointerEventHandlers.push(clickHandler);
-
-        return clickHandler;
-    }
-
-    registerKeyboardInputHandler(callback: (event: KeyboardInputEvent) => void): InputEventHandler<KeyboardInputEvent> {
-        const clickHandler = new InputEventHandler<KeyboardInputEvent>(callback);
-        this.keyboardEventHandlers.push(clickHandler);
-
-        return clickHandler;
-    }
-}
-
-function getTouchEventX(ev: TouchEvent): number {
-    const touch = ev.touches[0];
-    return touch ? touch.clientX : 0
-}
-
-function getTouchEventY(ev: TouchEvent): number {
-    const touch = ev.touches[0];
-    return touch ? touch.clientY : 0
 }

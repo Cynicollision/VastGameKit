@@ -1,9 +1,10 @@
 import { ActorInstance, ActorInstanceStatus } from './../engine/actor/instance';
 import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
-import { Game } from './../engine/game/game';
-import { GameController } from './../engine/game/controller';
-import { GameEvent } from './../engine/game/gameEvent';
-import { KeyboardInputEvent, PointerInputEvent } from './../engine/device/input';
+import { GameEvent } from '../engine/core/event';
+import { KeyboardInputEvent } from './../engine/device/keyboard';
+import { PointerInputEvent } from './../engine/device/pointer';
+import { Game } from './../engine/game';
+import { SceneController } from '../engine/scene/controller';
 import { Layer, LayerStatus } from '../engine/scene/layer';
 import { Scene } from '../engine/scene/scene';
 import { TestUtil } from './testUtil';
@@ -11,7 +12,7 @@ import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 
 describe('Layer', () => {
     let testGame: Game;
-    let testController: GameController;
+    let testController: SceneController;
     let testScene: Scene;
     let testLayer: Layer;
 
