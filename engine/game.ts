@@ -22,9 +22,6 @@ export class Game {
     private readonly sceneMap: { [name: string]: Scene } = {};
     private readonly spriteMap: { [name: string]: Sprite } = {};
 
-    private readonly _controller: Controller;
-    get controller(): SceneController { return this._controller;}
-
     private readonly _options: GameOptions;
     get options() { return this._options; }
 
@@ -46,7 +43,6 @@ export class Game {
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
         this._defaultScene = <Scene>this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this._controller = new Controller(this, this._defaultScene);
     }
 
     private applyGameOptions(options: GameOptions): GameOptions {
@@ -157,8 +153,10 @@ export class Game {
 
     start() {
         // TODO: track whether started previously, skip rest(?) to prevent "improper restart"
-        this._inputHandler.keyboard.subscribe(ev => this._controller.onKeyboardEvent(ev));
-        this._inputHandler.pointer.subscribe(ev => this._controller.onPointerEvent(ev));
+        const controller = new Controller(this, this._defaultScene);
+
+        this._inputHandler.keyboard.subscribe(ev => controller.onKeyboardEvent(ev));
+        this._inputHandler.pointer.subscribe(ev => controller.onPointerEvent(ev));
 
         let offset = 0;
         let previous = window.performance.now();
@@ -169,11 +167,11 @@ export class Game {
             offset += (Math.min(1, (current - previous) / 1000));
 
             while (offset > stepSize) {
-                this._controller.step();
+                controller.step();
                 offset -= stepSize;
             }
 
-            this._controller.draw(this._canvas);
+            controller.draw(this._canvas);
             previous = current;
             requestAnimationFrame(gameLoop);
         };

@@ -3,15 +3,19 @@ import { Game } from './../../engine/game';
 export function buildDefaultRoom(game: Game) {
 
     // HUD
-    const hud = game.defaultScene.defineLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 })
-        .setBackground('#0A0')
-        .onDraw((self, canvas, sc) => {
-            canvas.drawText('Hello HUD ' + (sc.state.message || ''), self.x + 100, self.y + 100, { color: '#0F0', font: '32px Arial'});
-        })
+    // const hud = game.defaultScene.defineLayer('hud1', { x: 16, y: 16, height: 128, width: game.canvas.width - 32 })
+    //     .setBackground('#0A0')
+    //     .onDraw((self, canvas, sc) => {
+    //         canvas.drawText('Hello HUD ' + (sc.state.message || ''), self.x + 100, self.y + 100, { color: '#0F0', font: '32px Arial'});
+    //     })
 
-    const button = game.defineActor('button');
+    const button = game.defineActor('actButton');
     button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
-    button.onCreate((self, sc) => button.setRectBoundaryFromSprite());
+
+    button.onCreate((self, sc) => {
+        button.setRectBoundaryFromSprite();
+    });
+    
     button.onPointerInput('mousedown', (self, gc, event) => {
         if (self.animation.stopped) {
             self.animation.start(0, 1, 500);
@@ -21,21 +25,25 @@ export function buildDefaultRoom(game: Game) {
         }
     });
 
-    hud.onCreate((self, sc) => {
-        self.createInstance('button', 16, 16);
-        self.follow(self.scene.defaultCamera);
-    });
+    // hud.onCreate((self, sc) => {
+    //     self.createInstance('button', 16, 16);
+    //     self.follow(self.scene.defaultCamera);
+    // });
+
+    game.defaultScene.setBackground(game.defineSprite('sky', './resources/sky.png'));
 
     game.defaultScene.onStart((self, sc) => {
         console.log('defaultRoom.onStart');
-        const player = self.defaultLayer.createInstance('actPlayer', 256, 256);
+        const player = self.createInstance('actPlayer', 256, 256);
         self.defaultCamera.follow(player, { centerOnInstanceBoundary: true });
-        self.defaultCamera.portY = 100;
+        self.defaultCamera.portY = 120;
 
-        self.defineCamera('camera2', { x: 400, y: 0, portX: 500, portY: 0, width: 400, height: 800, portWidth: 200, portHeight: 400 });
+        self.defineCamera('hud', { x: 0, y: 980, portX: 0, portY: 0, width: self.game.canvas.width, height: 120, portWidth: self.game.canvas.width, portHeight: 120 });
+
+        self.defineCamera('camera2', { x: 400, y: -200, portX: 500, portY: 0, width: 400, height: 800, portWidth: 200, portHeight: 400 });
 
         const map = [
-            'X                             X',
+            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
             'X                    C        X',
             'X                             X',
             'X          C                  X',
@@ -44,32 +52,30 @@ export function buildDefaultRoom(game: Game) {
             'X                             X',
             'X                             X',
             'X                  XX         X',
-            'X                 XXXX        X',
+            'X  B              XXXX        X',
             'X                  XX         X',
             'X XXXXX                       X',
             'X X X X         XXXXX         X',
             'X X                           X',
-            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+            'XXXXXXXXXX  XXXXXXXXXXXXXXXXXXX',
         ];
 
         const key = {
             'C': 'actCoin',
-            'X': 'actWall'
+            'X': 'actWall',
+            'B': 'actButton',
         };
 
-        self.defaultLayer.createInstancesFromMap(64, map, key);
+        self.createInstancesFromMap(64, map, key);
     });
 
-    game.defaultScene.defaultLayer.onGameEvent('something', (self, ev, sc) => {
-        console.log('game.defaultRoom.onGameEvent.something!');
-        console.log('game.defaultRoom.onGameEvent.something data = '+ev.data);
+    game.defaultScene.onGameEvent('something', (self, ev, sc) => {
+        console.log('game.defaultScene.onGameEvent.something!');
+        console.log('game.defaultScene.onGameEvent.something data = '+ev.data);
         //event.cancel();
     });
 
-    game.defaultScene.defaultLayer.setBackground(game.defineSprite('sky', './resources/sky.png'));
+    
 
-    game.defaultScene.defaultLayer.onCreate((self, gc) => {
-        console.log('defaultRoom.defaultLayer.onCreate');
-    });
 
 }

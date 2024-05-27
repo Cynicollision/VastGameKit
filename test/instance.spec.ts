@@ -11,7 +11,7 @@ describe('ActorInstance', () => {
     beforeEach(() => {
         game = TestUtil.getTestGame();
         game.defineActor('testActor');
-        testInstance = game.defaultScene.defaultLayer.createInstance('testActor');
+        testInstance = game.defaultScene.createInstance('testActor');
     });
 
     describe('status', () => {

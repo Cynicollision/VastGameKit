@@ -1,17 +1,18 @@
 import { ActorBehaviorName, InstanceStatus } from './../core/enum';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../scene/controller';
-import { Layer } from './../scene/layer';
+import { SceneDefinition } from './../scene/scene';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 import { ActorMotionBehavior } from './behaviors/motionBehavior';
 import { Actor, ActorBehavior } from './actor';
+
 
 export interface ActorInstance {
     id: number;
     animation: SpriteAnimation;
     actor: Actor;
-    layer: Layer;
     motion: ActorMotionBehavior;
+    scene: SceneDefinition;
     state: { [name: string]: unknown };
     status: InstanceStatus;
     x: number;
@@ -19,6 +20,7 @@ export interface ActorInstance {
     activate(): void;
     collidesWith(other: ActorInstance): boolean;
     destroy(): void;
+    //follow(actor or camera): void; // TODO add
     inactivate(): void;
     useBehavior(behavior: ActorBehavior): void;
 }
@@ -27,7 +29,7 @@ export class Instance implements ActorInstance {
     private readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;
-    readonly layer: Layer;
+    readonly scene: SceneDefinition;
 
     private _animation: SpriteAnimation;
     get animation() { return this._animation; }
@@ -42,8 +44,8 @@ export class Instance implements ActorInstance {
     x: number = 0;
     y: number = 0;
 
-    static spawn(id: number, actor: Actor, layer: Layer, x: number, y: number): ActorInstance {
-        const instance = new Instance(id, actor, layer);
+    static spawn(id: number, actor: Actor, scene: SceneDefinition, x: number, y: number): ActorInstance {
+        const instance = new Instance(id, actor, scene);
         instance.x = x; 
         instance.y = y;
 
@@ -60,10 +62,10 @@ export class Instance implements ActorInstance {
         return instance;
     }
 
-    private constructor(id: number, actor: Actor, layer: Layer) {
+    private constructor(id: number, actor: Actor, scene: SceneDefinition) {
         this.id = id;
         this.actor = actor;
-        this.layer = layer;
+        this.scene = scene;
         this._status = InstanceStatus.New;
     }
 
@@ -119,11 +121,18 @@ export class Instance implements ActorInstance {
         }
 
         if (this._animation) {
-            this._animation.draw(canvas, this.x + this.layer.x, this.y + this.layer.y);
+            this._animation.draw(canvas, this.x, this.y);
         }
 
         this.actor.callDraw(this, canvas, sc);
     }
+
+    // TODO add
+    // follow(camera: Camera | Actor, offsetX = 0, offsetY = 0): void {
+    //     this._followingCamera = camera;
+    //     this.followOffsetX = offsetX;
+    //     this.followOffsetY = offsetY;
+    // }
 
     inactivate(): void {
         this._status = InstanceStatus.Inactive;

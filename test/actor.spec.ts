@@ -57,7 +57,7 @@ describe('Actor', () => {
         it('defines a collsion handler callback', () => {
             let collisionHandlerCalled = false;
             testGame.defineActor('actor2');
-            const instance2 = testScene.defaultLayer.createInstance('actor2');
+            const instance2 = testScene.createInstance('actor2');
 
             testActor.onCollision('actor2', (self, other, state) => {
                 collisionHandlerCalled = true;
@@ -78,7 +78,7 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, GameEvent.raise('testEvent'), testController);
+            testActor.callGameEvent(null, GameEvent.init('testEvent'), testController);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -182,7 +182,7 @@ describe('Actor', () => {
         expect(handlerCalled).toBeFalse();
         expect(dataFromEvent).toBeNull();
 
-        const event = GameEvent.raise('testEvent', { value: 123 });
+        const event = GameEvent.init('testEvent', { value: 123 });
         testActor.callGameEvent(null, event, testController);
 
         expect(handlerCalled).toBeTrue();

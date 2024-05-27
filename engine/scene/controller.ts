@@ -12,7 +12,7 @@ export interface SceneController {
     scene: SceneDefinition;
     state: { [name: string]: unknown };
     goToScene(sceneName: string): void;
-    raiseEvent(eventName: string, data?: any): void;
+    publishEvent(eventName: string, data?: any): void;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;
 }
 
@@ -63,8 +63,8 @@ export class Controller implements SceneController {
         this.setCurrentScene(scene);
     }
 
-    raiseEvent(eventName: string, data?: any): void {
-        const event = GameEvent.raise(eventName, data);
+    publishEvent(eventName: string, data?: any): void {
+        const event = GameEvent.init(eventName, data);
         this._eventQueue.push(event);
     }
 

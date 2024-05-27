@@ -38,7 +38,7 @@ export function buildPlayerActor(game: Game) {
     })
     .onPointerInput('mousedown', (self, ev, sc) => {
         console.log('you clicked me');
-        sc.raiseEvent('something', { foo: 'bar'});
+        sc.publishEvent('something', { foo: 'bar'});
     })
     .onStep((self, sc) => {
         // TODO: ActorKeyboardControlBehavior

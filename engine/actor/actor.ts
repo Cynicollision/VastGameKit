@@ -23,12 +23,17 @@ export type ActorOptions = {
     sprite?: Sprite;
 };
 
+// TODO do these NEED to be exported?
 export type ActorLifecycleCallback = {
     (self: ActorInstance, sc: SceneController): void;
 };
 
 export type ActorLifecycleCollisionCallback = {
     (self: ActorInstance, other: ActorInstance, sc: SceneController): void;
+};
+
+export type ActorLifecycleDrawCallback = {
+    (self: ActorInstance, canvas: GameCanvas, sc: SceneController): void;
 };
 
 export type ActorLifecycleEventCallback = {
@@ -41,10 +46,6 @@ export type ActorKeyboardInputCallback = {
 
 export type ActorPointerInputCallback = {
     (self: ActorInstance, event: PointerInputEvent, sc: SceneController): void;
-};
-
-export type ActorLifecycleDrawCallback = {
-    (self: ActorInstance, canvas: GameCanvas, sc: SceneController): void;
 };
 
 export interface ActorDefinition {

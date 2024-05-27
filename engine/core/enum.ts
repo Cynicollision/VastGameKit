@@ -16,13 +16,6 @@ export enum InstanceStatus {
     New = 'New',
 }
 
-export enum LayerStatus {
-    Active = 'Active',
-    Destroyed = 'Destroyed',
-    Inactive = 'Inactive',
-    New = 'New',
-}
-
 export enum SceneStatus {
     NotStarted = 'NotStarted',
     Starting = 'Starting',

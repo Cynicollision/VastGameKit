@@ -82,13 +82,16 @@ export class Camera {
             return;
         }
 
+        const height = this._scene.game.canvas.height - this.portY;
+        const width = this._scene.game.canvas.width - this.portX;
         const minXY = this._followOptions.stayWithinScene ? 0 : -Infinity;
-        const maxX = this._followOptions.stayWithinScene ? this._scene.width - this._scene.game.canvas.width : Infinity;
-        const maxY = this._followOptions.stayWithinScene ? this._scene.height - this._scene.game.canvas.height : Infinity;
+        const maxX = this._followOptions.stayWithinScene ? this._scene.width - width : Infinity;
+        const maxY = this._followOptions.stayWithinScene ? this._scene.height - height : Infinity;
+        
         const center = this._followOptions.centerOnInstanceBoundary && this._followInstance.actor.boundary;
-        const newX = center ? (this._followInstance.x - this._scene.game.canvas.width / 2 + this._followInstance.actor.boundary.width / 2) : this._followInstance.x;
+        const newX = center ? (this._followInstance.x - width / 2 + this._followInstance.actor.boundary.width / 2) : this._followInstance.x;
         this.x = MathUtil.clamp(newX - this._followOptions.offsetX, minXY, maxX);
-        const newY = center ? (this._followInstance.y - this._scene.game.canvas.height / 2 + this._followInstance.actor.boundary.height / 2) : this._followInstance.y;
+        const newY = center ? (this._followInstance.y - height / 2 + this._followInstance.actor.boundary.height / 2) : this._followInstance.y;
         this.y = MathUtil.clamp(newY - this._followOptions.offsetY, minXY, maxY);
     }
 }
