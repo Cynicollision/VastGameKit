@@ -1,4 +1,4 @@
-import { GameError } from '../core/error';
+import { GameError } from './../core/error';
 import { Sprite } from './../sprite/sprite';
 
 export type GameCanvasOptions = {

@@ -10,9 +10,9 @@ describe('Game', () => {
     });
 
     it('defines ActorInstance IDs', () => {
-        let id = game.nextActorInstanceID();
+        let id = game.nextSceneRuntimeID();
         expect(id).toBe(1);
-        id = game.nextActorInstanceID();
+        id = game.nextSceneRuntimeID();
         expect(id).toBe(2);
     });
 

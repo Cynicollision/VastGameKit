@@ -1,18 +1,17 @@
 import { Actor } from './../actor/actor';
 import { Boundary } from './../actor/boundary';
-import { ActorInstance, Instance } from '../actor/instance';
-import { InstanceStatus, SceneStatus } from './../core/enum';
+import { ActorInstance, Instance } from './../actor/instance';
+import { InstanceStatus, SceneStatus, SubSceneDisplayMode } from './../core/enum';
 import { GameError } from './../core/error';
 import { GameEvent } from './../core/event';
 import { GameCanvas } from './../device/canvas';
 import { KeyboardInputEvent } from './../device/keyboard';
 import { PointerInputEvent } from './../device/pointer';
 import { Game } from './../game';
+import { Sprite } from './../sprite/sprite';
 import { Background, BackgroundOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
-import { Sprite } from '../sprite/sprite';
-
 
 type SceneLifecycleCallback = {
     (self: SceneDefinition, sc: SceneController): void;
@@ -63,13 +62,40 @@ export interface SceneDefinition {
     onStep(callback: SceneLifecycleCallback): SceneDefinition;
     onSuspend(callback: SceneLifecycleCallback): SceneDefinition;
     setBackground(colorOrSprite: string | Sprite, options?: BackgroundOptions): SceneDefinition;
+    showSubScene(sceneName: string, sc: SceneController, options?: SubSceneOptions): SubScene;
+}
+
+type SubSceneOptions = {
+    displayMode?: SubSceneDisplayMode;
+    x?: number;
+    y?: number;
+}
+
+class SubScene {
+    readonly id: number;
+    readonly displayMode: SubSceneDisplayMode = SubSceneDisplayMode.Embed;
+    readonly parent: SceneDefinition;
+    readonly scene: SceneDefinition;
+    readonly x: number = 0;
+    readonly y: number = 0;
+
+    constructor(id: number, parent: SceneDefinition, subScene: SceneDefinition, options: SubSceneOptions = {}) {
+        this.id = id;
+        this.parent = parent;
+        this.scene = subScene;
+        this.displayMode = options.displayMode || SubSceneDisplayMode.Embed;
+        this.x = options.x || 0;
+        this.y = options.y || 0;
+    }
+
+    // TODO add: hide() mechanism
 }
 
 export class Scene implements SceneDefinition {
     static readonly DefaultCameraName = 'default';
 
     private readonly cameraMap: { [name: string]: Camera } = {};
-    private readonly subSceneMap: { [name: string]: SceneDefinition }; // TODO implement
+    private readonly subSceneMap: { [name: string]: SubScene } = {};
     private instanceMap: { [index: number]: Instance } = {};
     
     private gameEventHandlerMap: { [eventName: string]: SceneLifecycleEventCallback } = {};
@@ -94,11 +120,8 @@ export class Scene implements SceneDefinition {
     readonly height: number;
     readonly name: string;
     readonly options: SceneOptions;
-    readonly width: number;
-    // TODO x,y on new SubScene that has a SceneDefinition, parent, and coords
-    
-    // TODO make state on others readonly?
     readonly state: { [name: string]: unknown } = {};
+    readonly width: number;
 
     static define(name: string, game: Game, options: SceneOptions = {}): SceneDefinition {
         return new Scene(name, game, options);
@@ -122,6 +145,27 @@ export class Scene implements SceneDefinition {
         delete this.instanceMap[instance.id];
     }
 
+    private getCameraCanvasSubKey(camera: Camera): string {
+        return `${this.name}_${camera.name}`;
+    }
+
+    private getSubSceneCanvasKey(subScene: SubScene): string {
+        return `${this.name}_${subScene.scene.name}_${subScene.id}`;
+    }
+
+    private getSubScenes(displayMode?: SubSceneDisplayMode): SubScene[] {
+        const subScenes: SubScene[] = [];
+
+        for (const a in this.subSceneMap) {
+            const subScene = this.subSceneMap[a];
+            if (!displayMode || displayMode === subScene.displayMode) {
+                subScenes.push(this.subSceneMap[a]);
+            }
+        }
+
+        return subScenes;
+    }
+
     private scalePointerEventToCamera(event: PointerInputEvent, camera: Camera): PointerInputEvent {
         const translatedEvent = event.translate(-camera.portX, -camera.portY);
 
@@ -134,10 +178,16 @@ export class Scene implements SceneDefinition {
         return translatedEvent;
     }
 
+    // TODO not needed?
     callGameEvent(ev: GameEvent, sc: SceneController): void {
         if (!ev.isCancelled) {
             if (this.gameEventHandlerMap[ev.name]) {
                 this.gameEventHandlerMap[ev.name](this, ev, sc);
+            }
+
+            for (const subScene of this.getSubScenes()) {
+                const scene = <Scene>subScene.scene;
+                scene.callGameEvent(ev, sc);
             }
         }
     }
@@ -145,15 +195,22 @@ export class Scene implements SceneDefinition {
     callKeyboardInput(ev: KeyboardInputEvent, sc: SceneController): void {
         if (!ev.isCancelled) {
             const handler: SceneKeyboardInputCallback = this.keyboardInputEventHandlerMap[ev.key];
+
             if (handler) {
                 handler(this, ev, sc);
             }
+
+            // for (const subScene of this.getSubScenes()) {
+            //     const scene = <Scene>subScene.scene;
+            //     scene.callKeyboardInput(ev, sc);
+            // }
         }
     }
 
     callPointerInput(ev: PointerInputEvent, sc: SceneController): void {
         if (!ev.isCancelled) {
             const handler: ScenePointerInputCallback = this.pointerInputEventHandlerMap[ev.type];
+
             if (handler) {
                 handler(this, ev, sc);
             }
@@ -161,7 +218,7 @@ export class Scene implements SceneDefinition {
     }
 
     createInstance(actorName: string, x?: number, y?: number): ActorInstance {
-        const instanceId = this.game.nextActorInstanceID();
+        const instanceId = this.game.nextSceneRuntimeID();
         const actor = <Actor>this.game.getActor(actorName);
 
         const spawnX = (x || 0);
@@ -199,6 +256,14 @@ export class Scene implements SceneDefinition {
         return camera;
     }
 
+    private drawSubScene(mainCanvas: GameCanvas, targetCanvas: GameCanvas, subScene: SubScene, sc: SceneController): void {
+        const scene = <Scene>subScene.scene;
+        const subSceneKey = this.getSubSceneCanvasKey(subScene);
+        const embeddedSubSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: scene.width, height: scene.height });
+        scene.draw(embeddedSubSceneCanvas, sc);
+        targetCanvas.drawCanvas(embeddedSubSceneCanvas, 0, 0, scene.width, scene.height, subScene.x, subScene.y, scene.width, scene.height);
+    }
+
     draw(canvas: GameCanvas, sc: SceneController): void {
         const sceneCanvas = canvas.subCanvas('scene', { width: this.width, height: this.height });
 
@@ -206,11 +271,13 @@ export class Scene implements SceneDefinition {
             this.background.draw(sceneCanvas);
         }
 
+        for (const subScene of this.getSubScenes(SubSceneDisplayMode.Embed)) {
+            this.drawSubScene(canvas, sceneCanvas, subScene, sc);
+        }
+
         for (const instance of <Instance[]>this.getInstances()) {
             instance.draw(sceneCanvas, sc);
         }
-
-        // TODO draw subScenes
 
         if (this.onDrawCallback) {
             this.onDrawCallback(this, canvas, sc);
@@ -218,9 +285,14 @@ export class Scene implements SceneDefinition {
 
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
-            const cameraCanvas = canvas.subCanvas(this.name + '_' + camera.name, { width: camera.width, height: camera.height });
+            const cameraCanvasKey = this.getCameraCanvasSubKey(camera);
+            const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
             cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
+        }
+
+        for (const subScene of this.getSubScenes(SubSceneDisplayMode.Float)) {
+            this.drawSubScene(canvas, canvas, subScene, sc);
         }
     }
 
@@ -274,6 +346,8 @@ export class Scene implements SceneDefinition {
 
         return instances;
     }
+
+    
 
     init(): void {
         if (!this.options.persistent || this._status === SceneStatus.NotStarted) {
@@ -337,10 +411,17 @@ export class Scene implements SceneDefinition {
         return this;
     }
 
-    propogateKeyboardEvent(event: KeyboardInputEvent, sc: SceneController): void {
+    propogateKeyboardEvent(ev: KeyboardInputEvent, sc: SceneController): void {
         for (const instance of this.getInstances()) {
-            instance.actor.callKeyboardInput(instance, event, sc);
+            instance.actor.callKeyboardInput(instance, ev, sc);
         }
+
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            scene.propogateKeyboardEvent(ev, sc);
+        }
+
+        this.callKeyboardInput(ev, sc);
     }
 
     propogatePointerEvent(event: PointerInputEvent, sc: SceneController): void {
@@ -368,6 +449,20 @@ export class Scene implements SceneDefinition {
                 instance.actor.callPointerInput(instance, propogatedEvent, sc);
             }
         }
+
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            if (subScene.displayMode === (SubSceneDisplayMode.Float)) {
+                scene.propogatePointerEvent(propogatedEvent, sc);
+            }
+            else {
+                const translatedEvent = propogatedEvent.translate(-subScene.x, -subScene.y);
+                scene.propogatePointerEvent(translatedEvent, sc);
+            }
+            
+        }
+
+        this.callPointerInput(event, sc);
     }
 
     resume(sc: SceneController): void {
@@ -389,6 +484,19 @@ export class Scene implements SceneDefinition {
         return this;
     }
 
+    showSubScene(sceneName: string, sc: SceneController, options: SubSceneOptions = {}): SubScene {
+        const subSceneId = this.game.nextSceneRuntimeID();
+        const scene = <Scene>this.game.getScene(sceneName);
+        const subScene = new SubScene(subSceneId, this, scene, options);
+
+        this.subSceneMap[`${sceneName}_${subSceneId}`] = subScene;
+
+        // TODO: should this be done by the caller instead?
+        scene.start(sc);
+
+        return subScene;
+    }
+
     start(sc: SceneController): void {
         if (this.onStartCallback) {
             this.onStartCallback(this, sc);
@@ -398,7 +506,11 @@ export class Scene implements SceneDefinition {
     }
 
     step(events: GameEvent[], sc: SceneController): void {
-        // TODO call step on subScenes regardless
+
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            scene.step(events, sc);
+        }
 
         if (this._status === SceneStatus.Suspended) {
             return;

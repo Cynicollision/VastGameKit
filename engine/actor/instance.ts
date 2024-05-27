@@ -40,7 +40,7 @@ export class Instance implements ActorInstance {
     private _motion: ActorMotionBehavior;
     get motion() { return this._motion; }
 
-    state: { [name: string]: unknown } = {};
+    readonly state: { [name: string]: unknown } = {};
     x: number = 0;
     y: number = 0;
 

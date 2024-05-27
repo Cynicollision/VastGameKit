@@ -1,8 +1,8 @@
-import { RectBoundary } from '../engine/actor/boundaries/rectangleBoundary';
-import { GameEvent } from '../engine/core/event';
-import { KeyboardInputEvent } from '../engine/device/keyboard';
-import { PointerInputEvent } from '../engine/device/pointer';
+import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
 import { InstanceStatus, SceneStatus } from './../engine/core/enum';
+import { GameEvent } from './../engine/core/event';
+import { KeyboardInputEvent } from './../engine/device/keyboard';
+import { PointerInputEvent } from './../engine/device/pointer';
 import { Game } from './../engine/game';
 import { Controller } from './../engine/scene/controller';
 import { Scene } from './../engine/scene/scene';

@@ -26,7 +26,7 @@ export class Controller implements SceneController {
     private _eventQueue: GameEvent[] = [];
     private _transition: SceneTransition;
 
-    state: { [name: string]: unknown } = {};
+    readonly state: { [name: string]: unknown } = {};
 
     constructor(game: Game, scene: Scene) {
         this._game = game;

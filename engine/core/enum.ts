@@ -34,3 +34,8 @@ export enum SpriteTransformation {
     TileX = 2,
     TileY = 3,
 }
+
+export enum SubSceneDisplayMode {
+    Embed = 'Embed',
+    Float = 'Float'
+}

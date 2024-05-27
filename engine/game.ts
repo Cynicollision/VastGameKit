@@ -3,7 +3,7 @@ import { GameError } from './core/error';
 import { GameAudio, GameAudioOptions } from './device/audio';
 import { GameCanvas } from './device/canvas';
 import { GameInputHandler } from './device/input';
-import { Controller, SceneController } from './scene/controller';
+import { Controller } from './scene/controller';
 import { Scene, SceneDefinition, SceneOptions } from './scene/scene';
 import { Sprite, SpriteOptions } from './sprite/sprite';
 
@@ -50,7 +50,7 @@ export class Game {
         return options;
     }
 
-    nextActorInstanceID = (() => {
+    nextSceneRuntimeID = (() => {
         let currentID = 0;
         return (() => ++currentID);
     })();
