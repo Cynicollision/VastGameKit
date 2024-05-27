@@ -1,4 +1,4 @@
-import { Scene, SceneDefinition } from './../engine/scene/scene';
+import { Scene, GameScene } from './../engine/scene/scene';
 import { Game, GameOptions } from './../engine/game';
 import { Controller } from './../engine/scene/controller';
 import { Sprite, SpriteOptions } from './../engine/sprite/sprite';
@@ -29,7 +29,7 @@ export class TestUtil {
         return Sprite.fromSource('testSprite', TestImage.Source, options);
     }
 
-    static getTestScene(game: Game): SceneDefinition {
+    static getTestScene(game: Game): GameScene {
         return Scene.define('testScene', game);
     }
 }

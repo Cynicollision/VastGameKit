@@ -1,18 +1,19 @@
+import { LifecycleEntityExecution } from './../core/entity';
 import { ActorBehaviorName, InstanceStatus } from './../core/enum';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../scene/controller';
-import { SceneDefinition } from './../scene/scene';
+import { GameScene } from './../scene/scene';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 import { ActorMotionBehavior } from './behaviors/motionBehavior';
 import { Actor, ActorBehavior } from './actor';
 
-
-export interface ActorInstance {
+export interface ActorInstance extends LifecycleEntityExecution<ActorInstance> {
     id: number;
     animation: SpriteAnimation;
     actor: Actor;
     motion: ActorMotionBehavior;
-    scene: SceneDefinition;
+    scene: GameScene;
     state: { [name: string]: unknown };
     status: InstanceStatus;
     x: number;
@@ -29,7 +30,7 @@ export class Instance implements ActorInstance {
     private readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;
-    readonly scene: SceneDefinition;
+    readonly scene: GameScene;
 
     private _animation: SpriteAnimation;
     get animation() { return this._animation; }
@@ -44,7 +45,7 @@ export class Instance implements ActorInstance {
     x: number = 0;
     y: number = 0;
 
-    static spawn(id: number, actor: Actor, scene: SceneDefinition, x: number, y: number): ActorInstance {
+    static spawn(id: number, actor: Actor, scene: GameScene, x: number, y: number): ActorInstance {
         const instance = new Instance(id, actor, scene);
         instance.x = x; 
         instance.y = y;
@@ -62,7 +63,7 @@ export class Instance implements ActorInstance {
         return instance;
     }
 
-    private constructor(id: number, actor: Actor, scene: SceneDefinition) {
+    private constructor(id: number, actor: Actor, scene: GameScene) {
         this.id = id;
         this.actor = actor;
         this.scene = scene;
@@ -97,12 +98,6 @@ export class Instance implements ActorInstance {
         }
     }
 
-    callStep(sc: SceneController): void {
-        if (this._status === InstanceStatus.Active) {
-            this.actor.callStep(this, sc);
-        }
-    }
-
     collidesWith(other: ActorInstance): boolean {
         if (this.actor.boundary && other.actor.boundary) {
             return this.actor.boundary.atPosition(this.x, this.y).collidesWith(other.actor.boundary.atPosition(other.x, other.y));
@@ -123,19 +118,34 @@ export class Instance implements ActorInstance {
         if (this._animation) {
             this._animation.draw(canvas, this.x, this.y);
         }
-
-        this.actor.callDraw(this, canvas, sc);
     }
 
-    // TODO add
-    // follow(camera: Camera | Actor, offsetX = 0, offsetY = 0): void {
-    //     this._followingCamera = camera;
-    //     this.followOffsetX = offsetX;
-    //     this.followOffsetY = offsetY;
-    // }
+    handleGameEvent(self: ActorInstance, event: GameEvent, sc: SceneController): void {
+        if (!event.isCancelled) {
+            this.actor.callGameEvent(self, event, sc);
+        }
+    }
+
+    handleKeyboardEvent(self: ActorInstance, event: KeyboardInputEvent, sc: SceneController): void {
+        if (!event.isCancelled) {
+            this.actor.callKeyboardEvent(self, event, sc);
+        }
+    }
+
+    handlePointerEvent(self: ActorInstance, event: PointerInputEvent, sc: SceneController): void {
+        if (!event.isCancelled) {
+            this.actor.callPointerEvent(self, event, sc);
+        }
+    }
 
     inactivate(): void {
         this._status = InstanceStatus.Inactive;
+    }
+
+    step(sc: SceneController): void {
+        if (this._status === InstanceStatus.Active) {
+            this.actor.callStep(this, sc);
+        }
     }
 
     useBehavior(behavior: ActorBehavior): void {

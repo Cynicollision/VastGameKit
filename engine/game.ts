@@ -4,7 +4,7 @@ import { GameAudio, GameAudioOptions } from './device/audio';
 import { GameCanvas } from './device/canvas';
 import { GameInputHandler } from './device/input';
 import { Controller } from './scene/controller';
-import { Scene, SceneDefinition, SceneOptions } from './scene/scene';
+import { Scene, GameScene, SceneOptions } from './scene/scene';
 import { Sprite, SpriteOptions } from './sprite/sprite';
 
 export type GameOptions = {
@@ -32,7 +32,7 @@ export class Game {
     get input() { return this._inputHandler; }
 
     private readonly _defaultScene: Scene;
-    get defaultScene(): SceneDefinition { return this._defaultScene; }
+    get defaultScene(): GameScene { return this._defaultScene; }
 
     static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
         return new Game(canvas, inputHandler, options);
@@ -77,7 +77,7 @@ export class Game {
         return audio;
     }
 
-    defineScene(sceneName: string, options: SceneOptions = {}): SceneDefinition {
+    defineScene(sceneName: string, options: SceneOptions = {}): GameScene {
         if (this.sceneMap[sceneName]) {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }
@@ -115,7 +115,7 @@ export class Game {
         return this.audioMap[audioName];
     }
 
-    getScene(sceneName: string): SceneDefinition {
+    getScene(sceneName: string): GameScene {
         if (!this.sceneMap[sceneName]) {
             throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
         }

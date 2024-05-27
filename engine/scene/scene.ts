@@ -1,37 +1,16 @@
 import { Actor } from './../actor/actor';
 import { Boundary } from './../actor/boundary';
 import { ActorInstance, Instance } from './../actor/instance';
+import { EntityLifecycleCb, EntityLifecycleDrawCb, EntityLifecycleGameEventCb, EntityLifecycleKeyboardEventCb, EntityLifecyclePointerEventCb, LifecycleEntity, LifecycleEntityExecution } from '../core/entity';
 import { InstanceStatus, SceneStatus, SubSceneDisplayMode } from './../core/enum';
 import { GameError } from './../core/error';
-import { GameEvent } from './../core/event';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
-import { KeyboardInputEvent } from './../device/keyboard';
-import { PointerInputEvent } from './../device/pointer';
 import { Game } from './../game';
 import { Sprite } from './../sprite/sprite';
 import { Background, BackgroundOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
-
-type SceneLifecycleCallback = {
-    (self: SceneDefinition, sc: SceneController): void;
-};
-
-type SceneLifecycleDrawCallback = {
-    (self: SceneDefinition, canvas: GameCanvas, sc: SceneController): void;
-};
-
-type SceneKeyboardInputCallback = {
-    (self: SceneDefinition, ev: KeyboardInputEvent, sc: SceneController): void;
-};
-
-type SceneLifecycleEventCallback = {
-    (self: SceneDefinition, ev: GameEvent, sc: SceneController): void;
-};
-
-type ScenePointerInputCallback = {
-    (self: SceneDefinition, ev: PointerInputEvent, sc: SceneController): void;
-};
 
 export type SceneOptions = {
     height?: number;
@@ -39,7 +18,7 @@ export type SceneOptions = {
     width?: number;
 };
 
-export interface SceneDefinition {
+export interface GameScene extends LifecycleEntity<GameScene, GameScene>, LifecycleEntityExecution<GameScene> {
     name: string;
     defaultCamera: SceneCamera;
     game: Game;
@@ -53,15 +32,10 @@ export interface SceneDefinition {
     getInstancesAtPosition(x: number, y: number, solid?: boolean): ActorInstance[];
     getInstancesWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid?: boolean): ActorInstance[];
     isPositionFree(x: number, y: number, solid?: boolean): boolean;
-    onDraw(callback: SceneLifecycleDrawCallback): SceneDefinition;
-    onGameEvent(eventName: string, callback: SceneLifecycleEventCallback): SceneDefinition;
-    onKeyboardInput(key: string, callback: SceneKeyboardInputCallback): SceneDefinition;
-    onPointerInput(type: string, callback: ScenePointerInputCallback): SceneDefinition;
-    onResume(callback: SceneLifecycleCallback): SceneDefinition;
-    onStart(callback: SceneLifecycleCallback): SceneDefinition;
-    onStep(callback: SceneLifecycleCallback): SceneDefinition;
-    onSuspend(callback: SceneLifecycleCallback): SceneDefinition;
-    setBackground(colorOrSprite: string | Sprite, options?: BackgroundOptions): SceneDefinition;
+    onResume(callback: EntityLifecycleCb<GameScene>): GameScene;
+    onStart(callback: EntityLifecycleCb<GameScene>): GameScene;
+    onSuspend(callback: EntityLifecycleCb<GameScene>): GameScene;
+    setBackground(colorOrSprite: string | Sprite, options?: BackgroundOptions): GameScene;
     showSubScene(sceneName: string, sc: SceneController, options?: SubSceneOptions): SubScene;
 }
 
@@ -74,12 +48,12 @@ type SubSceneOptions = {
 class SubScene {
     readonly id: number;
     readonly displayMode: SubSceneDisplayMode = SubSceneDisplayMode.Embed;
-    readonly parent: SceneDefinition;
-    readonly scene: SceneDefinition;
+    readonly parent: GameScene;
+    readonly scene: GameScene;
     readonly x: number = 0;
     readonly y: number = 0;
 
-    constructor(id: number, parent: SceneDefinition, subScene: SceneDefinition, options: SubSceneOptions = {}) {
+    constructor(id: number, parent: GameScene, subScene: GameScene, options: SubSceneOptions = {}) {
         this.id = id;
         this.parent = parent;
         this.scene = subScene;
@@ -91,22 +65,23 @@ class SubScene {
     // TODO add: hide() mechanism
 }
 
-export class Scene implements SceneDefinition {
+export class Scene implements GameScene {
     static readonly DefaultCameraName = 'default';
 
     private readonly cameraMap: { [name: string]: Camera } = {};
     private readonly subSceneMap: { [name: string]: SubScene } = {};
     private instanceMap: { [index: number]: Instance } = {};
     
-    private gameEventHandlerMap: { [eventName: string]: SceneLifecycleEventCallback } = {};
-    private keyboardInputEventHandlerMap: { [type: string]: SceneKeyboardInputCallback } = {};
-    private pointerInputEventHandlerMap: { [type: string]: ScenePointerInputCallback } = {};
+    private gameEventHandlerMap: { [eventName: string]: EntityLifecycleGameEventCb<GameScene> } = {};
+    private keyboardInputEventHandlerMap: { [type: string]: EntityLifecycleKeyboardEventCb<GameScene> } = {};
+    private pointerInputEventHandlerMap: { [type: string]: EntityLifecyclePointerEventCb<GameScene> } = {};
 
-    private onDrawCallback: SceneLifecycleDrawCallback;
-    private onResumeCallback: SceneLifecycleCallback;
-    private onStartCallback: SceneLifecycleCallback;
-    private onStepCallback: SceneLifecycleCallback;
-    private onSuspendCallback: SceneLifecycleCallback;
+    private onDrawCallback: EntityLifecycleDrawCb<GameScene>;
+    private onLoadCallback: (actor: GameScene) => void;
+    private onResumeCallback: EntityLifecycleCb<GameScene>;
+    private onStartCallback: EntityLifecycleCb<GameScene>;
+    private onStepCallback: EntityLifecycleCb<GameScene>;
+    private onSuspendCallback: EntityLifecycleCb<GameScene>;
 
     private background: Background;
 
@@ -123,7 +98,7 @@ export class Scene implements SceneDefinition {
     readonly state: { [name: string]: unknown } = {};
     readonly width: number;
 
-    static define(name: string, game: Game, options: SceneOptions = {}): SceneDefinition {
+    static define(name: string, game: Game, options: SceneOptions = {}): GameScene {
         return new Scene(name, game, options);
     }
 
@@ -143,6 +118,14 @@ export class Scene implements SceneDefinition {
 
     private deleteInstance(instance: ActorInstance): void {
         delete this.instanceMap[instance.id];
+    }
+
+    private drawSubScene(mainCanvas: GameCanvas, targetCanvas: GameCanvas, subScene: SubScene, sc: SceneController): void {
+        const scene = <Scene>subScene.scene;
+        const subSceneKey = this.getSubSceneCanvasKey(subScene);
+        const embeddedSubSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: scene.width, height: scene.height });
+        scene.draw(embeddedSubSceneCanvas, sc);
+        targetCanvas.drawCanvas(embeddedSubSceneCanvas, 0, 0, scene.width, scene.height, subScene.x, subScene.y, scene.width, scene.height);
     }
 
     private getCameraCanvasSubKey(camera: Camera): string {
@@ -176,45 +159,6 @@ export class Scene implements SceneDefinition {
         translatedEvent.y += camera.y;
 
         return translatedEvent;
-    }
-
-    // TODO not needed?
-    callGameEvent(ev: GameEvent, sc: SceneController): void {
-        if (!ev.isCancelled) {
-            if (this.gameEventHandlerMap[ev.name]) {
-                this.gameEventHandlerMap[ev.name](this, ev, sc);
-            }
-
-            for (const subScene of this.getSubScenes()) {
-                const scene = <Scene>subScene.scene;
-                scene.callGameEvent(ev, sc);
-            }
-        }
-    }
-
-    callKeyboardInput(ev: KeyboardInputEvent, sc: SceneController): void {
-        if (!ev.isCancelled) {
-            const handler: SceneKeyboardInputCallback = this.keyboardInputEventHandlerMap[ev.key];
-
-            if (handler) {
-                handler(this, ev, sc);
-            }
-
-            // for (const subScene of this.getSubScenes()) {
-            //     const scene = <Scene>subScene.scene;
-            //     scene.callKeyboardInput(ev, sc);
-            // }
-        }
-    }
-
-    callPointerInput(ev: PointerInputEvent, sc: SceneController): void {
-        if (!ev.isCancelled) {
-            const handler: ScenePointerInputCallback = this.pointerInputEventHandlerMap[ev.type];
-
-            if (handler) {
-                handler(this, ev, sc);
-            }
-        }
     }
 
     createInstance(actorName: string, x?: number, y?: number): ActorInstance {
@@ -254,14 +198,6 @@ export class Scene implements SceneDefinition {
         this.cameraMap[cameraName] = camera;
 
         return camera;
-    }
-
-    private drawSubScene(mainCanvas: GameCanvas, targetCanvas: GameCanvas, subScene: SubScene, sc: SceneController): void {
-        const scene = <Scene>subScene.scene;
-        const subSceneKey = this.getSubSceneCanvasKey(subScene);
-        const embeddedSubSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: scene.width, height: scene.height });
-        scene.draw(embeddedSubSceneCanvas, sc);
-        targetCanvas.drawCanvas(embeddedSubSceneCanvas, 0, 0, scene.width, scene.height, subScene.x, subScene.y, scene.width, scene.height);
     }
 
     draw(canvas: GameCanvas, sc: SceneController): void {
@@ -347,7 +283,101 @@ export class Scene implements SceneDefinition {
         return instances;
     }
 
-    
+    handleGameEvent(self: GameScene, ev: GameEvent, sc: SceneController): void {
+        if (ev.isCancelled) {
+            return;
+        }
+
+        if (this.gameEventHandlerMap[ev.name]) {
+            this.gameEventHandlerMap[ev.name](self, ev, sc);
+        }
+        
+        for (const instance of this.getInstances()) {
+            instance.handleGameEvent(instance, ev, sc);
+        }
+
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            scene.handleGameEvent(scene, ev, sc);
+        }
+    }
+
+    handleKeyboardEvent(self: GameScene, ev: KeyboardInputEvent, sc: SceneController): void {
+        if (ev.isCancelled) {
+            return;
+        }
+
+        // propagate to instances.
+        for (const instance of this.getInstances()) {
+            instance.handleKeyboardEvent(instance, ev, sc);
+        }
+
+        // propagate to sub-scenes.
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            scene.handleKeyboardEvent(scene, ev, sc);
+        }
+
+        // call scene handler.
+        if (this.keyboardInputEventHandlerMap[ev.key]) {
+            this.keyboardInputEventHandlerMap[ev.key](this, ev, sc);
+        }
+    }
+
+    handlePointerEvent(self: GameScene, ev: PointerInputEvent, sc: SceneController): void {
+        if (ev.isCancelled) {
+            return;
+        }
+
+        // transform to secondary cameras first.
+        let transformedEvent = null;
+        for (const cameraName in this.cameraMap) {
+            if (cameraName === Scene.DefaultCameraName) {
+                continue;
+            }
+
+            const camera = this.getCamera(cameraName);
+            if (camera.portContainsPosition(ev.x, ev.y)) {
+                transformedEvent = this.scalePointerEventToCamera(ev, camera);
+                break;
+            }
+        }
+
+        // transform to default camera if necessary.
+        if (!transformedEvent && this._defaultCamera.portContainsPosition(ev.x, ev.y)) {
+            transformedEvent = this.scalePointerEventToCamera(ev, this._defaultCamera);
+        }
+
+        const propogatedEvent = transformedEvent || ev;
+
+        // propagate to instances.
+        for (const instance of this.getInstances()) {
+            // TODO move "if" check to inside handlePointerEvent
+            if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(propogatedEvent.x, propogatedEvent.y)) {
+                instance.handlePointerEvent(instance, propogatedEvent, sc);
+            }
+        }
+
+        // propagate to sub-scenes.
+        for (const subScene of this.getSubScenes()) {
+            const scene = <Scene>subScene.scene;
+            if (subScene.displayMode === (SubSceneDisplayMode.Float)) {
+                scene.handlePointerEvent(scene, propogatedEvent, sc);
+            }
+            else {
+                const translatedEvent = propogatedEvent.translate(-subScene.x, -subScene.y);
+                scene.handlePointerEvent(scene, translatedEvent, sc);
+            }
+            
+        }
+
+        // call scene handler.
+        const handler: EntityLifecyclePointerEventCb<GameScene> = this.pointerInputEventHandlerMap[ev.type];
+
+        if (handler) {
+            handler(self, ev, sc);
+        }
+    }
 
     init(): void {
         if (!this.options.persistent || this._status === SceneStatus.NotStarted) {
@@ -371,98 +401,55 @@ export class Scene implements SceneDefinition {
         return true;
     }
 
-    onDraw(callback: SceneLifecycleDrawCallback): SceneDefinition {
+    load(): void {
+        if (this.onLoadCallback) {
+            this.onLoadCallback(this);
+        }
+    }
+
+    onDraw(callback: EntityLifecycleDrawCb<GameScene>): GameScene {
         this.onDrawCallback = callback;
         return this;
     }
 
-    onGameEvent(eventName: string, callback: SceneLifecycleEventCallback): SceneDefinition {
+    onGameEvent(eventName: string, callback: EntityLifecycleGameEventCb<GameScene>): GameScene {
         this.gameEventHandlerMap[eventName] = callback;
         return this;
     }
 
-    onKeyboardInput(key: string, callback: SceneKeyboardInputCallback): SceneDefinition {
+    onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<GameScene>): GameScene {
         this.keyboardInputEventHandlerMap[key] = callback;
         return this;
     }
 
-    onPointerInput(type: string, callback: ScenePointerInputCallback): SceneDefinition {
+    onLoad(callback: (actor: GameScene) => void): GameScene {
+        this.onLoadCallback = callback;
+        return this;
+    }
+
+    onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<GameScene>): GameScene {
         this.pointerInputEventHandlerMap[type] = callback;
         return this;
     }
 
-    onResume(callback: SceneLifecycleCallback): SceneDefinition {
+    onResume(callback: EntityLifecycleCb<GameScene>): GameScene {
         this.onResumeCallback = callback;
         return this;
     }
 
-    onStart(callback: SceneLifecycleCallback): SceneDefinition {
+    onStart(callback: EntityLifecycleCb<GameScene>): GameScene {
         this.onStartCallback = callback;
         return this;
     }
 
-    onStep(callback: SceneLifecycleCallback): SceneDefinition {
+    onStep(callback: EntityLifecycleCb<GameScene>): GameScene {
         this.onStepCallback = callback;
         return this;
     }
 
-    onSuspend(callback: SceneLifecycleCallback): SceneDefinition {
+    onSuspend(callback: EntityLifecycleCb<GameScene>): GameScene {
         this.onSuspendCallback = callback;
         return this;
-    }
-
-    propogateKeyboardEvent(ev: KeyboardInputEvent, sc: SceneController): void {
-        for (const instance of this.getInstances()) {
-            instance.actor.callKeyboardInput(instance, ev, sc);
-        }
-
-        for (const subScene of this.getSubScenes()) {
-            const scene = <Scene>subScene.scene;
-            scene.propogateKeyboardEvent(ev, sc);
-        }
-
-        this.callKeyboardInput(ev, sc);
-    }
-
-    propogatePointerEvent(event: PointerInputEvent, sc: SceneController): void {
-        let translatedEvent = null; // TODO: better handling of camera "priority"
-        for (const cameraName in this.cameraMap) {
-            if (cameraName === Scene.DefaultCameraName) {
-                continue;
-            }
-
-            const camera = this.getCamera(cameraName);
-            if (camera.portContainsPosition(event.x, event.y)) {
-                translatedEvent = this.scalePointerEventToCamera(event, camera);
-                break;
-            }
-        }
-
-        if (!translatedEvent && this._defaultCamera.portContainsPosition(event.x, event.y)) {
-            translatedEvent = this.scalePointerEventToCamera(event, this._defaultCamera);
-        }
-
-        const propogatedEvent = translatedEvent || event;
-
-        for (const instance of this.getInstances()) {
-            if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(propogatedEvent.x, propogatedEvent.y)) {
-                instance.actor.callPointerInput(instance, propogatedEvent, sc);
-            }
-        }
-
-        for (const subScene of this.getSubScenes()) {
-            const scene = <Scene>subScene.scene;
-            if (subScene.displayMode === (SubSceneDisplayMode.Float)) {
-                scene.propogatePointerEvent(propogatedEvent, sc);
-            }
-            else {
-                const translatedEvent = propogatedEvent.translate(-subScene.x, -subScene.y);
-                scene.propogatePointerEvent(translatedEvent, sc);
-            }
-            
-        }
-
-        this.callPointerInput(event, sc);
     }
 
     resume(sc: SceneController): void {
@@ -473,7 +460,7 @@ export class Scene implements SceneDefinition {
         this._status = SceneStatus.Running;
     }
 
-    setBackground(colorOrSprite: string | Sprite, options: BackgroundOptions = {}): SceneDefinition {
+    setBackground(colorOrSprite: string | Sprite, options: BackgroundOptions = {}): GameScene {
         if (typeof colorOrSprite === 'string') {
             this.background = Background.fromColor(this, colorOrSprite, options);
         }
@@ -505,11 +492,11 @@ export class Scene implements SceneDefinition {
         this._status = SceneStatus.Running;
     }
 
-    step(events: GameEvent[], sc: SceneController): void {
+    step(sc: SceneController): void {
 
         for (const subScene of this.getSubScenes()) {
             const scene = <Scene>subScene.scene;
-            scene.step(events, sc);
+            scene.step(sc);
         }
 
         if (this._status === SceneStatus.Suspended) {
@@ -544,18 +531,8 @@ export class Scene implements SceneDefinition {
             }
             else if (instance.status === InstanceStatus.Active) {
                 instance.callBeforeStepBehaviors(sc);
-                instance.callStep(sc);
+                instance.step(sc);
                 instance.callAfterStepBehaviors(sc);
-
-                for (const ev of events) {
-                    instance.actor.callGameEvent(instance, ev, sc);
-                }
-            }
-        }
-
-        for (const ev of events) {
-            if (this.gameEventHandlerMap[ev.name]) {
-                this.gameEventHandlerMap[ev.name](this, ev, sc);
             }
         }
     }

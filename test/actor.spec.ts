@@ -1,9 +1,7 @@
 
 
 import { Actor } from './../engine/actor/actor';
-import { GameEvent } from './../engine/core/event';
-import { KeyboardInputEvent } from './../engine/device/keyboard';
-import { PointerInputEvent } from './../engine/device/pointer';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core/events';
 import { Game } from './../engine/game';
 import { Controller } from './../engine/scene/controller';
 import { Scene } from './../engine/scene/scene';
@@ -93,7 +91,7 @@ describe('Actor', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testActor.callPointerInput(null, new PointerInputEvent('pointertest', 20, 40), testController);
+            testActor.callPointerEvent(null, new PointerInputEvent('pointertest', 20, 40), testController);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -109,7 +107,7 @@ describe('Actor', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testActor.callKeyboardInput(null, new KeyboardInputEvent('testkey', 'testkeytype'), testController);
+            testActor.callKeyboardEvent(null, new KeyboardInputEvent('testkey', 'testkeytype'), testController);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');

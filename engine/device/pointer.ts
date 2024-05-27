@@ -1,40 +1,5 @@
-import { GameEvent } from './../core/event';
+import { PointerInputEvent } from './../core/events';
 import { InputEventSubscription, InputHandler } from './input';
-
-function getTouchEventX(ev: TouchEvent): number {
-    const touch = ev.touches[0];
-    return touch ? touch.clientX : 0
-}
-
-function getTouchEventY(ev: TouchEvent): number {
-    const touch = ev.touches[0];
-    return touch ? touch.clientY : 0
-}
-
-export class PointerInputEvent extends GameEvent {
-    type: string;
-    x: number;
-    y: number;
-
-    static fromMouseEvent(ev: MouseEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, ev.offsetX, ev.offsetY);
-    }
-
-    static fromTouchEvent(ev: TouchEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, getTouchEventX(ev), getTouchEventY(ev));
-    }
-
-    constructor(type: string, x: number, y: number) {
-        super(type);
-        this.type = type;
-        this.x = x;
-        this.y = y;
-    }
-
-    translate(diffX: number, diffY: number): PointerInputEvent {
-        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY);
-    }
-}
 
 export class PointerInputHandler implements InputHandler<PointerInputEvent> {
     private subscribers: InputEventSubscription<PointerInputEvent>[] = [];
@@ -62,8 +27,8 @@ export class PointerInputHandler implements InputHandler<PointerInputEvent> {
         };
 
         target.ontouchmove = function trackActiveTouchPosition(ev: TouchEvent): void {
-            handler._currentX = getTouchEventX(ev);
-            handler._currentY = getTouchEventY(ev);
+            handler._currentX = ev.touches[0] ? ev.touches[0].clientX : 0;
+            handler._currentY = ev.touches[0] ? ev.touches[0].clientY : 0;
         };
 
         target.onmousedown = target.onmouseup = function(this: GlobalEventHandlers, ev: MouseEvent): void {

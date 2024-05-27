@@ -1,15 +1,13 @@
 import { SceneTransitionType } from './../core/enum';
-import { GameEvent } from './../core/event';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
-import { KeyboardInputEvent } from './../device/keyboard';
-import { PointerInputEvent } from './../device/pointer';
 import { Game } from './../game';
-import { Scene, SceneDefinition } from './scene';
+import { Scene, GameScene } from './scene';
 import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
 export interface SceneController {
     game: Game;
-    scene: SceneDefinition;
+    scene: GameScene;
     state: { [name: string]: unknown };
     goToScene(sceneName: string): void;
     publishEvent(eventName: string, data?: any): void;
@@ -21,7 +19,7 @@ export class Controller implements SceneController {
     get game() { return this._game; }
 
     private _scene: Scene;
-    get scene(): SceneDefinition { return this._scene; }
+    get scene(): GameScene { return this._scene; }
 
     private _eventQueue: GameEvent[] = [];
     private _transition: SceneTransition;
@@ -69,16 +67,19 @@ export class Controller implements SceneController {
     }
 
     onKeyboardEvent(event: KeyboardInputEvent): void {
-        this._scene.propogateKeyboardEvent(event, this);
+        this._scene.handleKeyboardEvent(this._scene, event, this);
     }
 
     onPointerEvent(event: PointerInputEvent): void {
-        this._scene.propogatePointerEvent(event, this);
+        this._scene.handlePointerEvent(this._scene, event, this);
     }
 
     step(): void {
-        const events = this.flushEventQueue();
-        this._scene.step(events, this)
+        for (const ev of this.flushEventQueue()) {
+            this._scene.handleGameEvent(this._scene, ev, this);
+        }
+        
+        this._scene.step(this)
     }
 
     // TODO: allow data to be passed to next scene

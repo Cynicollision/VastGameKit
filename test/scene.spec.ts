@@ -1,8 +1,6 @@
 import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
 import { InstanceStatus, SceneStatus } from './../engine/core/enum';
-import { GameEvent } from './../engine/core/event';
-import { KeyboardInputEvent } from './../engine/device/keyboard';
-import { PointerInputEvent } from './../engine/device/pointer';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core/events';
 import { Game } from './../engine/game';
 import { Controller } from './../engine/scene/controller';
 import { Scene } from './../engine/scene/scene';
@@ -167,7 +165,7 @@ describe('Scene', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testScene.callGameEvent(GameEvent.init('testEvent'), sc);
+            testScene.handleGameEvent(testScene, GameEvent.init('testEvent'), sc);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -182,7 +180,7 @@ describe('Scene', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testScene.callPointerInput(new PointerInputEvent('pointertest', 20, 40), sc);
+            testScene.handlePointerEvent(testScene, new PointerInputEvent('pointertest', 20, 40), sc);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -198,7 +196,7 @@ describe('Scene', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testScene.callKeyboardInput(new KeyboardInputEvent('testkey', 'testkeytype'), sc);
+            testScene.handleKeyboardEvent(testScene, new KeyboardInputEvent('testkey', 'testkeytype'), sc);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -236,7 +234,7 @@ describe('Scene', () => {
                 stepCalled = true;
             });
 
-            testScene.step([], sc);
+            testScene.step(sc);
             expect(stepCalled).toBeTrue();
         });
 
@@ -298,7 +296,7 @@ describe('Scene', () => {
 
             expect(actorOnCreatedCalled).toBeFalse();
             expect(instance.status).toBe(InstanceStatus.New);
-            testScene.step([], sc);
+            testScene.step(sc);
 
             expect(actorOnCreatedCalled).toBeTrue();
             expect(instance.status).toBe(InstanceStatus.Active);
@@ -322,13 +320,13 @@ describe('Scene', () => {
             const instance = testScene.createInstance('testActor');
             const mockBehavior = new MockActorInstanceBehavior();
             instance.useBehavior(mockBehavior);
-            testScene.step([], sc);
+            testScene.step(sc);
 
             expect(actorOnStepCalled).toBeFalse();
             expect(mockBehavior.beforeStepCallCount).toBe(0);
             expect(mockBehavior.afterStepCallCount).toBe(0);
 
-            testScene.step([], sc);
+            testScene.step(sc);
 
             expect(actorOnStepCalled).toBeTrue();
             expect(mockBehavior.beforeStepCallCount).toBe(1);
@@ -342,7 +340,7 @@ describe('Scene', () => {
             expect(instance.status).toBe(InstanceStatus.Destroyed);
             expect(testScene.getInstances().length).toBe(1);
 
-            testScene.step([], sc);
+            testScene.step(sc);
 
             expect(actorOnDestroyCalled).toBeTrue();
             expect(testScene.getInstances().length).toBe(0);
