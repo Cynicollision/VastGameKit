@@ -1,6 +1,6 @@
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
-import { SceneController } from './../scene/controller';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './events';
+import { SceneController } from './controller';
 
 export type EntityLifecycleCb<T> = {
     (self: T, sc: SceneController): void;

@@ -1,7 +1,6 @@
 import { Actor } from './../actor/actor';
 import { Boundary } from './../actor/boundary';
 import { ActorInstance, Instance } from './../actor/instance';
-import { EntityLifecycleCb, EntityLifecycleDrawCb, EntityLifecycleGameEventCb, EntityLifecycleKeyboardEventCb, EntityLifecyclePointerEventCb, LifecycleEntity, LifecycleEntityExecution } from '../core/entity';
 import { InstanceStatus, SceneStatus, SubSceneDisplayMode } from './../core/enum';
 import { GameError } from './../core/error';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
@@ -11,6 +10,7 @@ import { Sprite } from './../sprite/sprite';
 import { Background, BackgroundOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
+import { EntityLifecycleCb, EntityLifecycleDrawCb, EntityLifecycleGameEventCb, EntityLifecycleKeyboardEventCb, EntityLifecyclePointerEventCb, LifecycleEntity, LifecycleEntityExecution } from './entity';
 
 export type SceneOptions = {
     height?: number;
@@ -18,7 +18,7 @@ export type SceneOptions = {
     width?: number;
 };
 
-export interface GameScene extends LifecycleEntity<GameScene, GameScene>, LifecycleEntityExecution<GameScene> {
+export interface GameScene extends LifecycleEntity<GameScene, GameScene> {
     name: string;
     defaultCamera: SceneCamera;
     game: Game;
@@ -65,7 +65,7 @@ class SubScene {
     // TODO add: hide() mechanism
 }
 
-export class Scene implements GameScene {
+export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
     static readonly DefaultCameraName = 'default';
 
     private readonly cameraMap: { [name: string]: Camera } = {};
@@ -293,7 +293,7 @@ export class Scene implements GameScene {
         }
         
         for (const instance of this.getInstances()) {
-            instance.handleGameEvent(instance, ev, sc);
+            (<Instance>instance).handleGameEvent(instance, ev, sc);
         }
 
         for (const subScene of this.getSubScenes()) {
@@ -309,7 +309,7 @@ export class Scene implements GameScene {
 
         // propagate to instances.
         for (const instance of this.getInstances()) {
-            instance.handleKeyboardEvent(instance, ev, sc);
+            (<Instance>instance).handleKeyboardEvent(instance, ev, sc);
         }
 
         // propagate to sub-scenes.
@@ -354,7 +354,7 @@ export class Scene implements GameScene {
         for (const instance of this.getInstances()) {
             // TODO move "if" check to inside handlePointerEvent
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(propogatedEvent.x, propogatedEvent.y)) {
-                instance.handlePointerEvent(instance, propogatedEvent, sc);
+                (<Instance>instance).handlePointerEvent(instance, propogatedEvent, sc);
             }
         }
 

@@ -1,14 +1,14 @@
-import { LifecycleEntityExecution } from './../core/entity';
 import { ActorBehaviorName, InstanceStatus } from './../core/enum';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../scene/controller';
+import { LifecycleEntityExecution } from './../scene/entity';
 import { GameScene } from './../scene/scene';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 import { ActorMotionBehavior } from './behaviors/motionBehavior';
 import { Actor, ActorBehavior } from './actor';
 
-export interface ActorInstance extends LifecycleEntityExecution<ActorInstance> {
+export interface ActorInstance  {
     id: number;
     animation: SpriteAnimation;
     actor: Actor;
@@ -21,12 +21,12 @@ export interface ActorInstance extends LifecycleEntityExecution<ActorInstance> {
     activate(): void;
     collidesWith(other: ActorInstance): boolean;
     destroy(): void;
-    //follow(actor or camera): void; // TODO add
+    // TODO add: follow(actor or camera): void; 
     inactivate(): void;
     useBehavior(behavior: ActorBehavior): void;
 }
 
-export class Instance implements ActorInstance {
+export class Instance implements ActorInstance, LifecycleEntityExecution<ActorInstance> {
     private readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;

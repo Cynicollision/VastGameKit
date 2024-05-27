@@ -1,10 +1,10 @@
 import { ActorBehaviorName } from './../core/enum';
 import { GameError } from './../core/error';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
-import { EntityLifecycleKeyboardEventCb, EntityLifecycleCb, LifecycleEntity, EntityLifecycleGameEventCb, EntityLifecyclePointerEventCb, EntityLifecycleDrawCb } from './../core/entity';
 import { GameCanvas } from './../device/canvas';
 import { Game } from './../game';
 import { SceneController } from './../scene/controller';
+import { EntityLifecycleKeyboardEventCb, EntityLifecycleCb, LifecycleEntity, EntityLifecycleGameEventCb, EntityLifecyclePointerEventCb, EntityLifecycleDrawCb } from './../scene/entity';
 import { Sprite } from './../sprite/sprite';
 import { CircleBoundary } from './boundaries/circleBoundary';
 import { RectBoundary } from './boundaries/rectangleBoundary';
