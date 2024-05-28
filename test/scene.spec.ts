@@ -165,7 +165,7 @@ describe('Scene', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testScene.handleGameEvent(testScene, GameEvent.init('testEvent'), sc);
+            testScene.handleGameEvent(GameEvent.init('testEvent'), sc);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -180,7 +180,7 @@ describe('Scene', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testScene.handlePointerEvent(testScene, new PointerInputEvent('pointertest', 20, 40), sc);
+            testScene.handlePointerEvent(new PointerInputEvent('pointertest', 20, 40), sc);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -196,7 +196,7 @@ describe('Scene', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testScene.handleKeyboardEvent(testScene, new KeyboardInputEvent('testkey', 'testkeytype'), sc);
+            testScene.handleKeyboardEvent( new KeyboardInputEvent('testkey', 'testkeytype'), sc);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -270,18 +270,19 @@ describe('Scene', () => {
             actorOnStepCalled = false;
             actorOnDestroyCalled = false;
 
-            testGame.getActor('testActor')
-                .onCreate((self, state) => {
+            const testActor = testGame.getActor('testActor');
+            testActor.onCreate((self, state) => {
                     actorOnCreatedCalled = true;
-                })
-                .onGameEvent('testEvent', (self, ev, sc) => {
-                    actorOnGameEventCalled = true;
-                    actorOnGameEventData = ev.data;
-                })
-                .onStep((self, state) => {
-                    actorOnStepCalled = true;
-                })
-                .onDestroy((self, state) => {
+                });
+            testActor.onGameEvent('testEvent', (self, ev, sc) => {
+                actorOnGameEventCalled = true;
+                actorOnGameEventData = ev.data;
+            });
+            testActor.onStep((self, state) => {
+                actorOnStepCalled = true;
+            });
+                
+            testActor.onDestroy((self, state) => {
                     actorOnDestroyCalled = true;
                 });
 

@@ -144,8 +144,11 @@ export class Game {
         return Promise.all(promises).then(() => {
             for (const a in this.actorMap) {
                 const actor = this.actorMap[a];
-                actor.load();
+                actor.load(actor);
             }
+
+            // TODO add callback for game setup code, to be called last.
+            //  see Actor and Scene load.
 
             return Promise.resolve();
         });

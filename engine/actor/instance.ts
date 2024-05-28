@@ -2,7 +2,6 @@ import { ActorBehaviorName, InstanceStatus } from './../core/enum';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../scene/controller';
-import { LifecycleEntityExecution } from './../scene/entity';
 import { GameScene } from './../scene/scene';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 import { ActorMotionBehavior } from './behaviors/motionBehavior';
@@ -26,7 +25,7 @@ export interface ActorInstance  {
     useBehavior(behavior: ActorBehavior): void;
 }
 
-export class Instance implements ActorInstance, LifecycleEntityExecution<ActorInstance> {
+export class Instance implements ActorInstance {
     private readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;

@@ -22,19 +22,72 @@ export type EntityLifecyclePointerEventCb<T> = {
     (self: T, ev: PointerInputEvent, sc: SceneController): void;
 };
 
-export interface LifecycleEntity<T, V> {
-    onDraw(callback: EntityLifecycleDrawCb<V>): T;
-    onGameEvent(eventName: string, callback: EntityLifecycleGameEventCb<V>): T;
-    onLoad(callback: (entity: T) => void): T;
-    onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<V>): T;
-    onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<V>): T;
-    onStep(callback: EntityLifecycleCb<V>): T;
-}
+export abstract class LifecycleEntityBase<T, U = T> {
+    protected gameEventHandlerMap: { [eventName: string]: EntityLifecycleGameEventCb<U> } = {};
+    protected keyboardInputEventHandlerMap: { [type: string]: EntityLifecycleKeyboardEventCb<U> } = {};
+    protected pointerInputEventHandlerMap: { [type: string]: EntityLifecyclePointerEventCb<U> } = {};
 
-export interface LifecycleEntityExecution<T> {
-    draw(canvas: GameCanvas, sc: SceneController): void;
-    handleGameEvent(self: T, ev: GameEvent, sc: SceneController): void;
-    handleKeyboardEvent(self: T, ev: KeyboardInputEvent, sc: SceneController): void;
-    handlePointerEvent(self: T, ev: PointerInputEvent, sc: SceneController): void;
-    step(sc: SceneController): void;
+    protected onLoadCallback: (actor: T) => void;
+    protected onStepCallback: EntityLifecycleCb<U>;
+    protected onDrawCallback: EntityLifecycleDrawCb<U>;
+
+    callDraw(self: U, canvas: GameCanvas, sc: SceneController): void {
+        if (this.onDrawCallback) {
+            this.onDrawCallback(self, canvas, sc);
+        }
+    }
+
+    callGameEvent(self: U, event: GameEvent, sc: SceneController): void {
+        if (this.gameEventHandlerMap[event.name]) {
+            this.gameEventHandlerMap[event.name](self, event, sc);
+        }
+    }
+
+    callKeyboardEvent(self: U, event: KeyboardInputEvent, sc: SceneController): void {
+        if (this.keyboardInputEventHandlerMap[event.key]) {
+            this.keyboardInputEventHandlerMap[event.key](self, event, sc);
+        }
+    }
+
+    callPointerEvent(self: U, event: PointerInputEvent, sc: SceneController): void {
+        if (this.pointerInputEventHandlerMap[event.type]) {
+            this.pointerInputEventHandlerMap[event.type](self, event, sc);
+        }
+    }
+
+    callStep(self: U, sc: SceneController): void {
+        if (this.onStepCallback) {
+            this.onStepCallback(self, sc);
+        }
+    }
+
+    load(def: T): void {
+        if (this.onLoadCallback) {
+            this.onLoadCallback(def);
+        }
+    }
+
+    onDraw(callback: EntityLifecycleDrawCb<U>): void {
+        this.onDrawCallback = callback;
+    }
+
+    onGameEvent(eventName: string, callback: EntityLifecycleGameEventCb<U>): void {
+        this.gameEventHandlerMap[eventName] = callback;
+    }
+
+    onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<U>): void {
+        this.keyboardInputEventHandlerMap[key] = callback;
+    }
+
+    onLoad(callback: (actor: T) => void): void {
+        this.onLoadCallback = callback;
+    }
+
+    onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<U>): void {
+        this.pointerInputEventHandlerMap[type] = callback;
+    }
+
+    onStep(callback:  EntityLifecycleCb<U>): void {
+        this.onStepCallback = callback;
+    }
 }

@@ -67,16 +67,16 @@ export class Controller implements SceneController {
     }
 
     onKeyboardEvent(event: KeyboardInputEvent): void {
-        this._scene.handleKeyboardEvent(this._scene, event, this);
+        this._scene.handleKeyboardEvent(event, this);
     }
 
     onPointerEvent(event: PointerInputEvent): void {
-        this._scene.handlePointerEvent(this._scene, event, this);
+        this._scene.handlePointerEvent(event, this);
     }
 
     step(): void {
-        for (const ev of this.flushEventQueue()) {
-            this._scene.handleGameEvent(this._scene, ev, this);
+        for (const event of this.flushEventQueue()) {
+            this._scene.handleGameEvent(event, this);
         }
         
         this._scene.step(this)

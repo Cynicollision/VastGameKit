@@ -8,6 +8,27 @@ export function buildDefaultRoom(game: Game) {
     const button = game.defineActor('actButton');
     button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 
+    
+    button.onCreate((self, sc) => {
+        button.setRectBoundaryFromSprite();
+    })
+    button.onPointerInput('mousedown', (self, gc, event) => {
+        if (self.animation.stopped) {
+            self.animation.start(0, 1, 100);
+        }
+        else {
+            self.animation.stop();
+        }
+    });
+    button.onKeyboardInput('t', ((self, event, sc) => {
+        self.destroy();
+    }));
+    button.onGameEvent('startAll', (self, event, sc) => {
+        self.animation.start(0, 1, event.data.speed);
+    });
+    button.onGameEvent('endAll', (self, event, sc) => {
+        self.animation.stop();
+    });
 
     const hud = game.defineScene('hud', { width: game.canvas.width, height: 120, persistent: false });
     hud.setBackground('#0F0');
@@ -23,31 +44,10 @@ export function buildDefaultRoom(game: Game) {
         self.createInstance('actButton', 96, 32);
         self.createInstance('actButton', 196, 32);
     });
-    
-    game.getActor('actButton')
-        .onCreate((self, sc) => {
-            button.setRectBoundaryFromSprite();
-        })
-        .onPointerInput('mousedown', (self, gc, event) => {
-            if (self.animation.stopped) {
-                self.animation.start(0, 1, 100);
-            }
-            else {
-                self.animation.stop();
-            }
-        })
-        .onKeyboardInput('t', ((self, event, sc) => {
-            self.destroy();
-        }))
-        .onGameEvent('startAll', (self, event, sc) => {
-            self.animation.start(0, 1, event.data.speed);
-        })
-        .onGameEvent('endAll', (self, event, sc) => {
-            self.animation.stop();
-        });
 
-    game.defaultScene
-        .onStart((self, sc) => {
+
+    const scene = game.defaultScene;
+    scene.onStart((self, sc) => {
             console.log('defaultRoom.onStart');
 
             game.defaultScene.showSubScene('embedded', sc, { x: 200, y: 400, displayMode: SubSceneDisplayMode.Embed });
@@ -62,8 +62,8 @@ export function buildDefaultRoom(game: Game) {
 
             const map = [
                 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-                'X                    C        X',
-                'X                             X',
+                'X X                  C        X',
+                'X X                           X',
                 'X          C                  X',
                 'X                             X',
                 'X                             X',
@@ -85,19 +85,20 @@ export function buildDefaultRoom(game: Game) {
             };
 
             self.createInstancesFromMap(64, map, key);
-        })
-    .onGameEvent('something', (self, ev, sc) => {
+        });
+
+    scene.onGameEvent('something', (self, ev, sc) => {
         console.log('game.defaultScene.onGameEvent.something!');
         console.log('game.defaultScene.onGameEvent.something data = '+ev.data);
-    })
-    .onKeyboardInput('y', (self, event, sc) => {
+    });
+    scene.onKeyboardInput('y', (self, event, sc) => {
         sc.publishEvent('startAll', { speed: 250 });
-    })
-    .onKeyboardInput('u', (self, event, sc) => {
+    });
+    scene.onKeyboardInput('u', (self, event, sc) => {
         sc.publishEvent('startAll', { speed: 500 });
-    })
-    .onKeyboardInput('i', (self, event, sc) => {
+    });
+    scene.onKeyboardInput('i', (self, event, sc) => {
         sc.publishEvent('endAll');
-    })
+    });
 
 }

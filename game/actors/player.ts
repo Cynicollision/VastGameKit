@@ -3,44 +3,55 @@ import { Game } from './../../engine/game';
 
 export function buildPlayerActor(game: Game) {
     
-    game.defineActor('actPlayer', { 
+    const player = game.defineActor('actPlayer', { 
         sprite: game.defineSprite('sprPlayer', './resources/granite.png') 
-    })
-    .useBasicMotionBehavior()
-    .onLoad(player => {
+    });
+
+    player.useBasicMotionBehavior();
+
+    player.onLoad(player => {
         player.setRectBoundaryFromSprite();
-    })
-    .onCreate((self, gc) => {
+    });
+
+    player.onCreate((self, gc) => {
         self.state.stats = { health: 100 };
         self.animation.setTransform(SpriteTransformation.Opacity, 0.5);
         gc.state.message = ' :)';
-    })
-    .onGameEvent('something', (self, ev, sc) => {
+    });
+
+    player.onGameEvent('something', (self, ev, sc) => {
         const nextRoom = sc.scene.name === 'default' ? 'room1' : 'default';
         sc.transitionToScene(nextRoom, { durationMs: 500 });
         ev.cancel();
-    })
-    .onCollision('actCoin', (self, other, sc) => {
+    });
+
+    player.onCollision('actCoin', (self, other, sc) => {
         //other.destroy();
-    })
-    .onKeyboardInput('w', (self, ev, sc) => {
+    });
+    
+    player.onKeyboardInput('w', (self, ev, sc) => {
         // TODO: define in (new) ActorKeyboardControlBehavior
         self.state.moveUp = ev.type === 'keydown';
-    })
-    .onKeyboardInput('a', (self, ev, sc) => {
+    });
+
+    player.onKeyboardInput('a', (self, ev, sc) => {
         self.state.moveLeft = ev.type === 'keydown';
-    })
-    .onKeyboardInput('s', (self, ev, sc) => {
+    });
+
+    player.onKeyboardInput('s', (self, ev, sc) => {
         self.state.moveDown = ev.type === 'keydown';
-    })
-    .onKeyboardInput('d', (self, ev, sc) => {
+    });
+
+    player.onKeyboardInput('d', (self, ev, sc) => {
         self.state.moveRight = ev.type === 'keydown';
-    })
-    .onPointerInput('mousedown', (self, ev, sc) => {
+    });
+
+    player.onPointerInput('mousedown', (self, ev, sc) => {
         console.log('you clicked me');
         sc.publishEvent('something', { foo: 'bar'});
-    })
-    .onStep((self, sc) => {
+    });
+
+    player.onStep((self, sc) => {
         // TODO: ActorKeyboardControlBehavior
         if (self.state.moveUp || self.state.moveLeft || self.state.moveRight || self.state.moveDown) {
             self.motion.speed = 6;
@@ -73,8 +84,9 @@ export function buildPlayerActor(game: Game) {
         else if (self.state.moveDown) {
             self.motion.direction = Direction.Down;
         }
-    })
-    .onDraw((self, canvas, sc) => {
+    });
+
+    player.onDraw((self, canvas, sc) => {
         canvas.drawText(`(${self.x},${self.y})`, self.x + 100, self.y + 10);
     });
 }

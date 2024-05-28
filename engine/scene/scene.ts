@@ -10,7 +10,7 @@ import { Sprite } from './../sprite/sprite';
 import { Background, BackgroundOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
-import { EntityLifecycleCb, EntityLifecycleDrawCb, EntityLifecycleGameEventCb, EntityLifecycleKeyboardEventCb, EntityLifecyclePointerEventCb, LifecycleEntity, LifecycleEntityExecution } from './entity';
+import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
 
 export type SceneOptions = {
     height?: number;
@@ -18,7 +18,7 @@ export type SceneOptions = {
     width?: number;
 };
 
-export interface GameScene extends LifecycleEntity<GameScene, GameScene> {
+export interface GameScene extends LifecycleEntityBase<GameScene> {
     name: string;
     defaultCamera: SceneCamera;
     game: Game;
@@ -65,24 +65,17 @@ class SubScene {
     // TODO add: hide() mechanism
 }
 
-export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
+export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
     static readonly DefaultCameraName = 'default';
+
+    private onResumeCallback: EntityLifecycleCb<GameScene>;
+    private onStartCallback: EntityLifecycleCb<GameScene>;
+    private onSuspendCallback: EntityLifecycleCb<GameScene>;
 
     private readonly cameraMap: { [name: string]: Camera } = {};
     private readonly subSceneMap: { [name: string]: SubScene } = {};
     private instanceMap: { [index: number]: Instance } = {};
     
-    private gameEventHandlerMap: { [eventName: string]: EntityLifecycleGameEventCb<GameScene> } = {};
-    private keyboardInputEventHandlerMap: { [type: string]: EntityLifecycleKeyboardEventCb<GameScene> } = {};
-    private pointerInputEventHandlerMap: { [type: string]: EntityLifecyclePointerEventCb<GameScene> } = {};
-
-    private onDrawCallback: EntityLifecycleDrawCb<GameScene>;
-    private onLoadCallback: (actor: GameScene) => void;
-    private onResumeCallback: EntityLifecycleCb<GameScene>;
-    private onStartCallback: EntityLifecycleCb<GameScene>;
-    private onStepCallback: EntityLifecycleCb<GameScene>;
-    private onSuspendCallback: EntityLifecycleCb<GameScene>;
-
     private background: Background;
 
     private readonly _defaultCamera: Camera;
@@ -103,6 +96,7 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
     }
 
     private constructor(name: string, game: Game, options: SceneOptions = {}) {
+        super();
         this.name = name;
         this.game = game;
 
@@ -283,13 +277,13 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
         return instances;
     }
 
-    handleGameEvent(self: GameScene, ev: GameEvent, sc: SceneController): void {
+    handleGameEvent(ev: GameEvent, sc: SceneController): void {
         if (ev.isCancelled) {
             return;
         }
 
         if (this.gameEventHandlerMap[ev.name]) {
-            this.gameEventHandlerMap[ev.name](self, ev, sc);
+            this.gameEventHandlerMap[ev.name](this, ev, sc);
         }
         
         for (const instance of this.getInstances()) {
@@ -298,11 +292,11 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
 
         for (const subScene of this.getSubScenes()) {
             const scene = <Scene>subScene.scene;
-            scene.handleGameEvent(scene, ev, sc);
+            scene.handleGameEvent(ev, sc);
         }
     }
 
-    handleKeyboardEvent(self: GameScene, ev: KeyboardInputEvent, sc: SceneController): void {
+    handleKeyboardEvent(ev: KeyboardInputEvent, sc: SceneController): void {
         if (ev.isCancelled) {
             return;
         }
@@ -315,7 +309,7 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
         // propagate to sub-scenes.
         for (const subScene of this.getSubScenes()) {
             const scene = <Scene>subScene.scene;
-            scene.handleKeyboardEvent(scene, ev, sc);
+            scene.handleKeyboardEvent(ev, sc);
         }
 
         // call scene handler.
@@ -324,7 +318,7 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
         }
     }
 
-    handlePointerEvent(self: GameScene, ev: PointerInputEvent, sc: SceneController): void {
+    handlePointerEvent(ev: PointerInputEvent, sc: SceneController): void {
         if (ev.isCancelled) {
             return;
         }
@@ -362,26 +356,23 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
         for (const subScene of this.getSubScenes()) {
             const scene = <Scene>subScene.scene;
             if (subScene.displayMode === (SubSceneDisplayMode.Float)) {
-                scene.handlePointerEvent(scene, propogatedEvent, sc);
+                scene.handlePointerEvent(propogatedEvent, sc);
             }
             else {
                 const translatedEvent = propogatedEvent.translate(-subScene.x, -subScene.y);
-                scene.handlePointerEvent(scene, translatedEvent, sc);
+                scene.handlePointerEvent(translatedEvent, sc);
             }
             
         }
 
         // call scene handler.
-        const handler: EntityLifecyclePointerEventCb<GameScene> = this.pointerInputEventHandlerMap[ev.type];
-
-        if (handler) {
-            handler(self, ev, sc);
+        if (this.pointerInputEventHandlerMap[ev.type]) {
+            this.pointerInputEventHandlerMap[ev.type](this, ev, sc);
         }
     }
 
     init(): void {
         if (!this.options.persistent || this._status === SceneStatus.NotStarted) {
-            // this.resetLayers();
             this.instanceMap = {};
             this._status = SceneStatus.Starting;
         }
@@ -402,34 +393,10 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
     }
 
     load(): void {
+        // TODO: anything "internal" to do here?
         if (this.onLoadCallback) {
             this.onLoadCallback(this);
         }
-    }
-
-    onDraw(callback: EntityLifecycleDrawCb<GameScene>): GameScene {
-        this.onDrawCallback = callback;
-        return this;
-    }
-
-    onGameEvent(eventName: string, callback: EntityLifecycleGameEventCb<GameScene>): GameScene {
-        this.gameEventHandlerMap[eventName] = callback;
-        return this;
-    }
-
-    onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<GameScene>): GameScene {
-        this.keyboardInputEventHandlerMap[key] = callback;
-        return this;
-    }
-
-    onLoad(callback: (actor: GameScene) => void): GameScene {
-        this.onLoadCallback = callback;
-        return this;
-    }
-
-    onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<GameScene>): GameScene {
-        this.pointerInputEventHandlerMap[type] = callback;
-        return this;
     }
 
     onResume(callback: EntityLifecycleCb<GameScene>): GameScene {
@@ -439,11 +406,6 @@ export class Scene implements GameScene, LifecycleEntityExecution<GameScene> {
 
     onStart(callback: EntityLifecycleCb<GameScene>): GameScene {
         this.onStartCallback = callback;
-        return this;
-    }
-
-    onStep(callback: EntityLifecycleCb<GameScene>): GameScene {
-        this.onStepCallback = callback;
         return this;
     }
 

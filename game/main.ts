@@ -15,6 +15,7 @@ const game = VastGameKit.init({
     }
 });
 
+// TODO: put these within "load" callback, to be called after sprites, etc. are loaded.
 buildCoinActor(game);
 buildPlayerActor(game);
 buildWallActor(game);

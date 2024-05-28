@@ -1,10 +1,8 @@
 import { ActorBehaviorName } from './../core/enum';
 import { GameError } from './../core/error';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
-import { GameCanvas } from './../device/canvas';
 import { Game } from './../game';
 import { SceneController } from './../scene/controller';
-import { EntityLifecycleKeyboardEventCb, EntityLifecycleCb, LifecycleEntity, EntityLifecycleGameEventCb, EntityLifecyclePointerEventCb, EntityLifecycleDrawCb } from './../scene/entity';
+import { EntityLifecycleCb, LifecycleEntityBase } from './../scene/entity';
 import { Sprite } from './../sprite/sprite';
 import { CircleBoundary } from './boundaries/circleBoundary';
 import { RectBoundary } from './boundaries/rectangleBoundary';
@@ -26,7 +24,7 @@ type ActorLifecycleCollisionCallback = {
     (self: ActorInstance, other: ActorInstance, sc: SceneController): void;
 };
 
-export interface ActorDefinition extends LifecycleEntity<ActorDefinition, ActorInstance> {
+export interface ActorDefinition extends LifecycleEntityBase<ActorDefinition, ActorInstance> {
     name: string;
     behaviors: ActorBehaviorName[];
     boundary: Boundary;
@@ -44,17 +42,11 @@ export interface ActorDefinition extends LifecycleEntity<ActorDefinition, ActorI
     useBehavior(behaviorName: ActorBehaviorName): ActorDefinition;
 }
 
-export class Actor implements ActorDefinition {
-    private collisionHandlerRegistry: { [actorName: string]: ActorLifecycleCollisionCallback } = {};
-    private gameEventHandlerRegistry: { [eventName: string]: EntityLifecycleGameEventCb<ActorInstance> } = {};
-    private keyboardInputEventHandlerRegistry: { [type: string]: EntityLifecycleKeyboardEventCb<ActorInstance> } = {};
-    private pointerInputEventHandlerRegistry: { [type: string]: EntityLifecyclePointerEventCb<ActorInstance> } = {};
-
-    private onLoadCallback: (actor: ActorDefinition) => void;
+export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> implements ActorDefinition {
     private onCreateCallback: EntityLifecycleCb<ActorInstance>;
-    private onStepCallback: EntityLifecycleCb<ActorInstance>;
-    private onDrawCallback: EntityLifecycleDrawCb<ActorInstance>;
     private onDestroyCallback: EntityLifecycleCb<ActorInstance>;
+
+    private collisionHandlerRegistry: { [actorName: string]: ActorLifecycleCollisionCallback } = {};
 
     readonly name: string;
     readonly game: Game;
@@ -72,6 +64,7 @@ export class Actor implements ActorDefinition {
     }
 
     private constructor(name: string, game: Game, options: ActorOptions) {
+        super();
         this.name = name;
         this.game = game;
         this._boundary = options.boundary;
@@ -97,36 +90,6 @@ export class Actor implements ActorDefinition {
         }
     }
 
-    callDraw(self: ActorInstance, canvas: GameCanvas, sc: SceneController): void {
-        if (this.onDrawCallback) {
-            this.onDrawCallback(self, canvas, sc);
-        }
-    }
-
-    callGameEvent(self: ActorInstance, event: GameEvent, sc: SceneController): void {
-        if (this.gameEventHandlerRegistry[event.name]) {
-            this.gameEventHandlerRegistry[event.name](self, event, sc);
-        }
-    }
-
-    callKeyboardEvent(self: ActorInstance, event: KeyboardInputEvent, sc: SceneController): void {
-        if (this.keyboardInputEventHandlerRegistry[event.key]) {
-            this.keyboardInputEventHandlerRegistry[event.key](self, event, sc);
-        }
-    }
-
-    callPointerEvent(self: ActorInstance, event: PointerInputEvent, sc: SceneController): void {
-        if (this.pointerInputEventHandlerRegistry[event.type]) {
-            this.pointerInputEventHandlerRegistry[event.type](self, event, sc);
-        }
-    }
-
-    callStep(self: ActorInstance, sc: SceneController): void {
-        if (this.onStepCallback) {
-            this.onStepCallback(self, sc);
-        }
-    }
-
     getCollisionActorNames(): string[] {
         const actorNames = [];
 
@@ -135,12 +98,6 @@ export class Actor implements ActorDefinition {
         }
 
         return actorNames;
-    }
-
-    load(): void {
-        if (this.onLoadCallback) {
-            this.onLoadCallback(this);
-        }
     }
 
     onCreate(callback: EntityLifecycleCb<ActorInstance>): ActorDefinition {
@@ -159,36 +116,6 @@ export class Actor implements ActorDefinition {
 
     onDestroy(callback:  EntityLifecycleCb<ActorInstance>): ActorDefinition {
         this.onDestroyCallback = callback;
-        return this;
-    }
-
-    onDraw(callback: EntityLifecycleDrawCb<ActorInstance>): ActorDefinition {
-        this.onDrawCallback = callback;
-        return this;
-    }
-
-    onGameEvent(eventName: string, callback: EntityLifecycleGameEventCb<ActorInstance>): ActorDefinition {
-        this.gameEventHandlerRegistry[eventName] = callback;
-        return this;
-    }
-
-    onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<ActorInstance>): ActorDefinition {
-        this.keyboardInputEventHandlerRegistry[key] = callback;
-        return this;
-    }
-
-    onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<ActorInstance>): ActorDefinition {
-        this.pointerInputEventHandlerRegistry[type] = callback;
-        return this;
-    }
-
-    onStep(callback:  EntityLifecycleCb<ActorInstance>): ActorDefinition {
-        this.onStepCallback = callback;
-        return this;
-    }
-
-    onLoad(callback: (actor: ActorDefinition) => void): ActorDefinition {
-        this.onLoadCallback = callback;
         return this;
     }
 

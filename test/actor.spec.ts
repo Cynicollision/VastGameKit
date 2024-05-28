@@ -31,7 +31,7 @@ describe('Actor', () => {
 
         expect(loadCalled).toBeFalse();
 
-        testActor.load();
+        testActor.load(testActor);
 
         expect(loadCalled).toBeTrue();
         expect(loadedActor).toBe(testActor);
