@@ -2,7 +2,6 @@ import { ActorBehaviorName, InstanceStatus } from './../core/enum';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../scene/controller';
-import { GameScene } from './../scene/scene';
 import { SpriteAnimation } from './../sprite/spriteAnimation';
 import { ActorMotionBehavior } from './behaviors/motionBehavior';
 import { Actor, ActorBehavior } from './actor';
@@ -12,7 +11,6 @@ export interface ActorInstance  {
     animation: SpriteAnimation;
     actor: Actor;
     motion: ActorMotionBehavior;
-    scene: GameScene;
     state: { [name: string]: unknown };
     status: InstanceStatus;
     x: number;
@@ -29,7 +27,6 @@ export class Instance implements ActorInstance {
     private readonly behaviors: ActorBehavior[] = [];
     readonly id: number;
     readonly actor: Actor;
-    readonly scene: GameScene;
 
     private _animation: SpriteAnimation;
     get animation() { return this._animation; }
@@ -44,8 +41,8 @@ export class Instance implements ActorInstance {
     x: number = 0;
     y: number = 0;
 
-    static spawn(id: number, actor: Actor, scene: GameScene, x: number, y: number): ActorInstance {
-        const instance = new Instance(id, actor, scene);
+    static spawn(id: number, actor: Actor, x: number, y: number): ActorInstance {
+        const instance = new Instance(id, actor);
         instance.x = x; 
         instance.y = y;
 
@@ -62,10 +59,9 @@ export class Instance implements ActorInstance {
         return instance;
     }
 
-    private constructor(id: number, actor: Actor, scene: GameScene) {
+    private constructor(id: number, actor: Actor) {
         this.id = id;
         this.actor = actor;
-        this.scene = scene;
         this._status = InstanceStatus.New;
     }
 
@@ -117,6 +113,8 @@ export class Instance implements ActorInstance {
         if (this._animation) {
             this._animation.draw(canvas, this.x, this.y);
         }
+
+        this.actor.callDraw(this, canvas, sc);
     }
 
     handleGameEvent(self: ActorInstance, event: GameEvent, sc: SceneController): void {

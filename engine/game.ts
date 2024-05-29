@@ -1,7 +1,7 @@
 import { Actor, ActorDefinition, ActorOptions } from './actor/actor';
 import { GameError } from './core/error';
 import { GameAudio, GameAudioOptions } from './device/audio';
-import { GameCanvas } from './device/canvas';
+import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
 import { Controller } from './scene/controller';
 import { Scene, GameScene, SceneOptions } from './scene/scene';
@@ -34,11 +34,21 @@ export class Game {
     private readonly _defaultScene: Scene;
     get defaultScene(): GameScene { return this._defaultScene; }
 
-    static init(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions): Game {
-        return new Game(canvas, inputHandler, options);
+    static initGame(options: GameOptions): Game {
+        try {
+            const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
+            const canvas = GameCanvasHtml2D.initForElement(canvasElement);
+            const inputHandler = GameInputHandler.initForElement(document.body);
+            return new Game(canvas, inputHandler, options);
+        }
+        catch (error) {
+            const message = error.message ? error.message : error;
+            console.error(`Vastgame failed to initialize. ${message}`);
+            throw new GameError(message, error);
+        }
     }
 
-    private constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
+    constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
@@ -50,17 +60,19 @@ export class Game {
         return options;
     }
 
+    // TODO move to Controller.
     nextSceneRuntimeID = (() => {
         let currentID = 0;
         return (() => ++currentID);
     })();
 
+    // TODO rename -> initActor, (newActor?) etc.
     defineActor(actorName: string, options: ActorOptions = {}): ActorDefinition {
         if (this.actorMap[actorName]) {
             throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
         }
         
-        const actor = <Actor>Actor.define(actorName, this, options);
+        const actor = <Actor>Actor.define(actorName, options);
         this.actorMap[actorName] = actor;
 
         return actor;

@@ -18,25 +18,26 @@ export type SceneOptions = {
     width?: number;
 };
 
+// TODO separate into SceneDefinition, SceneExecution.
 export interface GameScene extends LifecycleEntityBase<GameScene> {
     name: string;
     defaultCamera: SceneCamera;
-    game: Game;
+    game: Game; // TODO replace with Controller reference? (in SceneExecution)
     height: number;
-    status: SceneStatus;
+    status: SceneStatus; // "execution"
     width: number;
-    createInstance(actorName: string, x?: number, y?: number): ActorInstance;
-    createInstancesFromMap(gridSize: number, map: string[], instanceKey: {[char: string]: string }): ActorInstance[];
-    defineCamera(cameraName: string, options?: SceneCameraOptions): SceneCamera;
-    getInstances(actorName?: string): ActorInstance[];
-    getInstancesAtPosition(x: number, y: number, solid?: boolean): ActorInstance[];
-    getInstancesWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid?: boolean): ActorInstance[];
-    isPositionFree(x: number, y: number, solid?: boolean): boolean;
+    createInstance(actorName: string, x?: number, y?: number): ActorInstance; // "execution"
+    createInstancesFromMap(gridSize: number, map: string[], instanceKey: {[char: string]: string }): ActorInstance[]; // "execution"
+    defineCamera(cameraName: string, options?: SceneCameraOptions): SceneCamera; // TODO rename -> initCamera
+    getInstances(actorName?: string): ActorInstance[]; // "execution"
+    getInstancesAtPosition(x: number, y: number, solid?: boolean): ActorInstance[]; // "execution"
+    getInstancesWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid?: boolean): ActorInstance[]; // "execution"
+    isPositionFree(x: number, y: number, solid?: boolean): boolean; // "execution"
     onResume(callback: EntityLifecycleCb<GameScene>): GameScene;
     onStart(callback: EntityLifecycleCb<GameScene>): GameScene;
     onSuspend(callback: EntityLifecycleCb<GameScene>): GameScene;
     setBackground(colorOrSprite: string | Sprite, options?: BackgroundOptions): GameScene;
-    showSubScene(sceneName: string, sc: SceneController, options?: SubSceneOptions): SubScene;
+    showSubScene(sceneName: string, sc: SceneController, options?: SubSceneOptions): SubScene; // TODO rename (Execution) -> initSubScene
 }
 
 type SubSceneOptions = {
@@ -162,7 +163,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         const spawnX = (x || 0);
         const spawnY = (y || 0);
 
-        const newInstance = <Instance>Instance.spawn(instanceId, actor, this, spawnX, spawnY);
+        const newInstance = <Instance>Instance.spawn(instanceId, actor, spawnX, spawnY);
         this.instanceMap[instanceId] = newInstance;
 
         return newInstance;

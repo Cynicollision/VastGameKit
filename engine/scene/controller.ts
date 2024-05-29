@@ -15,8 +15,7 @@ export interface SceneController {
 }
 
 export class Controller implements SceneController {
-    private _game: Game;
-    get game() { return this._game; }
+    readonly game: Game;
 
     private _scene: Scene;
     get scene(): GameScene { return this._scene; }
@@ -27,7 +26,7 @@ export class Controller implements SceneController {
     readonly state: { [name: string]: unknown } = {};
 
     constructor(game: Game, scene: Scene) {
-        this._game = game;
+        this.game = game;
         this.setCurrentScene(scene);
     }
 

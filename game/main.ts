@@ -1,4 +1,4 @@
-import { VastGameKit } from './../engine/vastgamekit';
+import { Game } from './../engine/game';
 
 import { buildWallActor } from './actors/wall';
 import { buildRoom1 } from './rooms/room1';
@@ -6,7 +6,7 @@ import { buildPlayerActor } from './actors/player';
 import { buildCoinActor } from './actors/coin';
 import { buildDefaultRoom } from './rooms/default';
 
-const game = VastGameKit.init({
+const game = Game.initGame({
     canvasElementId: 'gameCanvas',
     defaultSceneOptions: {
         height: 1000, 

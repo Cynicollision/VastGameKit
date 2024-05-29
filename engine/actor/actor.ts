@@ -28,7 +28,6 @@ export interface ActorDefinition extends LifecycleEntityBase<ActorDefinition, Ac
     name: string;
     behaviors: ActorBehaviorName[];
     boundary: Boundary;
-    game: Game;
     sprite: Sprite;
     solid: boolean;
     onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): ActorDefinition;
@@ -49,7 +48,6 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
     private collisionHandlerRegistry: { [actorName: string]: ActorLifecycleCollisionCallback } = {};
 
     readonly name: string;
-    readonly game: Game;
     solid: boolean;
     sprite: Sprite;
 
@@ -59,14 +57,15 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
 
-    static define(name: string, game: Game, options: ActorOptions = {}): ActorDefinition {
-        return new Actor(name, game, options);
+    // TODO rename "static define" -> init etc. throughout
+    //  
+    static define(name: string, options: ActorOptions = {}): ActorDefinition {
+        return new Actor(name, options);
     }
 
-    private constructor(name: string, game: Game, options: ActorOptions) {
+    private constructor(name: string, options: ActorOptions) {
         super();
         this.name = name;
-        this.game = game;
         this._boundary = options.boundary;
         this.solid = options.solid || false;
         this.sprite = options.sprite;

@@ -18,7 +18,7 @@ export class TestUtil {
 
     static getTestGame(options?: GameOptions): Game {
         options = options || this.defaultGameConfig;
-        return Game.init(new MockGameCanvas(), this.getMockInputHandler(), options);
+        return new Game(new MockGameCanvas(), this.getMockInputHandler(), options);
     }
 
     static getTestController(game: Game): Controller {

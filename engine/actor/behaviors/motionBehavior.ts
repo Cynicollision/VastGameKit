@@ -23,7 +23,7 @@ export class ActorMotionBehavior implements ActorBehavior {
                 return;
             }
 
-            const instancesAtNewPosition = self.scene.getInstancesWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y + newY, true);
+            const instancesAtNewPosition = sc.scene.getInstancesWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y + newY, true);
             let freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
             let freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
 
@@ -56,7 +56,7 @@ export class ActorMotionBehavior implements ActorBehavior {
     afterStep(self: ActorInstance, sc: SceneController): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
-                const otherInstances = self.scene.getInstances(actorName);
+                const otherInstances = sc.scene.getInstances(actorName);
                 for (const other of otherInstances) {
                     if (self !== other && self.collidesWith(other)) {
                         self.actor.callCollision(self, other, sc);
