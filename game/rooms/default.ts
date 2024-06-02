@@ -63,27 +63,34 @@ export function buildDefaultRoom(game: Game) {
         follower2.follow(self.defaultCamera, { offsetX: 16, offsetY: 16 });
         follower2.depth = -100;
 
-        self.defaultCamera.follow(player, { centerOnTarget: true });
-        self.defaultCamera.portY = 120;
+        const scale = 1;
 
-        self.defineCamera('minimap', { x: 0, y: 0, portX: 800, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
+        self.defaultCamera.height = (960 - 120) / scale;
+        self.defaultCamera.width = 1280 / scale;
+        self.defaultCamera.portWidth = self.defaultCamera.width * scale;
+        self.defaultCamera.portHeight = self.defaultCamera.height * scale;
+
+        self.defaultCamera.portY = 120;
+        self.defaultCamera.follow(player, { centerOnTarget: true });
+
+        self.defineCamera('minimap', { x: 0, y: 0, portX: 1000, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
 
         const map = [
-            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-            'X X                  C        X',
-            'X X                           X',
-            'X          C                  X',
-            'X                             X',
-            'X                             X',
-            'X             B           B   X',
-            'X                             X',
-            'X                  XX         X',
-            'X                 XXXX        X',
-            'X                  XX         X',
-            'X XXXXX                       X',
-            'X X X X         XXXXX         X',
-            'X X                           X',
-            'XXXXXXXXXX  XXXXXXXXXXXXXXXXXXX',
+            'XXXXXXXXX  XXX     XXXXX      XXXX  XXXXX',
+            'X X                  C                  X',
+            'X X                                     X',
+            'X          C                            X',
+            'X                                       X',
+            'X                                       X',
+            'X             B           B             X',
+            'X                                       X',
+            'X                  XX                   X',
+            'X                 XXXX                  X',
+            'X                  XX                   X',
+            'X XXXXX                                 X',
+            'X X X X         XXXXX                   X',
+            'X X                                     X',
+            'XXXXXXXXXX  XXXXXXX            XXXXXXXXXX',
         ];
 
         const key = {

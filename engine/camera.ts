@@ -70,12 +70,15 @@ export class Camera implements SceneCamera {
             return;
         }
 
-        const width = this._scene.game.canvas.width - this.portX;
-        const newX = this._followOptions.centerOnTarget ? (this._followTarget.x - width / 2 + this._followTarget.width / 2) : this._followTarget.x;
-        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._scene.width - width);
+        let newX = this._followTarget.x;
+        let newY = this._followTarget.y;
 
-        const height = this._scene.game.canvas.height - this.portY;
-        const newY = this._followOptions.centerOnTarget ? (this._followTarget.y - height / 2 + this._followTarget.height / 2) : this._followTarget.y;
-        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._scene.height - height);
+        if (this._followOptions.centerOnTarget) {
+            newX -= this.width / 2 - this._followTarget.width / 2;
+            newY -= this.height / 2 - this._followTarget.height / 2;
+        }
+
+        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._scene.width - this.width);
+        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._scene.height - this.height);
     }
 }

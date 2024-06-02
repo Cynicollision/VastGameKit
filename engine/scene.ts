@@ -201,6 +201,9 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
             const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
             cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
+
+            // debug
+            sceneCanvas.drawRect('#F00', camera.x + 2, camera.y + 2, camera.width - 4, camera.height - 4);
         }
 
         for (const embed of this.getSceneEmbeds(SceneEmbedDisplayMode.Float)) {

@@ -30,6 +30,7 @@ export interface GameCanvas {
     width: number;
     clear(): void;
     drawCanvas(canvas: GameCanvas, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void;
+    drawRect(color: string, x: number, y: number, w: number, h: number): void;
     drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void;
     drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void;
     drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
@@ -72,6 +73,11 @@ export class GameCanvasHtml2D implements GameCanvas {
         this.canvasContext2D.fill();
     }
 
+    drawRect(color: string, x: number, y: number, w: number, h: number): void {
+        this.canvasContext2D.strokeStyle = color;
+        this.canvasContext2D.strokeRect(x, y, w, h);
+    }
+
     drawSprite(sprite: Sprite, x: number, y: number, options: CanvasDrawImageOptions = {}): void {
         this.drawImage(sprite.image, 0, 0, sprite.width, sprite.height, x, y, sprite.width, sprite.height, options);
     }
@@ -93,6 +99,8 @@ export class GameCanvasHtml2D implements GameCanvas {
         // set opacity
         const defaultOpacity = 1;
         let previousOpacity: number = null;
+
+        this.canvasContext2D.imageSmoothingEnabled = false;
 
         if (options.opacity !== defaultOpacity && options.opacity !== null && options.opacity !== undefined) {
             previousOpacity = this.canvasContext2D.globalAlpha;

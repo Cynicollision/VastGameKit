@@ -9,8 +9,8 @@ import { buildDefaultRoom } from './rooms/default';
 const game = Game.init({
     canvasElementId: 'gameCanvas',
     defaultSceneOptions: {
-        height: 1000, 
-        width: 2000, 
+        height: 2000, 
+        width: 4000, 
         persistent: true
     }
 });

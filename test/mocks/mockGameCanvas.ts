@@ -11,6 +11,8 @@ export class MockGameCanvas implements GameCanvas {
     }
     drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void {
     }
+    drawRect(color: string, x: number, y: number, w: number, h: number): void {
+    }
     drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void {
     }
     drawText(text: string, x: number, y: number, options?: CanvasDrawTextOptions): void {
