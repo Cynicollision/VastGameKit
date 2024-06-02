@@ -9,13 +9,6 @@ describe('Game', () => {
         game = TestUtil.getTestGame();
     });
 
-    it('defines ActorInstance IDs', () => {
-        let id = game.nextSceneRuntimeID();
-        expect(id).toBe(1);
-        id = game.nextSceneRuntimeID();
-        expect(id).toBe(2);
-    });
-
     it('defines Actors', () => {
         game.defineActor('testActor');
 

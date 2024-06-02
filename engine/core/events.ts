@@ -8,8 +8,7 @@ export class GameEvent {
     private _data: any;
     get data() { return this._data; }
 
-    // TODO rename "static init" methods -> "new.." throughout
-    static init(eventName: string, data?: any): GameEvent {
+    static new(eventName: string, data?: any): GameEvent {
         return new GameEvent(eventName, data);
     }
 

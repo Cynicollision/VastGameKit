@@ -1,42 +1,57 @@
 import { CanvasDrawImageOptions, CanvasFillOptions, GameCanvas } from './device/canvas';
-import { GameScene } from './scene';
 import { Sprite } from './sprite';
 
-export type BackgroundOptions = CanvasDrawImageOptions | CanvasFillOptions;
+export type BackgroundOptions = {
+    height?: number;
+    width?: number;
+    x?: number;
+    y?: number;
+};
+
+export type BackgroundDrawOptions = CanvasDrawImageOptions | CanvasFillOptions;
 
 export class Background {
     private static readonly DefaultColor = '#CCC';
-    private readonly scene: GameScene;
-    private readonly options: BackgroundOptions;
+
+    private readonly _drawOptions: BackgroundDrawOptions;
     readonly color: string;
     readonly sprite: Sprite;
+    readonly height: number = 0;
+    readonly width: number = 0;
+    readonly x: number = 0;
+    readonly y: number = 0;
 
-    private constructor(scene: GameScene, color: string, sprite: Sprite, options: BackgroundOptions) {
+    private constructor(color: string, sprite: Sprite, options: BackgroundOptions = {}, drawOptions: BackgroundDrawOptions = {}) {
         this.color = color;
-        this.scene = scene; // TODO replace scene reference and params? does Background just need height/width and x,y ?
         this.sprite = sprite;
-        this.options = options;
-    }
-
-    static fromColor(scene: GameScene, color: string, options: CanvasFillOptions = {}): Background {
-        return new Background(scene, color, null, options);
-    }
-
-    static fromSprite(scene: GameScene, sprite: Sprite, options: CanvasDrawImageOptions): Background {
-        options.repeatX = options.repeatX !== undefined ? options.repeatX : true;
-        options.repeatY = options.repeatY !== undefined ? options.repeatY : true;
-        options.repeatHeight = options.repeatHeight || scene.height;
-        options.repeatWidth = options.repeatWidth || scene.width;
         
-        return new Background(scene, Background.DefaultColor, sprite, options);
+        this.height = options.height || 0;
+        this.width = options.width || 0;
+        this.x = options.x || 0;
+        this.y = options.y || 0;
+
+        this._drawOptions = drawOptions;
+    }
+
+    static fromColor( color: string, options: BackgroundOptions = {}, drawOptions: CanvasFillOptions = {}): Background {
+        return new Background(color, null, options, drawOptions);
+    }
+
+    static fromSprite(sprite: Sprite, options: BackgroundOptions = {}, drawOptions: CanvasDrawImageOptions = {}): Background {
+        drawOptions.repeatX = drawOptions.repeatX !== undefined ? drawOptions.repeatX : true;
+        drawOptions.repeatY = drawOptions.repeatY !== undefined ? drawOptions.repeatY : true;
+        drawOptions.repeatHeight = drawOptions.repeatHeight || options.height;
+        drawOptions.repeatWidth = drawOptions.repeatWidth || options.width;
+        
+        return new Background(Background.DefaultColor, sprite, options, drawOptions);
     }
 
     draw(canvas: GameCanvas): void {
         if (this.sprite) {
-            canvas.drawSprite(this.sprite, 0, 0, this.options); // TODO use x,y here if implemented
+            canvas.drawSprite(this.sprite, this.x, this.y, this._drawOptions);
         }
         else if (this.color) {
-            canvas.fillArea(this.color, 0, 0, this.scene.width, this.scene.height, this.options); // TODO use x,y here if implemented
+            canvas.fillArea(this.color, this.x, this.y, this.width, this.height, this._drawOptions);
         }
     }
 }

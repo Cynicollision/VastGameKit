@@ -1,4 +1,4 @@
-import { ActorBehaviorName, Boundary, GameError } from './core';
+import { ActorBehaviorName, Boundary, GameError, ObjMap } from './core';
 import { CircleBoundary, RectBoundary } from './core/boundaries';
 import { ActorInstance } from './actorInstance';
 import { SceneController } from './controller';
@@ -41,7 +41,7 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
     private onCreateCallback: EntityLifecycleCb<ActorInstance>;
     private onDestroyCallback: EntityLifecycleCb<ActorInstance>;
 
-    private collisionHandlerRegistry: { [actorName: string]: ActorLifecycleCollisionCallback } = {};
+    private collisionHandlerRegistry: ObjMap<ActorLifecycleCollisionCallback> = {};
 
     readonly name: string;
     solid: boolean;
@@ -53,9 +53,7 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
 
-    // TODO rename "static define" -> init etc. throughout
-    //  
-    static define(name: string, options: ActorOptions = {}): ActorDefinition {
+    static new(name: string, options: ActorOptions = {}): ActorDefinition {
         return new Actor(name, options);
     }
 

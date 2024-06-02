@@ -6,7 +6,7 @@ import { buildPlayerActor } from './actors/player';
 import { buildCoinActor } from './actors/coin';
 import { buildDefaultRoom } from './rooms/default';
 
-const game = Game.initGame({
+const game = Game.init({
     canvasElementId: 'gameCanvas',
     defaultSceneOptions: {
         height: 1000, 
@@ -15,7 +15,7 @@ const game = Game.initGame({
     }
 });
 
-// TODO: put these within "load" callback, to be called after sprites, etc. are loaded.
+// TODO: put these within "load/setup" callback, to be called after sprites, etc. are loaded.
 buildCoinActor(game);
 buildPlayerActor(game);
 buildWallActor(game);
@@ -23,7 +23,6 @@ buildWallActor(game);
 buildDefaultRoom(game);
 buildRoom1(game);
 
-// load and start the game
 game.load().then(() => {
     game.start();
 })

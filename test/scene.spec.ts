@@ -8,9 +8,12 @@ import { TestUtil } from './testUtil';
 
 describe('Scene', () => {
     let testGame: Game;
+    let testController: Controller;
     let testScene: Scene;
+
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
+        testController = TestUtil.getTestController(testGame);
         testScene = <Scene>testGame.defineScene('testScene');
 
         testGame.defineActor('testActor').setRectBoundary(20, 20);
@@ -23,17 +26,9 @@ describe('Scene', () => {
             expect(testScene.status).toBe(SceneStatus.NotStarted);
         });
 
-        it('when NotStarted, on initialize, changes to Starting', () => {
-            expect(testScene.status).toBe(SceneStatus.NotStarted);
-
-            testScene.init();
-
-            expect(testScene.status).toBe(SceneStatus.Starting);
-        });
-
         it('when Starting, on scene start, changes to Running', () => {
             const sc = TestUtil.getTestController(testGame);
-            testScene.start(sc);
+            testScene.startOrResume(sc);
 
             expect(testScene.status).toBe(SceneStatus.Running);
         });
@@ -45,34 +40,14 @@ describe('Scene', () => {
             expect(testScene.status).toBe(SceneStatus.Suspended);
         });
 
-        it('when Suspended, on initialize, if not persistent, changes to Starting', () => {
-            const sc = TestUtil.getTestController(testGame);
-            testScene.options.persistent = false;
-            testScene.suspend(sc);
-            expect(testScene.status).toBe(SceneStatus.Suspended);
-
-            testScene.init();
-
-            expect(testScene.status).toBe(SceneStatus.Starting);
-        });
-
-        it('when Suspended, on initialize, if persistent, changes to Resuming', () => {
-            testScene.options.persistent = true;
-            testScene.suspend(TestUtil.getTestController(testGame));
-
-            testScene.init();
-
-            expect(testScene.status).toBe(SceneStatus.Resuming);
-        });
-
         it('when Resuming, on scene start, changes to Running', () => {
             const sc = TestUtil.getTestController(testGame);
             testScene.options.persistent = true;
             testScene.suspend(sc);
-            testScene.init();
-            expect(testScene.status).toBe(SceneStatus.Resuming);
 
-            testScene.start(sc);
+            expect(testScene.status).toBe(SceneStatus.Suspended);
+
+            testScene.startOrResume(sc);
 
             expect(testScene.status).toBe(SceneStatus.Running);
         });
@@ -81,7 +56,7 @@ describe('Scene', () => {
     describe('manages ActorInstances', () => {
 
         it('creates ActorInstances', () => {
-            testScene.createInstance('testActor', 0, 0);
+            testScene.createInstance('testActor');
             const layerInstances = testScene.getInstances();
     
             expect(layerInstances.length).toBe(1);
@@ -89,7 +64,7 @@ describe('Scene', () => {
         });
     
         it('checks if a position is free of any ActorInstances', () => {
-            const instance = testScene.createInstance('testActor', 10, 10);
+            const instance = testScene.createInstance('testActor', {x: 10, y: 10 });
     
             expect(testScene.isPositionFree(0, 0)).toBeTrue()
             expect(testScene.isPositionFree(20, 20)).toBeFalse();
@@ -97,7 +72,7 @@ describe('Scene', () => {
         });
     
         it('checks if a position is free of solid ActorInstances', () => {
-            const instance = testScene.createInstance('testActor', 10, 10);
+            const instance = testScene.createInstance('testActor', {x: 10, y: 10 });
             instance.actor.solid = true;
     
             expect(testScene.isPositionFree(20, 20, true)).toBeFalse();
@@ -106,12 +81,36 @@ describe('Scene', () => {
     
             expect(testScene.isPositionFree(20, 20, true)).toBeTrue();
         });
+
+        it('gets ActorInstances of a specific type', () => {
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor2');
+            testScene.createInstance('testActor2');
+
+            expect(testScene.getInstances().length).toBe(5);
+            expect(testScene.getInstances('testActor').length).toBe(3);
+            expect(testScene.getInstances('testActor2').length).toBe(2);
+        });
+
+        it('gets ActorInstances by depth', () => {
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor');
+            testScene.createInstance('testActor2');
+            testScene.createInstance('testActor2');
+
+            expect(testScene.getInstances().length).toBe(5);
+            expect(testScene.getInstances('testActor').length).toBe(3);
+            expect(testScene.getInstances('testActor2').length).toBe(2);
+        });
     
         it('gets ActorInstances at a position', () => {
-            const instance1 = testScene.createInstance('testActor', 10, 10);
+            const instance1 = testScene.createInstance('testActor', {x: 10, y: 10 });
             instance1.actor.solid = true;
     
-            const instance2 = testScene.createInstance('testActor2', 15, 15);
+            const instance2 = testScene.createInstance('testActor2', {x: 15, y: 15 });
             instance2.actor.solid = false;
     
             expect(testScene.getInstancesAtPosition(5, 5).length).toBe(0);
@@ -120,10 +119,10 @@ describe('Scene', () => {
         });
     
         it('gets ActorInstances within a Boundary at a position', () => {
-            const instance1 = testScene.createInstance('testActor', 20, 20);
+            const instance1 = testScene.createInstance('testActor', {x: 20, y: 20 });
             instance1.actor.solid = true;
     
-            const instance2 = testScene.createInstance('testActor2', 25, 25);
+            const instance2 = testScene.createInstance('testActor2', {x: 25, y: 25 });
             instance2.actor.solid = false;
     
             const boundary = new RectBoundary(8, 8);
@@ -136,10 +135,10 @@ describe('Scene', () => {
     });
 
     describe('lifecycle callbacks', () => {
-        let sc: Controller;
+        let testController: Controller;
 
         beforeEach(() => {
-            sc = TestUtil.getTestController(testGame);
+            testController = TestUtil.getTestController(testGame);
         });
 
         it('defines an onDraw callback', () => {
@@ -150,7 +149,7 @@ describe('Scene', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testScene.draw(testGame.canvas, sc);
+            testScene.draw(testGame.canvas, testController);
 
             expect(drawCalled).toBeTrue();
         });
@@ -163,7 +162,7 @@ describe('Scene', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testScene.handleGameEvent(GameEvent.init('testEvent'), sc);
+            testScene.handleGameEvent(GameEvent.new('testEvent'), testController);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -178,7 +177,7 @@ describe('Scene', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testScene.handlePointerEvent(new PointerInputEvent('pointertest', 20, 40), sc);
+            testScene.handlePointerEvent(new PointerInputEvent('pointertest', 20, 40), testController);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -194,7 +193,7 @@ describe('Scene', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testScene.handleKeyboardEvent( new KeyboardInputEvent('testkey', 'testkeytype'), sc);
+            testScene.handleKeyboardEvent( new KeyboardInputEvent('testkey', 'testkeytype'), testController);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -208,7 +207,9 @@ describe('Scene', () => {
 
             expect(resumeCalled).toBeFalse();
 
-            testScene.resume(sc);
+            testScene.startOrResume(testController);
+            testScene.suspend(testController);
+            testScene.startOrResume(testController);
 
             expect(resumeCalled).toBeTrue();
         });
@@ -221,7 +222,7 @@ describe('Scene', () => {
 
             expect(startCalled).toBeFalse();
 
-            testScene.start(sc);
+            testScene.startOrResume(testController);
 
             expect(startCalled).toBeTrue();
         });
@@ -232,7 +233,9 @@ describe('Scene', () => {
                 stepCalled = true;
             });
 
-            testScene.step(sc);
+            testScene.startOrResume(testController);
+            testScene.step(testController);
+
             expect(stepCalled).toBeTrue();
         });
 
@@ -244,7 +247,7 @@ describe('Scene', () => {
 
             expect(suspendCalled).toBeFalse();
 
-            testScene.suspend(sc);
+            testScene.suspend(testController);
 
             expect(suspendCalled).toBeTrue();
         });
@@ -284,10 +287,8 @@ describe('Scene', () => {
                     actorOnDestroyCalled = true;
                 });
 
-            testScene.init();
             sc.goToScene('testScene');
-            testScene.start(sc);
-            //testLayer.activate();
+            testScene.startOrResume(sc);
         });
 
         it('activates new ActorInstances and calls Actor callbacks', () => {

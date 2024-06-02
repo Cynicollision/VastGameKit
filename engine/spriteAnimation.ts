@@ -1,4 +1,4 @@
-import { SpriteTransformation } from './core';
+import { ObjMap, SpriteTransformation } from './core';
 import { CanvasDrawImageOptions, GameCanvas } from './device/canvas';
 import { Sprite } from './sprite';
 
@@ -8,7 +8,7 @@ export type SpriteDrawOptions = CanvasDrawImageOptions & {
 
 export class SpriteAnimation {
     private readonly sprite: Sprite;
-    private transformations: { [index: number]: SpriteTransformation } = {};
+    private transformations: ObjMap<SpriteTransformation> = {};
     private timer: NodeJS.Timeout;
 
     private _paused: boolean = true;

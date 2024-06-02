@@ -1,4 +1,4 @@
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './core';
+import { GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
 import { GameCanvas } from './device/canvas';
 import { SceneController } from './controller';
 
@@ -22,10 +22,23 @@ export type EntityLifecyclePointerEventCb<T> = {
     (self: T, ev: PointerInputEvent, sc: SceneController): void;
 };
 
+export type FollowEntityOptions = {
+    centerOnTarget?: boolean;
+    offsetX?: number;
+    offsetY?: number;
+};
+
+export type PositionedEntity = {
+    height: number;
+    width: number;
+    x: number;
+    y: number;
+};
+
 export abstract class LifecycleEntityBase<T, U = T> {
-    protected gameEventHandlerMap: { [eventName: string]: EntityLifecycleGameEventCb<U> } = {};
-    protected keyboardInputEventHandlerMap: { [type: string]: EntityLifecycleKeyboardEventCb<U> } = {};
-    protected pointerInputEventHandlerMap: { [type: string]: EntityLifecyclePointerEventCb<U> } = {};
+    protected gameEventHandlerMap: ObjMap<EntityLifecycleGameEventCb<U>> = {};
+    protected keyboardInputEventHandlerMap: ObjMap<EntityLifecycleKeyboardEventCb<U>> = {};
+    protected pointerInputEventHandlerMap: ObjMap<EntityLifecyclePointerEventCb<U>> = {};
 
     protected onLoadCallback: (actor: T) => void;
     protected onStepCallback: EntityLifecycleCb<U>;

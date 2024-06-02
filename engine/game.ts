@@ -1,4 +1,4 @@
-import { GameError } from './core';
+import { GameError, ObjMap } from './core';
 import { GameAudio, GameAudioOptions } from './device/audio';
 import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
@@ -17,10 +17,12 @@ export class Game {
     private static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
-    private readonly actorMap: { [name: string]: Actor } = {};
-    private readonly audioMap: { [name: string]: GameAudio } = {};
-    private readonly sceneMap: { [name: string]: Scene } = {};
-    private readonly spriteMap: { [name: string]: Sprite } = {};
+    private readonly actorMap: ObjMap<Actor> = {};
+    private readonly audioMap: ObjMap<GameAudio> = {};
+    private readonly sceneMap: ObjMap<Scene> = {};
+    private readonly spriteMap: ObjMap<Sprite> = {};
+
+    readonly controller: Controller;
 
     private readonly _options: GameOptions;
     get options() { return this._options; }
@@ -34,11 +36,12 @@ export class Game {
     private readonly _defaultScene: Scene;
     get defaultScene(): GameScene { return this._defaultScene; }
 
-    static initGame(options: GameOptions): Game {
+    static init(options: GameOptions): Game {
         try {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
             const canvas = GameCanvasHtml2D.initForElement(canvasElement);
             const inputHandler = GameInputHandler.initForElement(document.body);
+
             return new Game(canvas, inputHandler, options);
         }
         catch (error) {
@@ -53,6 +56,7 @@ export class Game {
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
         this._defaultScene = <Scene>this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this.controller = new Controller(this, this._defaultScene);
     }
 
     private applyGameOptions(options: GameOptions): GameOptions {
@@ -60,20 +64,13 @@ export class Game {
         return options;
     }
 
-    // TODO move to Controller.
-    nextSceneRuntimeID = (() => {
-        let currentID = 0;
-        return (() => ++currentID);
-    })();
-
-    // TODO rename -> initActor, (newActor?) etc.
     defineActor(actorName: string, options: ActorOptions = {}): ActorDefinition {
         if (this.actorMap[actorName]) {
             throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
         }
         
-        const actor = <Actor>Actor.define(actorName, options);
-        this.actorMap[actorName] = actor;
+        const actor = Actor.new(actorName, options);
+        this.actorMap[actorName] = <Actor>actor;
 
         return actor;
     }
@@ -94,7 +91,7 @@ export class Game {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }
 
-        const scene = <Scene>Scene.define(sceneName, this, options);
+        const scene = <Scene>Scene.new(sceneName, this, options);
         this.sceneMap[sceneName] = scene;
 
         return scene;
@@ -167,26 +164,25 @@ export class Game {
     }
 
     start() {
-        // TODO: track whether started previously, skip rest(?) to prevent "improper restart"
-        const controller = new Controller(this, this._defaultScene);
-
-        this._inputHandler.keyboard.subscribe(ev => controller.onKeyboardEvent(ev));
-        this._inputHandler.pointer.subscribe(ev => controller.onPointerEvent(ev));
+        this._inputHandler.keyboard.subscribe(ev => this.controller.onKeyboardEvent(ev));
+        this._inputHandler.pointer.subscribe(ev => this.controller.onPointerEvent(ev));
 
         let offset = 0;
         let previous = window.performance.now();
         const stepSize = 1 / this.options.targetFPS;
+
+        (<Scene>this.controller.scene).startOrResume(this.controller);
 
         const gameLoop: FrameRequestCallback = (): void => {
             const current = window.performance.now();
             offset += (Math.min(1, (current - previous) / 1000));
 
             while (offset > stepSize) {
-                controller.step();
+                this.controller.step();
                 offset -= stepSize;
             }
 
-            controller.draw(this._canvas);
+            this.controller.draw(this._canvas);
             previous = current;
             requestAnimationFrame(gameLoop);
         };

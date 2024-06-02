@@ -19,6 +19,8 @@ describe('Actor', () => {
         testController = TestUtil.getTestController(testGame);
         testActor = <Actor>testGame.defineActor('testActor');
         testScene = <Scene>testGame.defineScene('testScene');
+
+        testController = TestUtil.startScene(testGame, testScene);
     });
 
     it('defines an on-load callback', () => {
@@ -76,7 +78,7 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, GameEvent.init('testEvent'), testController);
+            testActor.callGameEvent(null, GameEvent.new('testEvent'), testController);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -180,7 +182,7 @@ describe('Actor', () => {
         expect(handlerCalled).toBeFalse();
         expect(dataFromEvent).toBeNull();
 
-        const event = GameEvent.init('testEvent', { value: 123 });
+        const event = GameEvent.new('testEvent', { value: 123 });
         testActor.callGameEvent(null, event, testController);
 
         expect(handlerCalled).toBeTrue();

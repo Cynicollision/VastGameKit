@@ -16,10 +16,13 @@ export enum InstanceStatus {
     New = 'New',
 }
 
+export enum SceneEmbedDisplayMode {
+    Embed = 'Embed',
+    Float = 'Float'
+}
+
 export enum SceneStatus {
     NotStarted = 'NotStarted',
-    Starting = 'Starting',
-    Resuming = 'Resuming',
     Running = 'Running',
     Suspended = 'Suspended',
 }
@@ -35,7 +38,3 @@ export enum SpriteTransformation {
     TileY = 3,
 }
 
-export enum SubSceneDisplayMode {
-    Embed = 'Embed',
-    Float = 'Float'
-}

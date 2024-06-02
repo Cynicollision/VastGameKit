@@ -28,7 +28,6 @@ export class CircleBoundary implements Boundary {
     }
 }
 
-
 export class PositionedCircleBoundary implements PositionedBoundary {
     readonly boundary: CircleBoundary;
     readonly x: number;

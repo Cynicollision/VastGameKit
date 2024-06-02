@@ -1,4 +1,4 @@
-import { Controller } from './../engine/controller';
+import { Controller, SceneController } from './../engine/controller';
 import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
 import { Scene, GameScene } from './../engine/scene';
@@ -22,8 +22,8 @@ export class TestUtil {
         return new Game(new MockGameCanvas(), this.getMockInputHandler(), options);
     }
 
-    static getTestController(game: Game): Controller {
-        return new Controller(game, <Scene>this.getTestScene(game));
+    static getTestController(game: Game, scene?: Scene): Controller {
+        return new Controller(game, scene || <Scene>game.defaultScene);
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
@@ -31,6 +31,12 @@ export class TestUtil {
     }
 
     static getTestScene(game: Game): GameScene {
-        return Scene.define('testScene', game);
+        return Scene.new('testScene', game);
+    }
+
+    static startScene(game: Game, scene: GameScene): Controller {
+        const sc = new Controller(game, <Scene>scene);
+        (<Scene>scene).startOrResume(sc);
+        return sc;
     }
 }

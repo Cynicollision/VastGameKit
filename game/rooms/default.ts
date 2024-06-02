@@ -1,4 +1,4 @@
-import { SubSceneDisplayMode } from './../../engine/core';
+import { SceneEmbedDisplayMode } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {
@@ -8,10 +8,10 @@ export function buildDefaultRoom(game: Game) {
     const button = game.defineActor('actButton');
     button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 
-    
     button.onCreate((self, sc) => {
         button.setRectBoundaryFromSprite();
-    })
+    });
+
     button.onPointerInput('mousedown', (self, gc, event) => {
         if (self.animation.stopped) {
             self.animation.start(0, 1, 100);
@@ -20,12 +20,15 @@ export function buildDefaultRoom(game: Game) {
             self.animation.stop();
         }
     });
+
     button.onKeyboardInput('t', ((self, event, sc) => {
         self.destroy();
     }));
+
     button.onGameEvent('startAll', (self, event, sc) => {
         self.animation.start(0, 1, event.data.speed);
     });
+
     button.onGameEvent('endAll', (self, event, sc) => {
         self.animation.stop();
     });
@@ -33,72 +36,79 @@ export function buildDefaultRoom(game: Game) {
     const hud = game.defineScene('hud', { width: game.canvas.width, height: 120, persistent: false });
     hud.setBackground('#0F0');
     hud.onStart((self, sc) => {
-        self.createInstance('actButton', 32, 32);
-        self.createInstance('actButton', 96, 32);
+        self.createInstance('actButton', { x: 32, y: 32 });
+        self.createInstance('actButton', { x: 96, y: 32 });
     });
 
     const embedded = game.defineScene('embedded', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
-        self.createInstance('actButton', 32, 32);
-        self.createInstance('actButton', 96, 32);
-        self.createInstance('actButton', 196, 32);
+        self.createInstance('actButton', { x: 32, y: 32 });
+        self.createInstance('actButton', { x: 96, y: 32 });
+        self.createInstance('actButton', { x: 196, y: 32 });
     });
 
+    game.defaultScene.createSceneEmbed('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
+    game.defaultScene.createSceneEmbed('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
-    const scene = game.defaultScene;
-    scene.onStart((self, sc) => {
-            console.log('defaultRoom.onStart');
+    game.defaultScene.onStart((self, sc) => {
+        console.log('defaultRoom.onStart');
 
-            game.defaultScene.showSubScene('embedded', sc, { x: 200, y: 400, displayMode: SubSceneDisplayMode.Embed });
-            game.defaultScene.showSubScene('hud', sc, { x: 0, y: 0, displayMode: SubSceneDisplayMode.Float });
+        const player = self.createInstance('actPlayer', { x: 256, y: 256 });
 
-            const player = self.createInstance('actPlayer', 256, 256);
+        const follower1 = self.createInstance('actButton');
+        follower1.follow(player, { offsetX: 16, offsetY: 16 });
 
-            self.defaultCamera.follow(player, { centerOnInstanceBoundary: true });
-            self.defaultCamera.portY = 120;
+        const follower2 = self.createInstance('actButton');
+        follower2.follow(self.defaultCamera, { offsetX: 16, offsetY: 16 });
+        follower2.depth = -100;
 
-            self.defineCamera('minimap', { x: 0, y: 0, portX: 800, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
+        self.defaultCamera.follow(player, { centerOnTarget: true });
+        self.defaultCamera.portY = 120;
 
-            const map = [
-                'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
-                'X X                  C        X',
-                'X X                           X',
-                'X          C                  X',
-                'X                             X',
-                'X                             X',
-                'X             B           B   X',
-                'X                             X',
-                'X                  XX         X',
-                'X                 XXXX        X',
-                'X                  XX         X',
-                'X XXXXX                       X',
-                'X X X X         XXXXX         X',
-                'X X                           X',
-                'XXXXXXXXXX  XXXXXXXXXXXXXXXXXXX',
-            ];
+        self.defineCamera('minimap', { x: 0, y: 0, portX: 800, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
 
-            const key = {
-                'C': 'actCoin',
-                'X': 'actWall',
-                'B': 'actButton',
-            };
+        const map = [
+            'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX',
+            'X X                  C        X',
+            'X X                           X',
+            'X          C                  X',
+            'X                             X',
+            'X                             X',
+            'X             B           B   X',
+            'X                             X',
+            'X                  XX         X',
+            'X                 XXXX        X',
+            'X                  XX         X',
+            'X XXXXX                       X',
+            'X X X X         XXXXX         X',
+            'X X                           X',
+            'XXXXXXXXXX  XXXXXXXXXXXXXXXXXXX',
+        ];
 
-            self.createInstancesFromMap(64, map, key);
-        });
+        const key = {
+            'C': 'actCoin',
+            'X': 'actWall',
+            'B': 'actButton',
+        };
 
-    scene.onGameEvent('something', (self, ev, sc) => {
+        self.createInstancesFromMap(64, map, key);
+    });
+
+    game.defaultScene.onGameEvent('something', (self, ev, sc) => {
         console.log('game.defaultScene.onGameEvent.something!');
         console.log('game.defaultScene.onGameEvent.something data = '+ev.data);
     });
-    scene.onKeyboardInput('y', (self, event, sc) => {
+
+    game.defaultScene.onKeyboardInput('y', (self, event, sc) => {
         sc.publishEvent('startAll', { speed: 250 });
     });
-    scene.onKeyboardInput('u', (self, event, sc) => {
+
+    game.defaultScene.onKeyboardInput('u', (self, event, sc) => {
         sc.publishEvent('startAll', { speed: 500 });
     });
-    scene.onKeyboardInput('i', (self, event, sc) => {
+
+    game.defaultScene.onKeyboardInput('i', (self, event, sc) => {
         sc.publishEvent('endAll');
     });
-
 }

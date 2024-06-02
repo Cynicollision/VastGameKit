@@ -1,4 +1,4 @@
-import { GameError } from './../core';
+import { GameError, ObjMap } from './../core';
 import { Sprite } from './../sprite';
 
 export type GameCanvasOptions = {
@@ -40,7 +40,7 @@ export interface GameCanvas {
 
 export class GameCanvasHtml2D implements GameCanvas {
     private backgroundColor: string = '#fff';
-    private subCanvasMap: { [name: string]: GameCanvas } = {};
+    private subCanvasMap: ObjMap<GameCanvas> = {};
 
     private _canvas: HTMLCanvasElement;
     get canvas() { return this._canvas; }
