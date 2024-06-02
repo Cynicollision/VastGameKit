@@ -1,9 +1,9 @@
 
 
-import { Actor } from '../engine/actor';
+import { Actor } from './../engine/actor';
 import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { Game } from './../engine/game';
-import { Controller } from '../engine/controller';
+import { Controller } from './../engine/controller';
 import { Scene } from './../engine/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';

@@ -1,8 +1,8 @@
-import { Controller } from '../engine/controller';
+import { Controller } from './../engine/controller';
 import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
 import { Scene, GameScene } from './../engine/scene';
-import { Sprite, SpriteOptions } from '../engine/sprite';
+import { Sprite, SpriteOptions } from './../engine/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestImage } from './mocks/testImage';
 

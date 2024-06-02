@@ -1,7 +1,7 @@
-import { RectBoundary } from '../engine/core/boundaries/rectangleBoundary';
+import { RectBoundary } from './../engine/core/boundaries/rectangleBoundary';
 import { GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
-import { Controller } from '../engine/controller';
+import { Controller } from './../engine/controller';
 import { Scene } from './../engine/scene';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { TestUtil } from './testUtil';

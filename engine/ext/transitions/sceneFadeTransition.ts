@@ -1,7 +1,7 @@
-import { MathUtil } from '../../core';
-import { GameCanvas } from '../../device/canvas';
-import { Scene } from '../../scene';
-import { SceneTransition, SceneTransitionOptions } from '../../sceneTransition';
+import { MathUtil } from './../../core';
+import { GameCanvas } from './../../device/canvas';
+import { Scene } from './../../scene';
+import { SceneTransition, SceneTransitionOptions } from './../../sceneTransition';
 
 export class SceneFadeTransition implements SceneTransition {
     private static readonly DefaultColor = '#000';
