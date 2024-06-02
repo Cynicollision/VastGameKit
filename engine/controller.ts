@@ -1,9 +1,8 @@
-import { SceneTransitionType } from './../core/enum';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
-import { GameCanvas } from './../device/canvas';
-import { Game } from './../game';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent, SceneTransitionType } from './core';
+import { GameCanvas } from './device/canvas';
+import { Game } from './game';
 import { Scene, GameScene } from './scene';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
+import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './sceneTransition';
 
 export interface SceneController {
     game: Game;

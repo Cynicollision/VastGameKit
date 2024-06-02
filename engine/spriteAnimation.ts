@@ -1,5 +1,5 @@
-import { SpriteTransformation } from './../core/enum';
-import { CanvasDrawImageOptions, GameCanvas } from './../device/canvas';
+import { SpriteTransformation } from './core';
+import { CanvasDrawImageOptions, GameCanvas } from './device/canvas';
 import { Sprite } from './sprite';
 
 export type SpriteDrawOptions = CanvasDrawImageOptions & {

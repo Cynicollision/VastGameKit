@@ -1,16 +1,14 @@
-import { RectBoundary } from './../engine/actor/boundaries/rectangleBoundary';
-import { InstanceStatus, SceneStatus } from './../engine/core/enum';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core/events';
+import { RectBoundary } from '../engine/core/boundaries/rectangleBoundary';
+import { GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
-import { Controller } from './../engine/scene/controller';
-import { Scene } from './../engine/scene/scene';
+import { Controller } from '../engine/controller';
+import { Scene } from './../engine/scene';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { TestUtil } from './testUtil';
 
 describe('Scene', () => {
     let testGame: Game;
     let testScene: Scene;
-
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testScene = <Scene>testGame.defineScene('testScene');

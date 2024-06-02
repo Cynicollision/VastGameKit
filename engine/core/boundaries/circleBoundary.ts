@@ -1,6 +1,6 @@
-import { Geometry } from './../../core/geometry';
-import { Sprite } from './../../sprite/sprite';
 import { Boundary, PositionedBoundary } from './../boundary';
+import { Geometry } from './../geometry';
+import { Sprite } from './../../sprite';
 import { PositionedRectBoundary } from './rectangleBoundary';
 
 export class CircleBoundary implements Boundary {

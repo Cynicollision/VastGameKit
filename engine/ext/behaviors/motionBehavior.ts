@@ -1,7 +1,7 @@
-import { Geometry } from './../../core/geometry';
-import { SceneController } from './../../scene/controller';
-import { ActorBehavior } from './../actor';
-import { ActorInstance } from './../instance';
+import { Geometry } from '../../core';
+import { SceneController } from '../../controller';
+import { ActorBehavior } from '../../actor';
+import { ActorInstance } from '../../actorInstance';
 
 export class ActorMotionBehavior implements ActorBehavior {
     direction: number = 0;

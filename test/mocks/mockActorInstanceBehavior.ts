@@ -1,6 +1,6 @@
-import { Instance } from './../../engine/actor/instance';
-import { ActorBehavior } from './../../engine/actor/actor';
-import { Controller } from './../../engine/scene/controller';
+import { Instance } from '../../engine/actorInstance';
+import { ActorBehavior } from '../../engine/actor';
+import { Controller } from '../../engine/controller';
 
 export class MockActorInstanceBehavior implements ActorBehavior {
     beforeStepCallCount = 0;

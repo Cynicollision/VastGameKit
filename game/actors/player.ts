@@ -1,4 +1,4 @@
-import { Direction, SpriteTransformation } from './../../engine/core/enum';
+import { Direction, SpriteTransformation } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildPlayerActor(game: Game) {

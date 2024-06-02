@@ -1,10 +1,11 @@
-import { Scene, GameScene } from './../engine/scene/scene';
+import { Controller } from '../engine/controller';
+import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
-import { Controller } from './../engine/scene/controller';
-import { Sprite, SpriteOptions } from './../engine/sprite/sprite';
+import { Scene, GameScene } from './../engine/scene';
+import { Sprite, SpriteOptions } from '../engine/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestImage } from './mocks/testImage';
-import { GameInputHandler } from './../engine/device/input';
+
 
 export class TestUtil {
 

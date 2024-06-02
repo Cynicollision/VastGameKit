@@ -1,4 +1,4 @@
-import { SubSceneDisplayMode } from './../../engine/core/enum';
+import { SubSceneDisplayMode } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {

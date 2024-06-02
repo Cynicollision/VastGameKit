@@ -1,4 +1,4 @@
-import { PointerInputEvent } from './../core/events';
+import { PointerInputEvent } from './../core';
 import { InputEventSubscription, InputHandler } from './input';
 
 export class PointerInputHandler implements InputHandler<PointerInputEvent> {

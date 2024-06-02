@@ -1,11 +1,11 @@
-import { Actor, ActorDefinition, ActorOptions } from './actor/actor';
-import { GameError } from './core/error';
+import { GameError } from './core';
 import { GameAudio, GameAudioOptions } from './device/audio';
 import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
-import { Controller } from './scene/controller';
-import { Scene, GameScene, SceneOptions } from './scene/scene';
-import { Sprite, SpriteOptions } from './sprite/sprite';
+import { Actor, ActorDefinition, ActorOptions } from './actor';
+import { Controller } from './controller';
+import { Scene, GameScene, SceneOptions } from './scene';
+import { Sprite, SpriteOptions } from './sprite';
 
 export type GameOptions = {
     canvasElementId: string;

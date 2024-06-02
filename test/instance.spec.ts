@@ -1,6 +1,6 @@
 
-import { ActorInstance } from './../engine/actor/instance';
-import { InstanceStatus } from './../engine/core/enum';
+import { ActorInstance } from '../engine/actorInstance';
+import { InstanceStatus } from './../engine/core';
 import { Game } from './../engine/game';
 import { TestUtil } from './testUtil';
 

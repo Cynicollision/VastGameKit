@@ -1,16 +1,14 @@
-import { Actor } from './../actor/actor';
-import { Boundary } from './../actor/boundary';
-import { ActorInstance, Instance } from './../actor/instance';
-import { InstanceStatus, SceneStatus, SubSceneDisplayMode } from './../core/enum';
-import { GameError } from './../core/error';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
-import { GameCanvas } from './../device/canvas';
-import { Game } from './../game';
-import { Sprite } from './../sprite/sprite';
+
+import { Boundary, GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus, SubSceneDisplayMode } from './core';
+import { GameCanvas } from './device/canvas';
+import { Actor } from './actor';
+import { ActorInstance, Instance } from './actorInstance';
 import { Background, BackgroundOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
+import { Game } from './game';
+import { Sprite } from './sprite';
 
 export type SceneOptions = {
     height?: number;
@@ -73,9 +71,9 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
     private onStartCallback: EntityLifecycleCb<GameScene>;
     private onSuspendCallback: EntityLifecycleCb<GameScene>;
 
-    private readonly cameraMap: { [name: string]: Camera } = {};
-    private readonly subSceneMap: { [name: string]: SubScene } = {};
-    private instanceMap: { [index: number]: Instance } = {};
+    private readonly cameraMap: ObjMap<Camera> = {};
+    private readonly subSceneMap: ObjMap<SubScene> = {};
+    private instanceMap: ObjMap<Instance> = {};
     
     private background: Background;
 

@@ -1,7 +1,7 @@
-import { Actor } from './../engine/actor/actor';
-import { ActorInstance } from './../engine/actor/instance';
+import { Actor } from '../engine/actor';
+import { ActorInstance } from '../engine/actorInstance';
 import { Game } from './../engine/game';
-import { Camera } from './../engine/scene/camera';
+import { Camera } from '../engine/camera';
 import { TestUtil } from './testUtil';
 
 describe('SceneCamera', () => {

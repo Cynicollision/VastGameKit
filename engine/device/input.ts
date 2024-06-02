@@ -1,4 +1,4 @@
-import { GameEvent } from './../core/events';
+import { GameEvent } from './../core';
 import { KeyboardInputHandler } from './keyboard';
 import { PointerInputHandler } from './pointer';
 

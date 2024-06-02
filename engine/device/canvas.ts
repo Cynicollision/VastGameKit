@@ -1,5 +1,5 @@
-import { GameError } from './../core/error';
-import { Sprite } from './../sprite/sprite';
+import { GameError } from './../core';
+import { Sprite } from './../sprite';
 
 export type GameCanvasOptions = {
     backgroundColor?: string;

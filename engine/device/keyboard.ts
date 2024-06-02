@@ -1,4 +1,4 @@
-import { KeyboardInputEvent } from './../core/events';
+import { KeyboardInputEvent } from './../core';
 import { InputEventSubscription, InputHandler } from './input';
 
 export class KeyboardInputHandler implements InputHandler<KeyboardInputEvent> {

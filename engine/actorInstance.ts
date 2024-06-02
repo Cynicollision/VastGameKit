@@ -1,10 +1,9 @@
-import { ActorBehaviorName, InstanceStatus } from './../core/enum';
-import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../core/events';
-import { GameCanvas } from './../device/canvas';
-import { SceneController } from './../scene/controller';
-import { SpriteAnimation } from './../sprite/spriteAnimation';
-import { ActorMotionBehavior } from './behaviors/motionBehavior';
+import { ActorBehaviorName, GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent } from './core';
+import { GameCanvas } from './device/canvas';
+import { ActorMotionBehavior } from './ext/behaviors/motionBehavior';
 import { Actor, ActorBehavior } from './actor';
+import { SceneController } from './controller';
+import { SpriteAnimation } from './spriteAnimation';
 
 export interface ActorInstance  {
     id: number;
