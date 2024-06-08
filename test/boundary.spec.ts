@@ -42,6 +42,14 @@ describe('RectBoundary', () => {
         expect(b.atPosition(50, 50).containsPosition(45, 55)).toBe(false);
         expect(b.atPosition(50, 50).containsPosition(55, 45)).toBe(false);
     });
+
+    it('tests side-by-side scenarios', () => {
+        const a = new RectBoundary(16, 16);
+        const b = new RectBoundary(16, 16);
+
+        expect(a.atPosition(0, 0).collidesWith(b.atPosition(0, 16))).toBeFalse();
+        expect(a.atPosition(0, 0).collidesWith(b.atPosition(16, 0))).toBeFalse();
+    });
 });
 
 describe('CircleBoundary', () => {

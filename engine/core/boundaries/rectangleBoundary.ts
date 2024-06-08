@@ -46,7 +46,7 @@ export class PositionedRectBoundary implements PositionedBoundary {
 
     collidesWith(other: PositionedBoundary): boolean {
         if (other instanceof PositionedRectBoundary) {
-            return Geometry.rectangleIntersectsRectangle(this.x, this.y, this.boundary.width, this.boundary.height, other.x, other.y, other.boundary.width, other.boundary.height);
+            return Geometry.rectangleIntersectsRectangle(this.x, this.y, this.boundary.width, this.boundary.height, other.x, other.y, other.boundary.width - 1, other.boundary.height - 1);
         }
         else if (other instanceof PositionedCircleBoundary) {
             return Geometry.rectangleIntersectsCircle(this.x, this.y, this.boundary.width, this.boundary.height, other.x, other.y, other.boundary.radius);

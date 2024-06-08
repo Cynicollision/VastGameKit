@@ -26,9 +26,9 @@ export interface ActorDefinition extends LifecycleEntityBase<ActorDefinition, Ac
     boundary: Boundary;
     sprite: Sprite;
     solid: boolean;
-    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): ActorDefinition;
-    onCreate(callback: EntityLifecycleCb<ActorInstance>): ActorDefinition;
-    onDestroy(callback: EntityLifecycleCb<ActorInstance>): ActorDefinition;
+    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void;
+    onCreate(callback: EntityLifecycleCb<ActorInstance>): void;
+    onDestroy(callback: EntityLifecycleCb<ActorInstance>): void;
     setCircleBoundary(radius: number, originX: number, originY: number): CircleBoundary;
     setCircleBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): CircleBoundary;
     setRectBoundary(height: number, width: number, originX?: number, originY?: number): RectBoundary
@@ -93,23 +93,20 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         return actorNames;
     }
 
-    onCreate(callback: EntityLifecycleCb<ActorInstance>): ActorDefinition {
+    onCreate(callback: EntityLifecycleCb<ActorInstance>): void {
         this.onCreateCallback = callback;
-        return this;
     }
 
-    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): ActorDefinition {
+    onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void {
         if (this.collisionHandlerRegistry[actorName]) {
             throw new GameError(`Actor ${this.name} already has a collision handler for Actor ${actorName}.`)
         }
 
         this.collisionHandlerRegistry[actorName] = callback;
-        return <ActorDefinition>this;
     }
 
-    onDestroy(callback:  EntityLifecycleCb<ActorInstance>): ActorDefinition {
+    onDestroy(callback:  EntityLifecycleCb<ActorInstance>): void {
         this.onDestroyCallback = callback;
-        return this;
     }
 
     setCircleBoundary(radius: number, originX: number = 0, originY: number = 0): CircleBoundary {

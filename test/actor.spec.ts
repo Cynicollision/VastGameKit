@@ -17,8 +17,8 @@ describe('Actor', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testController = TestUtil.getTestController(testGame);
-        testActor = <Actor>testGame.defineActor('testActor');
-        testScene = <Scene>testGame.defineScene('testScene');
+        testActor = <Actor>testGame.resources.defineActor('testActor');
+        testScene = <Scene>testGame.resources.defineScene('testScene');
 
         testController = TestUtil.startScene(testGame, testScene);
     });
@@ -56,8 +56,8 @@ describe('Actor', () => {
 
         it('defines a collsion handler callback', () => {
             let collisionHandlerCalled = false;
-            testGame.defineActor('actor2');
-            const instance2 = testScene.createInstance('actor2');
+            testGame.resources.defineActor('actor2');
+            const instance2 = testScene.instances.create('actor2');
 
             testActor.onCollision('actor2', (self, other, state) => {
                 collisionHandlerCalled = true;
@@ -158,7 +158,7 @@ describe('Actor', () => {
     it('sets its boundary to the size of its Sprite', (done) => {
         expect(testActor.boundary).toBeUndefined();
 
-        testActor.sprite = testGame.defineSprite('testSprite', TestImage.Source);
+        testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source);
         testActor.sprite.load().then(() => {
             const boundary = testActor.setRectBoundaryFromSprite();
 

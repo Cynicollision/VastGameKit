@@ -1,3 +1,4 @@
+import { GameResources } from '../engine/gameResources';
 import { Controller, SceneController } from './../engine/controller';
 import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
@@ -17,13 +18,14 @@ export class TestUtil {
         return new GameInputHandler(null, null)
     }
 
+    // TODO replace with "TestGameBuilder"
     static getTestGame(options?: GameOptions): Game {
         options = options || this.defaultGameConfig;
         return new Game(new MockGameCanvas(), this.getMockInputHandler(), options);
     }
 
     static getTestController(game: Game, scene?: Scene): Controller {
-        return new Controller(game, scene || <Scene>game.defaultScene);
+        return new Controller(game.resources, scene || <Scene>game.defaultScene, { pulseLength: 30 });
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
@@ -31,11 +33,11 @@ export class TestUtil {
     }
 
     static getTestScene(game: Game): GameScene {
-        return Scene.new('testScene', game);
+        return Scene.new('testScene', game.resources);
     }
 
     static startScene(game: Game, scene: GameScene): Controller {
-        const sc = new Controller(game, <Scene>scene);
+        const sc = new Controller(game.resources, <Scene>scene, { pulseLength: 30 });
         (<Scene>scene).startOrResume(sc);
         return sc;
     }

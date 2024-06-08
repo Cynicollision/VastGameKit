@@ -5,12 +5,14 @@ import { buildRoom1 } from './rooms/room1';
 import { buildPlayerActor } from './actors/player';
 import { buildCoinActor } from './actors/coin';
 import { buildDefaultRoom } from './rooms/default';
+import { buildHUD } from './rooms/hud';
 
 const game = Game.init({
     canvasElementId: 'gameCanvas',
+    targetFPS: 60,
     defaultSceneOptions: {
-        height: 2000, 
-        width: 4000, 
+        height: 1024, 
+        width: 1532, 
         persistent: true
     }
 });
@@ -19,6 +21,7 @@ const game = Game.init({
 buildCoinActor(game);
 buildPlayerActor(game);
 buildWallActor(game);
+buildHUD(game);
 
 buildDefaultRoom(game);
 buildRoom1(game);

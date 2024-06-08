@@ -13,12 +13,12 @@ describe('SceneCamera', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
         testCamera = <Camera>testGame.defaultScene.defaultCamera;
-        testActor = <Actor>testGame.defineActor('testActor');
+        testActor = <Actor>testGame.resources.defineActor('testActor');
         testActor.setRectBoundary(100, 200);
 
         TestUtil.startScene(testGame, testGame.defaultScene);
 
-        testInstance = <Instance>testGame.defaultScene.createInstance('testActor');
+        testInstance = <Instance>testGame.defaultScene.instances.create('testActor');
     });
 
     describe('defines valid dimensions', () => {

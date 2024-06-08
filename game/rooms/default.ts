@@ -3,10 +3,10 @@ import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {
 
-    game.defaultScene.setBackground(game.defineSprite('sky', './resources/sky.png'));
+    game.defaultScene.setBackground(game.resources.defineSprite('sky', './resources/sky.png'));
 
-    const button = game.defineActor('actButton');
-    button.sprite = game.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
+    const button = game.resources.defineActor('actButton');
+    button.sprite = game.resources.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 
     button.onCreate((self, sc) => {
         button.setRectBoundaryFromSprite();
@@ -33,37 +33,30 @@ export function buildDefaultRoom(game: Game) {
         self.animation.stop();
     });
 
-    const hud = game.defineScene('hud', { width: game.canvas.width, height: 120, persistent: false });
-    hud.setBackground('#0F0');
-    hud.onStart((self, sc) => {
-        self.createInstance('actButton', { x: 32, y: 32 });
-        self.createInstance('actButton', { x: 96, y: 32 });
-    });
-
-    const embedded = game.defineScene('embedded', { width: 250, height: 250, persistent: false });
+    const embedded = game.resources.defineScene('embedded', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
-        self.createInstance('actButton', { x: 32, y: 32 });
-        self.createInstance('actButton', { x: 96, y: 32 });
-        self.createInstance('actButton', { x: 196, y: 32 });
+        self.instances.create('actButton', { x: 32, y: 32 });
+        self.instances.create('actButton', { x: 96, y: 32 });
+        self.instances.create('actButton', { x: 196, y: 32 });
     });
 
-    game.defaultScene.createSceneEmbed('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
-    game.defaultScene.createSceneEmbed('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
+    game.defaultScene.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
+    game.defaultScene.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
     game.defaultScene.onStart((self, sc) => {
         console.log('defaultRoom.onStart');
 
-        const player = self.createInstance('actPlayer', { x: 256, y: 256 });
+        const player = self.instances.create('actPlayer', { x: 32, y: 128 });
 
-        const follower1 = self.createInstance('actButton');
-        follower1.follow(player, { offsetX: 16, offsetY: 16 });
+        // const follower1 = self.instances.create('actButton');
+        // follower1.follow(player, { offsetX: 16, offsetY: 16 });
 
-        const follower2 = self.createInstance('actButton');
-        follower2.follow(self.defaultCamera, { offsetX: 16, offsetY: 16 });
+        const follower2 = self.instances.create('actButton');
+        follower2.follow(self.defaultCamera, { offsetX: 19, offsetY: 19 });
         follower2.depth = -100;
 
-        const scale = 1;
+        const scale = 4;
 
         self.defaultCamera.height = (960 - 120) / scale;
         self.defaultCamera.width = 1280 / scale;
@@ -76,31 +69,36 @@ export function buildDefaultRoom(game: Game) {
         self.defineCamera('minimap', { x: 0, y: 0, portX: 1000, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
 
         const map = [
-            'XXXXXXXXX  XXX     XXXXX      XXXX  XXXXX',
-            'X X                  C                  X',
-            'X X                                     X',
-            'X          C                            X',
-            'X                                       X',
-            'X                                       X',
-            'X             B           B             X',
-            'X                                       X',
-            'X                  XX                   X',
-            'X                 XXXX                  X',
-            'X                  XX                   X',
-            'X XXXXX                                 X',
-            'X X X X         XXXXX                   X',
-            'X X                                     X',
-            'XXXXXXXXXX  XXXXXXX            XXXXXXXXXX',
+            'XXXXXXXXXXXXXXXXXXXXXXXX',
+            'X X                  C X',
+            'X X                    X',
+            'X    P     C           X',
+            'X                      X',
+            'X                      X',
+            'X             B        X',
+            'X                      X',
+            'X                  XX  X',
+            'X                 XXXX X',
+            'X                  XX  X',
+            'X XXXXX                X',
+            'X X X X         XXXXX  X',
+            'X X                    X',
+            'X                      X',
+            'XXXXXXXXXXXXXXXXXXXXXXXX',
         ];
 
         const key = {
             'C': 'actCoin',
             'X': 'actWall',
-            'B': 'actButton',
+            'B': 'actButton'
         };
 
-        self.createInstancesFromMap(64, map, key);
+        self.instances.createFromMap(16, map, key);
     });
+
+    game.defaultScene.onResume((self, sc) => {
+        console.log('defaultRoom.onResume');
+    })
 
     game.defaultScene.onGameEvent('something', (self, ev, sc) => {
         console.log('game.defaultScene.onGameEvent.something!');

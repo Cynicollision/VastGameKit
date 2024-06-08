@@ -14,41 +14,62 @@ export class ActorMotionBehavior implements ActorBehavior {
         this.previousY = self.y;
 
         if (this.speed !== 0) {
-            let newX = Geometry.getLengthDirectionX(this.speed, this.direction);
-            let newY = Geometry.getLengthDirectionY(this.speed, this.direction);
-            
+            let newX = Math.round(Geometry.getLengthDirectionX(this.speed * 10, this.direction) / 10);
+            let newY = Math.round(Geometry.getLengthDirectionY(this.speed * 10, this.direction) / 10);
+
             if (!self.actor.boundary) {
                 self.x += newX;
                 self.y += newY;
                 return;
             }
 
-            const instancesAtNewPosition = sc.scene.getInstancesWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y + newY, true);
-            let freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
-            let freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
+            let instancesAtNewPositionX = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y, true);
+            let freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
+            
+            let instancesAtNewPositionY = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + newY, true);
+            let freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
 
-            const maxChecks = this.speed;
-            let current = 1;
-            while (current < maxChecks && !freeAtNewPositionX && Math.abs(newX) > 1) {
-                newX += self.x + newX > self.x ? -1 : 1;
-                newX = Math.round(newX);
-                freeAtNewPositionX = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
-                current++;
+            if (freeAtNewPositionX && freeAtNewPositionY) {
+                self.x += newX;
+                self.y += newY;
+                return;
             }
 
-            current = 1;
-            while (current < maxChecks && !freeAtNewPositionY && Math.abs(newY) > 1) { 
-                newY += self.y + newY > self.y ? -1 : 1;
-                newY = Math.round(newY);
-                freeAtNewPositionY = !instancesAtNewPosition.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
-                current++;
+            // move as close to the nearest solid Boundary as possible.
+            const newXSign = newX / Math.abs(newX);
+            const newYSign = newY / Math.abs(newY);
+            let tryNewX = newX !== 0 ? newXSign : 0;
+            let tryNewY = newY !== 0 ? newYSign : 0;
+
+            if (tryNewX !== 0 && !freeAtNewPositionX) {
+                for (let i = 1; i < Math.abs(newX); i++) {
+                    instancesAtNewPositionX = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + tryNewX, self.y, true);
+                    freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + tryNewX, self.y)));
+                    if (!freeAtNewPositionX) {
+                        break;
+                    }
+                    newX = tryNewX;
+                    tryNewX += newXSign;
+                }
+            }
+            
+            if (tryNewY !== 0 && !freeAtNewPositionY) {
+                for (let i = 1; i < Math.abs(newY); i++) {
+                    instancesAtNewPositionY = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + tryNewY, true);
+                    freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + tryNewY)));
+                    if (!freeAtNewPositionY) {
+                        break;
+                    }
+                    newY = tryNewY;
+                    tryNewY += newYSign;
+                }
             }
 
             if (freeAtNewPositionX && newX !== 0) {
-                self.x = Math.round(self.x + Math.round(newX));
+                self.x += newX;
             }
             if (freeAtNewPositionY && newY !== 0) {
-                self.y = Math.round(self.y + Math.round(newY));
+                self.y += newY;
             }
         }
     }
@@ -56,7 +77,7 @@ export class ActorMotionBehavior implements ActorBehavior {
     afterStep(self: ActorInstance, sc: SceneController): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
-                const otherInstances = sc.scene.getInstances(actorName);
+                const otherInstances = sc.scene.instances.getAll(actorName);
                 for (const other of otherInstances) {
                     if (self !== other && self.collidesWith(other)) {
                         self.actor.callCollision(self, other, sc);

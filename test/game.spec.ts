@@ -10,46 +10,46 @@ describe('Game', () => {
     });
 
     it('defines Actors', () => {
-        game.defineActor('testActor');
+        game.resources.defineActor('testActor');
 
-        const actor = game.getActor('testActor');
+        const actor = game.resources.getActor('testActor');
 
         expect(actor).toBeDefined();
         expect(actor.name).toBe('testActor');
     });
 
     it('defines Scenes', () => {
-        game.defineScene('testScene');
+        game.resources.defineScene('testScene');
 
-        const scene = game.getScene('testScene');
+        const scene = game.resources.getScene('testScene');
 
         expect(scene).toBeDefined();
         expect(scene.name).toBe('testScene');
     });
 
     it('defines Audio', () => {
-        game.defineAudio('testAudio', null);
+        game.resources.defineAudio('testAudio', null);
 
-        const audio = game.getAudio('testAudio');
+        const audio = game.resources.getAudio('testAudio');
 
         expect(audio).toBeDefined();
         expect(audio.name).toBe('testAudio');
     });
 
     it('defines Sprites', () => {
-        game.defineSprite('testSprite', TestImage.Source);
+        game.resources.defineSprite('testSprite', TestImage.Source);
 
-        const sprite = game.getSprite('testSprite');
+        const sprite = game.resources.getSprite('testSprite');
 
         expect(sprite).toBeDefined();
         expect(sprite.name).toBe('testSprite');
     });
 
     it('loads resources successfully', (done) => {
-        game.defineSprite('testSprite', TestImage.Source);
+        game.resources.defineSprite('testSprite', TestImage.Source);
 
         game.load().then(() => {
-            const sprite = game.getSprite('testSprite');
+            const sprite = game.resources.getSprite('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(TestImage.Height);
             expect(sprite.image.width).toBe(TestImage.Width);
@@ -58,10 +58,10 @@ describe('Game', () => {
     });
 
     it('loads resources and handles errors', (done) => {
-        game.defineSprite('testSprite', 'bogusImageSource');
+        game.resources.defineSprite('testSprite', 'bogusImageSource');
 
         game.load().catch(() => {
-            const sprite = game.getSprite('testSprite');
+            const sprite = game.resources.getSprite('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(0);
             expect(sprite.image.width).toBe(0);

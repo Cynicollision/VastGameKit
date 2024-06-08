@@ -6,6 +6,7 @@ import { Actor, ActorDefinition, ActorOptions } from './actor';
 import { Controller } from './controller';
 import { Scene, GameScene, SceneOptions } from './scene';
 import { Sprite, SpriteOptions } from './sprite';
+import { GameResources } from './gameResources';
 
 export type GameOptions = {
     canvasElementId: string;
@@ -17,12 +18,8 @@ export class Game {
     private static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
-    private readonly actorMap: ObjMap<Actor> = {};
-    private readonly audioMap: ObjMap<GameAudio> = {};
-    private readonly sceneMap: ObjMap<Scene> = {};
-    private readonly spriteMap: ObjMap<Sprite> = {};
-
     readonly controller: Controller;
+    readonly resources: GameResources;
 
     private readonly _options: GameOptions;
     get options() { return this._options; }
@@ -46,6 +43,7 @@ export class Game {
         }
         catch (error) {
             const message = error.message ? error.message : error;
+            // TODO: Add GameLog back
             console.error(`Vastgame failed to initialize. ${message}`);
             throw new GameError(message, error);
         }
@@ -55,8 +53,11 @@ export class Game {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
-        this._defaultScene = <Scene>this.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this.controller = new Controller(this, this._defaultScene);
+
+        this.resources = new GameResources();
+
+        this._defaultScene = <Scene>this.resources.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this.controller = new Controller(this.resources, this._defaultScene, { pulseLength: this.options.targetFPS });
     }
 
     private applyGameOptions(options: GameOptions): GameOptions {
@@ -64,106 +65,11 @@ export class Game {
         return options;
     }
 
-    defineActor(actorName: string, options: ActorOptions = {}): ActorDefinition {
-        if (this.actorMap[actorName]) {
-            throw new Error(`Actor defined with existing Actor name: ${actorName}.`);
-        }
-        
-        const actor = Actor.new(actorName, options);
-        this.actorMap[actorName] = <Actor>actor;
-
-        return actor;
+    load(): Promise<void> {
+        return this.resources.load();
     }
 
-    defineAudio(audioName: string, source: string, options?: GameAudioOptions): GameAudio {
-        if (this.audioMap[audioName]) {
-            throw new GameError(`Audio defined with existing Audio name: ${audioName}.`);
-        }
-
-        const audio = GameAudio.fromSource(audioName, source, options);
-        this.audioMap[audioName] = audio;
-
-        return audio;
-    }
-
-    defineScene(sceneName: string, options: SceneOptions = {}): GameScene {
-        if (this.sceneMap[sceneName]) {
-            throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
-        }
-
-        const scene = <Scene>Scene.new(sceneName, this, options);
-        this.sceneMap[sceneName] = scene;
-
-        return scene;
-    }
-
-    defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
-        if (this.spriteMap[spriteName]) {
-            throw new GameError(`Sprite defined with existing Sprite name: ${spriteName}.`);
-        }
-
-        const newSprite = Sprite.fromSource(spriteName, imageSource, options);
-        this.spriteMap[spriteName] = newSprite;
-
-        return newSprite;
-    }
-
-    getActor(actorName: string): ActorDefinition {
-        if (!this.actorMap[actorName]) {
-            throw new GameError(`Actor retrieved by name that does not exist: ${actorName}.`);
-        }
-
-        return this.actorMap[actorName];
-    }
-
-    getAudio(audioName: string): GameAudio {
-        if (!this.audioMap[audioName]) {
-            throw new GameError(`Audio retrieved by name that does not exist: ${audioName}.`);
-        }
-
-        return this.audioMap[audioName];
-    }
-
-    getScene(sceneName: string): GameScene {
-        if (!this.sceneMap[sceneName]) {
-            throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
-        }
-
-        return this.sceneMap[sceneName];
-    }
-
-    getSprite(spriteName: string): Sprite {
-        if (!this.spriteMap[spriteName]) {
-            throw new GameError(`Sprite retrieved by name that does not exist: ${spriteName}.`);
-        }
-
-        return this.spriteMap[spriteName];
-    }
-
-    load() {
-        const promises: Promise<void | string>[] = [];
-
-        // TODO: add audio loading.
-
-        for (const s in this.spriteMap) {
-            const sprite = this.spriteMap[s];
-            promises.push(sprite.load());
-        }
-
-        return Promise.all(promises).then(() => {
-            for (const a in this.actorMap) {
-                const actor = this.actorMap[a];
-                actor.load(actor);
-            }
-
-            // TODO add callback for game setup code, to be called last.
-            //  see Actor and Scene load.
-
-            return Promise.resolve();
-        });
-    }
-
-    start() {
+    start(): void {
         this._inputHandler.keyboard.subscribe(ev => this.controller.onKeyboardEvent(ev));
         this._inputHandler.pointer.subscribe(ev => this.controller.onPointerEvent(ev));
 

@@ -36,7 +36,7 @@ export interface GameCanvas {
     drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
     fill(color: string, width: number, height: number, options?: CanvasFillOptions): void;
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
-    subCanvas(name: string, options: GameCanvasOptions): GameCanvas;
+    subCanvas(name: string, options?: GameCanvasOptions): GameCanvas;
 }
 
 export class GameCanvasHtml2D implements GameCanvas {
@@ -146,7 +146,7 @@ export class GameCanvasHtml2D implements GameCanvas {
         }
     }
 
-    subCanvas(name: string, options: GameCanvasOptions): GameCanvas {
+    subCanvas(name: string, options: GameCanvasOptions = {}): GameCanvas {
         if (this.subCanvasMap[name]) {
             return this.subCanvasMap[name];
         }

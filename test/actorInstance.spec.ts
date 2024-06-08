@@ -10,9 +10,9 @@ describe('ActorInstance', () => {
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
-        game.defineActor('testActor');
+        game.resources.defineActor('testActor');
         TestUtil.startScene(game, game.defaultScene);
-        testInstance = game.defaultScene.createInstance('testActor');
+        testInstance = game.defaultScene.instances.create('testActor');
     });
 
     describe('status', () => {

@@ -6,6 +6,10 @@ import { GameScene } from './scene';
 export type SceneTransitionOptions = {
     color?: string;
     durationMs?: number;
+    height?: number;
+    portX?: number;
+    portY?: number;
+    width?: number;
 }
 
 export interface SceneTransition {
@@ -14,7 +18,10 @@ export interface SceneTransition {
 }
 
 export class SceneTransitionFactory {
+    private static readonly DefaultDurationMs = 1000;
+    
     static new(type: SceneTransitionType, options: SceneTransitionOptions = {}): SceneTransition {
+        options.durationMs = options.durationMs || this.DefaultDurationMs;
         switch (type) {
             case SceneTransitionType.Fade:
                 return new SceneFadeTransition(options);  
