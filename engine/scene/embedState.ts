@@ -1,7 +1,7 @@
-import { ObjMap, RuntimeID, SceneEmbedDisplayMode } from './core';
-import { GameResources } from './gameResources';
-import { Scene } from './scene';
-import { SceneEmbed, SceneEmbedOptions } from './sceneEmbed';
+import { ObjMap, RuntimeID, SceneEmbedDisplayMode } from './../core';
+import { GameResources } from './../resources';
+import { Scene } from './../scene';
+import { SceneEmbed, SceneEmbedOptions } from './embed';
 
 export class SceneEmbedState {
     private readonly resources: GameResources;

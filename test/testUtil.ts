@@ -1,5 +1,4 @@
-import { GameResources } from '../engine/gameResources';
-import { Controller, SceneController } from './../engine/controller';
+import { Controller } from './../engine/controller';
 import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
 import { Scene, GameScene } from './../engine/scene';

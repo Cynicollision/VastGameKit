@@ -1,7 +1,7 @@
-import { Boundary, ObjMap, RuntimeID } from './core';
-import { Actor } from './actor';
-import { ActorInstance, ActorInstanceOptions, Instance } from './actorInstance';
-import { GameResources } from './gameResources';
+import { Boundary, ObjMap, RuntimeID } from './../core';
+import { Actor } from './../actor';
+import { ActorInstance, ActorInstanceOptions, Instance } from './../actorInstance';
+import { GameResources } from './../resources';
 
 export class SceneInstanceState {
     private readonly resources: GameResources;

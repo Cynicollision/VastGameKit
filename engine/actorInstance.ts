@@ -18,7 +18,7 @@ export interface ActorInstance extends PositionedEntity {
     actor: Actor;
     depth: number;
     motion: ActorMotionBehavior;
-    state: { [name: string]: unknown };
+    state: ObjMap<any>;
     status: InstanceStatus;
     x: number;
     y: number;

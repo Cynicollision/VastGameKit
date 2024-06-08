@@ -9,9 +9,17 @@ export function buildHUD(game: Game) {
 
         self.instances.create('actButton', { x: 32, y: 32 });
         self.instances.create('actButton', { x: 96, y: 32 });
+
+        self.state.currentlyIn = sc.scene.name;
     });
 
     hud.onResume((self, sc) => {
         console.log('hud.onResume');
+
+        self.state.currentlyIn = sc.scene.name;
+    });
+
+    hud.onDraw((self, canvas, sc) => {
+        canvas.drawText('Currently in: '+ self.state.currentlyIn, 200, 32, { color: '#03A' });
     });
 }

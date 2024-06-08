@@ -65,8 +65,7 @@ export class SpriteAnimation {
         this.timer = setInterval(() => {
             if (this.getTransform(SpriteTransformation.Frame) === end) {
                 this.setTransform(SpriteTransformation.Frame, start);
-                // TODO: onAnimationEnd: ActorLifecycleCallback callback
-                //   define on Sprite ?
+                // TODO: onAnimationEnd: ActorLifecycleCallback callback. define on Sprite ?
             }
             else {
                 this.transform(SpriteTransformation.Frame, 1);

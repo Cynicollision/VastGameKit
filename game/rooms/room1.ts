@@ -1,4 +1,4 @@
-import { SceneEmbedDisplayMode } from '../../engine/core';
+import { SceneEmbedDisplayMode } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildRoom1(game: Game) {

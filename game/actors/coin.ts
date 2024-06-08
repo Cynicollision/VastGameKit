@@ -1,4 +1,4 @@
-import { SpriteTransformation } from '../../engine/core';
+import { SpriteTransformation } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildCoinActor(game: Game) {

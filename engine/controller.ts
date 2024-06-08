@@ -1,8 +1,8 @@
 import { GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneTransitionType } from './core';
 import { GameCanvas } from './device/canvas';
-import { GameResources } from './gameResources';
+import { GameResources } from './resources';
 import { Scene, GameScene } from './scene';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './sceneTransition';
+import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './scene/transition';
 
 export type ControllerOptions = { 
     pulseLength: number;
@@ -13,7 +13,7 @@ export interface SceneController {
     currentStep: number;
     resources: GameResources;
     scene: GameScene;
-    state: { [name: string]: unknown };
+    state: ObjMap<any>;
     goToScene(sceneName: string): void;
     publishEvent(eventName: string, data?: any): void;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;

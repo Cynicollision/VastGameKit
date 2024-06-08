@@ -1,15 +1,15 @@
 
-import { GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent, RuntimeID, SceneEmbedDisplayMode, SceneStatus } from './core';
+import { GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneEmbedDisplayMode, SceneStatus } from './core';
 import { GameCanvas } from './device/canvas';
 import { Instance } from './actorInstance';
 import { Background, BackgroundDrawOptions } from './background';
 import { Camera, SceneCamera, SceneCameraOptions } from './camera';
 import { SceneController } from './controller';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
-import { GameResources } from './gameResources';
-import { SceneEmbed, SceneEmbedOptions } from './sceneEmbed';
-import { SceneEmbedState } from './sceneEmbedState';
-import { SceneInstanceState } from './sceneInstanceState';
+import { GameResources } from './resources';
+import { SceneEmbed } from './scene/embed';
+import { SceneEmbedState } from './scene/embedState';
+import { SceneInstanceState } from './scene/instanceState';
 import { Sprite } from './sprite';
 
 export type SceneOptions = {
@@ -25,6 +25,7 @@ export interface GameScene extends LifecycleEntityBase<GameScene> {
     embeds: SceneEmbedState;
     height: number;
     instances: SceneInstanceState;
+    state: ObjMap<any>;
     status: SceneStatus;
     width: number;
     defineCamera(cameraName: string, options?: SceneCameraOptions): SceneCamera;
@@ -134,7 +135,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         }
 
         if (this.onDrawCallback) {
-            this.onDrawCallback(this, canvas, sc);
+            this.onDrawCallback(this, sceneCanvas, sc);
         }
 
         for (const cameraName in this.cameraMap) {

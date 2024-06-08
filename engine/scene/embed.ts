@@ -1,5 +1,5 @@
-import { SceneEmbedDisplayMode } from './core';
-import { GameScene } from './scene';
+import { SceneEmbedDisplayMode } from './../core';
+import { GameScene } from './../scene';
 
 export type SceneEmbedOptions = {
     displayMode?: SceneEmbedDisplayMode;

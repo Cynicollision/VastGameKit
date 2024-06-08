@@ -6,7 +6,7 @@ import { Actor, ActorDefinition, ActorOptions } from './actor';
 import { Controller } from './controller';
 import { Scene, GameScene, SceneOptions } from './scene';
 import { Sprite, SpriteOptions } from './sprite';
-import { GameResources } from './gameResources';
+import { GameResources } from './resources';
 
 export type GameOptions = {
     canvasElementId: string;
