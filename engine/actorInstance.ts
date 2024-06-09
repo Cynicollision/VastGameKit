@@ -12,14 +12,15 @@ export type ActorInstanceOptions = {
     y?: number;
 }
 
+// TODO rename -> Instance
 export interface ActorInstance extends PositionedEntity {
-    id: number;
-    animation: SpriteAnimation;
-    actor: Actor;
+    readonly id: number;
+    readonly animation: SpriteAnimation;
+    readonly actor: Actor;
+    readonly motion: ActorMotionBehavior;
+    readonly state: ObjMap<any>;
+    readonly status: InstanceStatus;
     depth: number;
-    motion: ActorMotionBehavior;
-    state: ObjMap<any>;
-    status: InstanceStatus;
     x: number;
     y: number;
     activate(): void;
@@ -30,6 +31,7 @@ export interface ActorInstance extends PositionedEntity {
     useBehavior(behavior: ActorBehavior): void;
 }
 
+// TODO rename -> ActorInstance
 export class Instance implements ActorInstance {
     private readonly behaviors: ActorBehavior[] = [];
     private _followTarget: PositionedEntity;

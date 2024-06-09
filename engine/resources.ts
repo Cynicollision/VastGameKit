@@ -99,7 +99,7 @@ export class GameResources {
         return Promise.all(promises).then(() => {
             for (const a in this.actorMap) {
                 const actor = this.actorMap[a];
-                actor.load(actor);
+                actor.load();
             }
 
             // TODO add callback for game setup code, to be called last.

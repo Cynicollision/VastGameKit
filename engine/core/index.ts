@@ -5,4 +5,5 @@ export * from './events';
 export * from './geometry';
 export * from './id';
 export * from './math';
+export * from './timer';
 export * from './types';

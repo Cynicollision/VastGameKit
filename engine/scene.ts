@@ -1,5 +1,5 @@
 
-import { GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneEmbedDisplayMode, SceneStatus } from './core';
+import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneEmbedDisplayMode, SceneStatus } from './core';
 import { GameCanvas } from './device/canvas';
 import { Instance } from './actorInstance';
 import { Background, BackgroundDrawOptions } from './background';
@@ -20,15 +20,16 @@ export type SceneOptions = {
 
 // TODO rename -> Scene
 export interface GameScene extends LifecycleEntityBase<GameScene> {
-    name: string;
-    defaultCamera: SceneCamera;
-    embeds: SceneEmbedState;
-    height: number;
-    instances: SceneInstanceState;
-    state: ObjMap<any>;
-    status: SceneStatus;
-    width: number;
+    readonly name: string;
+    readonly defaultCamera: SceneCamera;
+    readonly embeds: SceneEmbedState;
+    readonly height: number;
+    readonly instances: SceneInstanceState;
+    readonly state: ObjMap<any>;
+    readonly status: SceneStatus;
+    readonly width: number;
     defineCamera(cameraName: string, options?: SceneCameraOptions): SceneCamera;
+    onLoad(callback: (scene: GameScene) => void);
     onResume(callback: EntityLifecycleCb<GameScene>): void;
     onStart(callback: EntityLifecycleCb<GameScene>): void;
     onSuspend(callback: EntityLifecycleCb<GameScene>): void;
@@ -43,6 +44,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
 
     private readonly cameraMap: ObjMap<Camera> = {};
     private background: Background;
+    private onLoadCallback: (self: GameScene) => void;
     private onResumeCallback: EntityLifecycleCb<GameScene>;
     private onStartCallback: EntityLifecycleCb<GameScene>;
     private onSuspendCallback: EntityLifecycleCb<GameScene>;
@@ -119,7 +121,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         return camera;
     }
 
-    draw(canvas: GameCanvas, sc: SceneController): void {
+    draw(canvas: GameCanvas, controller: SceneController): void {
         const sceneCanvas = canvas.subCanvas('scene', { width: this.width, height: this.height });
 
         if (this.background) {
@@ -127,15 +129,13 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         }
 
         for (const embed of this.embeds.getAll(SceneEmbedDisplayMode.Embed)) {
-            this.drawSceneEmbed(canvas, sceneCanvas, embed, sc);
+            this.drawSceneEmbed(canvas, sceneCanvas, embed, controller);
         }
 
-        for (const instance of <Instance[]>this.instances.getByDepth()) {
-            instance.draw(sceneCanvas, sc);
-        }
+        this.instances.draw(sceneCanvas, controller)
 
         if (this.onDrawCallback) {
-            this.onDrawCallback(this, sceneCanvas, sc);
+            this.onDrawCallback(this, sceneCanvas, controller);
         }
 
         for (const cameraName in this.cameraMap) {
@@ -150,7 +150,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         }
 
         for (const embed of this.embeds.getAll(SceneEmbedDisplayMode.Float)) {
-            this.drawSceneEmbed(canvas, canvas, embed, sc);
+            this.drawSceneEmbed(canvas, canvas, embed, controller);
         }
     }
 
@@ -170,10 +170,10 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         if (this.gameEventHandlerMap[ev.name]) {
             this.gameEventHandlerMap[ev.name](this, ev, sc);
         }
-        
-        for (const instance of this.instances.getAll()) {
+
+        this.instances.forEach(instance => {
             (<Instance>instance).handleGameEvent(instance, ev, sc);
-        }
+        });
 
         for (const embed of this.embeds.getAll()) {
             (<Scene>embed.scene).handleGameEvent(ev, sc);
@@ -258,6 +258,10 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
         }
     }
 
+    onLoad(callback: (scene: GameScene) => void): void {
+        this.onLoadCallback = callback;
+    }
+
     onResume(callback: EntityLifecycleCb<GameScene>): void {
         this.onResumeCallback = callback;
     }
@@ -302,10 +306,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
     }
 
     step(sc: SceneController): void {
-
-        for (const embed of this.embeds.getAll()) {
-            (<Scene>embed.scene).step(sc);
-        }
+        this.embeds.forEach(embed => (<Scene>embed.scene).step(sc));
 
         if (this._status !== SceneStatus.Running) {
             return;
@@ -315,21 +316,7 @@ export class Scene extends LifecycleEntityBase<GameScene> implements GameScene {
             this.onStepCallback(this, sc);
         }
 
-        for (const instance of <Instance[]>this.instances.getAll()) {
-            if (instance.status === InstanceStatus.Destroyed) {
-                this.instances.delete(instance);
-                instance.actor.callDestroy(instance, sc);
-            }
-            else if (instance.status === InstanceStatus.New) {
-                instance.activate();
-                instance.actor.callCreate(instance, sc);
-            }
-            else if (instance.status === InstanceStatus.Active) {
-                instance.callBeforeStepBehaviors(sc);
-                instance.step(sc);
-                instance.callAfterStepBehaviors(sc);
-            }
-        }
+        this.instances.step(sc);
 
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];

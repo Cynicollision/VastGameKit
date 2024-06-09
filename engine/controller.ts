@@ -1,4 +1,4 @@
-import { GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneTransitionType } from './core';
+import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneTransitionType } from './core';
 import { GameCanvas } from './device/canvas';
 import { GameResources } from './resources';
 import { Scene, GameScene } from './scene';
@@ -10,12 +10,13 @@ export type ControllerOptions = {
 
 // TODO rename -> Controller
 export interface SceneController {
-    currentStep: number;
-    resources: GameResources;
-    scene: GameScene;
-    state: ObjMap<any>;
+    readonly currentStep: number;
+    readonly resources: GameResources;
+    readonly scene: GameScene;
+    readonly state: ObjMap<any>;
     goToScene(sceneName: string): void;
     publishEvent(eventName: string, data?: any): void;
+    startTimer(options: GameTimerOptions): GameTimer;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;
 }
 
@@ -23,6 +24,7 @@ export interface SceneController {
 export class Controller implements SceneController {
     private _eventQueue: GameEvent[] = [];
     private _options: ControllerOptions;
+    private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
 
     readonly resources: GameResources;
@@ -51,6 +53,12 @@ export class Controller implements SceneController {
         if (this._currentStep === this._options.pulseLength) {
             this._currentStep = 0;
         }
+    }
+
+    startTimer(options: GameTimerOptions): GameTimer {
+        const timer = GameTimer.start(options);
+        this._timers.push(timer);
+        return timer;
     }
 
     draw(canvas: GameCanvas): void {
@@ -83,7 +91,8 @@ export class Controller implements SceneController {
 
     step(): void {
         this.updateCurrentStep();
-        // TODO: call "pulse" event here. pass to scene -> instances
+        
+        this._timers.forEach(t => t.tick());
 
         for (const event of this.flushEventQueue()) {
             this._scene.handleGameEvent(event, this);

@@ -9,6 +9,11 @@ export enum Direction {
     Up = 270,
 }
 
+export enum GameTimerStatus {
+    Elapsed = 'Elapsed',
+    Ticking = 'Ticking',
+}
+
 export enum InstanceStatus {
     Active = 'Active',
     Destroyed = 'Destroyed',

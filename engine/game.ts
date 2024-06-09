@@ -1,11 +1,8 @@
-import { GameError, ObjMap } from './core';
-import { GameAudio, GameAudioOptions } from './device/audio';
+import { GameError } from './core';
 import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
-import { Actor, ActorDefinition, ActorOptions } from './actor';
 import { Controller } from './controller';
 import { Scene, GameScene, SceneOptions } from './scene';
-import { Sprite, SpriteOptions } from './sprite';
 import { GameResources } from './resources';
 
 export type GameOptions = {
@@ -15,7 +12,7 @@ export type GameOptions = {
 };
 
 export class Game {  
-    private static readonly DefaultSceneName = 'default';
+    static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
     readonly controller: Controller;

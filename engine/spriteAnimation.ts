@@ -57,7 +57,7 @@ export class SpriteAnimation {
         this.transformations[transformation] = value;
     }
 
-    start(start: number, end: number, delay?: number): void {
+    start(start: number, end: number, delayMs: number): void {
         this.stop();
         this.setTransform(SpriteTransformation.Frame, start);
 
@@ -70,7 +70,7 @@ export class SpriteAnimation {
             else {
                 this.transform(SpriteTransformation.Frame, 1);
             }
-        }, delay);
+        }, delayMs);
     }
 
     stop(): void {

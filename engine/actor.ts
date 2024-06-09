@@ -20,26 +20,30 @@ type ActorLifecycleCollisionCallback = {
     (self: ActorInstance, other: ActorInstance, sc: SceneController): void;
 };
 
+// TODO rename -> Actor
 export interface ActorDefinition extends LifecycleEntityBase<ActorDefinition, ActorInstance> {
-    name: string;
-    behaviors: ActorBehaviorName[];
-    boundary: Boundary;
+    readonly name: string;
+    readonly behaviors: ActorBehaviorName[];
+    readonly boundary: Boundary;
     sprite: Sprite;
     solid: boolean;
     onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void;
     onCreate(callback: EntityLifecycleCb<ActorInstance>): void;
     onDestroy(callback: EntityLifecycleCb<ActorInstance>): void;
+    onLoad(callback: (scene: ActorDefinition) => void);
     setCircleBoundary(radius: number, originX: number, originY: number): CircleBoundary;
     setCircleBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): CircleBoundary;
-    setRectBoundary(height: number, width: number, originX?: number, originY?: number): RectBoundary
+    setRectBoundary(width: number, height: number, originX?: number, originY?: number): RectBoundary
     setRectBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): RectBoundary;
     useBasicMotionBehavior(): ActorDefinition;
     useBehavior(behaviorName: ActorBehaviorName): ActorDefinition;
 }
 
+// TODO rename -> ActorDefinition
 export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> implements ActorDefinition {
     private onCreateCallback: EntityLifecycleCb<ActorInstance>;
     private onDestroyCallback: EntityLifecycleCb<ActorInstance>;
+    private onLoadCallback: (self: Actor) => void;
 
     private collisionHandlerRegistry: ObjMap<ActorLifecycleCollisionCallback> = {};
 
@@ -93,6 +97,12 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         return actorNames;
     }
 
+    load(): void {
+        if (this.onLoadCallback) {
+            this.onLoadCallback(this);
+        }
+    }
+
     onCreate(callback: EntityLifecycleCb<ActorInstance>): void {
         this.onCreateCallback = callback;
     }
@@ -107,6 +117,10 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
 
     onDestroy(callback:  EntityLifecycleCb<ActorInstance>): void {
         this.onDestroyCallback = callback;
+    }
+
+    onLoad(callback: (actor: ActorDefinition) => void): void {
+        this.onLoadCallback = callback;
     }
 
     setCircleBoundary(radius: number, originX: number = 0, originY: number = 0): CircleBoundary {
@@ -129,8 +143,8 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         return boundary;
     }
 
-    setRectBoundary(height: number, width: number, originX: number = 0, originY: number = 0): RectBoundary {
-        const boundary = new RectBoundary(height, width, originX, originY);
+    setRectBoundary(width: number, height: number, originX: number = 0, originY: number = 0): RectBoundary {
+        const boundary = new RectBoundary(width, height, originX, originY);
         this._boundary = boundary;
         
         return boundary;

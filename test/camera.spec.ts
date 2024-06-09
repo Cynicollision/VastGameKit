@@ -14,7 +14,7 @@ describe('SceneCamera', () => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
         testCamera = <Camera>testGame.defaultScene.defaultCamera;
         testActor = <Actor>testGame.resources.defineActor('testActor');
-        testActor.setRectBoundary(100, 200);
+        testActor.setRectBoundary(200, 100);
 
         TestUtil.startScene(testGame, testGame.defaultScene);
 

@@ -39,8 +39,6 @@ export abstract class LifecycleEntityBase<T, U = T> {
     protected gameEventHandlerMap: ObjMap<EntityLifecycleGameEventCb<U>> = {};
     protected keyboardInputEventHandlerMap: ObjMap<EntityLifecycleKeyboardEventCb<U>> = {};
     protected pointerInputEventHandlerMap: ObjMap<EntityLifecyclePointerEventCb<U>> = {};
-
-    protected onLoadCallback: (actor: T) => void;
     protected onStepCallback: EntityLifecycleCb<U>;
     protected onDrawCallback: EntityLifecycleDrawCb<U>;
 
@@ -74,12 +72,6 @@ export abstract class LifecycleEntityBase<T, U = T> {
         }
     }
 
-    load(def: T): void {
-        if (this.onLoadCallback) {
-            this.onLoadCallback(def);
-        }
-    }
-
     onDraw(callback: EntityLifecycleDrawCb<U>): void {
         this.onDrawCallback = callback;
     }
@@ -90,10 +82,6 @@ export abstract class LifecycleEntityBase<T, U = T> {
 
     onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<U>): void {
         this.keyboardInputEventHandlerMap[key] = callback;
-    }
-
-    onLoad(callback: (actor: T) => void): void {
-        this.onLoadCallback = callback;
     }
 
     onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<U>): void {

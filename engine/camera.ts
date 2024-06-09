@@ -14,7 +14,7 @@ export type SceneCameraOptions = {
 };
 
 export interface SceneCamera extends PositionedEntity {
-    name: string
+    readonly name: string
     portX: number;
     portY: number;
     portWidth: number;

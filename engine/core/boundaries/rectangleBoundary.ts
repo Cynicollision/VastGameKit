@@ -14,10 +14,10 @@ export class RectBoundary implements Boundary {
     get width() { return this._width; }
 
     static fromSprite(sprite: Sprite, originX: number = 0, originY: number = 0): RectBoundary {
-        return new RectBoundary(sprite.height, sprite.width, originX, originY);
+        return new RectBoundary(sprite.width, sprite.height, originX, originY);
     }
 
-    constructor(height: number, width: number, originX: number = 0, originY: number = 0) {
+    constructor(width: number, height: number, originX: number = 0, originY: number = 0) {
         if (height <= 0 || width <= 0) {
             throw new Error('Height and width must both be greater than zero.');
         }

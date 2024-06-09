@@ -26,8 +26,8 @@ export type CanvasFillOptions = {
 }
 
 export interface GameCanvas {
-    height: number;
-    width: number;
+    readonly height: number;
+    readonly width: number;
     clear(): void;
     drawCanvas(canvas: GameCanvas, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void;
     drawRect(color: string, x: number, y: number, w: number, h: number): void;
