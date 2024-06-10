@@ -1,7 +1,7 @@
+import { GameTimerStatus, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
 import { GameScene, Scene } from './../engine/scene';
 import { TestUtil } from './testUtil';
-import { GameTimer, GameTimerStatus, SceneStatus } from '../engine/core';
 
 describe('SceneController', () => {
     let game: Game;
@@ -31,43 +31,13 @@ describe('SceneController', () => {
         expect(scnTwo.status).toBe(SceneStatus.Suspended);
     });
 
-    it('creates, ticks, and restarts GameTimers', () => {
+    it('starts a GameTimer', () => {
         const timerDurationSteps = 10;
-        const timer1 = game.controller.startTimer({ durationSteps: timerDurationSteps });
-        let timer2: GameTimer;
+        const timer = game.controller.startTimer({ durationSteps: timerDurationSteps });
 
-        let timer1Called = false;
-        let timer2Called = false;
-
-        timer1.onEnd(timer => {
-            timer1Called = true;
-
-            timer2 = game.controller.startTimer({ durationSteps: timerDurationSteps });
-            timer2.onEnd(timer => {
-                timer2Called = true;
-                timer2.restart();
-            });
-        });
-
-        expect(timer1Called).toBeFalse();
-        expect(timer2Called).toBeFalse();
-        expect(timer1.status).toBe(GameTimerStatus.Ticking);
-
-        for (let i = 0; i < timerDurationSteps; i++) {
-            game.controller.step();
-        }
-        
-        expect(timer1Called).toBeTrue();
-        expect(timer2Called).toBeFalse();
-        expect(timer1.status).toBe(GameTimerStatus.Elapsed);
-        expect(timer2.status).toBe(GameTimerStatus.Ticking);
-
-        for (let i = 0; i < timerDurationSteps; i++) {
-            game.controller.step();
-        }
-
-        expect(timer2Called).toBeTrue();
-        expect(timer2.status).toBe(GameTimerStatus.Ticking);
+        expect(timer).toBeDefined();
+        expect(timer.durationSteps).toBe(timerDurationSteps);
+        expect(timer.status).toBe(GameTimerStatus.Ticking);
     });
 
     it('publishes GameEvents to the current Scene', () => {

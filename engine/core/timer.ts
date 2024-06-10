@@ -12,7 +12,7 @@ export type GameTimerOptions = {
 export interface Timer {
     readonly durationSteps: number;
     readonly status: GameTimerStatus;
-    restart(): void;
+    reset(): void;
 }
 
 export class GameTimer implements Timer {
@@ -37,7 +37,7 @@ export class GameTimer implements Timer {
         this._status = GameTimerStatus.Elapsed;
     }
 
-    restart(): void {
+    reset(): void {
         this._current = 0;
         this._status = GameTimerStatus.Ticking;
     }
