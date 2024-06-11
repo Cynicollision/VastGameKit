@@ -7,7 +7,7 @@ import { buildCoinActor } from './actors/coin';
 import { buildDefaultRoom } from './rooms/default';
 import { buildHUD } from './rooms/hud';
 
-const game = Game.init({
+const vastGame = Game.init({
     canvasElementId: 'gameCanvas',
     targetFPS: 60,
     defaultSceneOptions: {
@@ -17,16 +17,19 @@ const game = Game.init({
     }
 });
 
-// TODO: put these within "load/setup" callback, to be called after sprites, etc. are loaded.
-buildCoinActor(game);
-buildPlayerActor(game);
-buildWallActor(game);
-buildHUD(game);
+vastGame.resources.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
+vastGame.resources.defineSprite('granite', './resources/greenblock.png');
+vastGame.resources.defineSprite('sprCoin', './resources/coin.png');
 
-buildDefaultRoom(game);
-buildRoom1(game);
+vastGame.load().then(game => {
+    buildCoinActor(game);
+    buildPlayerActor(game);
+    buildWallActor(game);
+    buildHUD(game);
 
-game.load().then(() => {
+    buildDefaultRoom(game);
+    buildRoom1(game);
+
     game.start();
 })
 .catch(error => {

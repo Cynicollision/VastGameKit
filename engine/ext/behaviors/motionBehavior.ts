@@ -1,5 +1,5 @@
 import { Geometry } from './../../core';
-import { SceneController } from './../../controller';
+import { Controller } from './../../controller';
 import { ActorBehavior } from './../../actor';
 import { ActorInstance } from './../../actorInstance';
 
@@ -9,7 +9,7 @@ export class ActorMotionBehavior implements ActorBehavior {
     previousX: number = 0;
     previousY: number = 0;
 
-    beforeStep(self: ActorInstance, sc: SceneController): void {
+    beforeStep(self: ActorInstance, sc: Controller): void {
         this.previousX = self.x;
         this.previousY = self.y;
 
@@ -74,7 +74,7 @@ export class ActorMotionBehavior implements ActorBehavior {
         }
     }
 
-    afterStep(self: ActorInstance, sc: SceneController): void {
+    afterStep(self: ActorInstance, sc: Controller): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
                 const otherInstances = sc.scene.instances.getAll(actorName);

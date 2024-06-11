@@ -1,21 +1,21 @@
 import { ObjMap, RuntimeID, SceneEmbedDisplayMode } from './../core';
 import { GameResources } from './../resources';
-import { Scene } from './../scene';
+import { GameScene } from './../scene';
 import { SceneEmbed, SceneEmbedOptions } from './embed';
 
 export class SceneEmbedState {
-    private readonly _parent: Scene;
+    private readonly _parent: GameScene;
     private readonly _resources: GameResources;
     private readonly _sceneEmbedMap: ObjMap<SceneEmbed> = {};
 
-    constructor(resources: GameResources, parent: Scene) {
+    constructor(resources: GameResources, parent: GameScene) {
         this._resources = resources;
         this._parent = parent;
     }
 
     create(sceneName: string, options: SceneEmbedOptions = {}): SceneEmbed {
         const sceneEmbedId = RuntimeID.next();
-        const subScene = <Scene>this._resources.getScene(sceneName);
+        const subScene = <GameScene>this._resources.getScene(sceneName);
         const embed = new SceneEmbed(sceneEmbedId, this._parent, subScene, options);
 
         this._sceneEmbedMap[`${sceneName}_${sceneEmbedId}`] = embed;

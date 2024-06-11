@@ -1,24 +1,24 @@
-import { Actor } from './../engine/actor';
-import { Instance } from './../engine/actorInstance';
+import { ActorDefinition } from './../engine/actor';
+import { ActorInstance } from './../engine/actorInstance';
 import { Game } from './../engine/game';
-import { Camera } from './../engine/camera';
+import { SceneCamera } from './../engine/camera';
 import { TestUtil } from './testUtil';
 
 describe('SceneCamera', () => {
     let testGame: Game;
-    let testCamera: Camera;
-    let testActor: Actor;
-    let testInstance: Instance;
+    let testCamera: SceneCamera;
+    let testActor: ActorDefinition;
+    let testInstance: ActorInstance;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
-        testCamera = <Camera>testGame.defaultScene.defaultCamera;
-        testActor = <Actor>testGame.resources.defineActor('testActor');
+        testCamera = <SceneCamera>testGame.defaultScene.defaultCamera;
+        testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
         TestUtil.startScene(testGame, testGame.defaultScene);
 
-        testInstance = <Instance>testGame.defaultScene.instances.create('testActor');
+        testInstance = <ActorInstance>testGame.defaultScene.instances.create('testActor');
     });
 
     describe('defines valid dimensions', () => {

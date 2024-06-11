@@ -1,8 +1,8 @@
 import { GameError } from './core';
 import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
-import { Controller } from './controller';
-import { Scene, GameScene, SceneOptions } from './scene';
+import { SceneController } from './controller';
+import { GameScene, Scene, SceneOptions } from './scene';
 import { GameResources } from './resources';
 
 export type GameOptions = {
@@ -15,7 +15,7 @@ export class Game {
     static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
-    readonly controller: Controller;
+    readonly controller: SceneController;
     readonly resources: GameResources;
 
     private readonly _options: GameOptions;
@@ -27,8 +27,8 @@ export class Game {
     private readonly _inputHandler: GameInputHandler;
     get input() { return this._inputHandler; }
 
-    private readonly _defaultScene: Scene;
-    get defaultScene(): GameScene { return this._defaultScene; }
+    private readonly _defaultScene: GameScene;
+    get defaultScene(): Scene { return this._defaultScene; }
 
     static init(options: GameOptions): Game {
         try {
@@ -53,8 +53,8 @@ export class Game {
 
         this.resources = new GameResources();
 
-        this._defaultScene = <Scene>this.resources.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this.controller = new Controller(this.resources, this._defaultScene, { pulseLength: this.options.targetFPS });
+        this._defaultScene = <GameScene>this.resources.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this.controller = new SceneController(this.resources, this._defaultScene, { pulseLength: this.options.targetFPS });
     }
 
     private applyGameOptions(options: GameOptions): GameOptions {
@@ -62,8 +62,8 @@ export class Game {
         return options;
     }
 
-    load(): Promise<void> {
-        return this.resources.load();
+    load(): Promise<Game> {
+        return this.resources.load().then(() => Promise.resolve(this));
     }
 
     start(): void {
@@ -74,7 +74,7 @@ export class Game {
         let previous = window.performance.now();
         const stepSize = 1 / this.options.targetFPS;
 
-        (<Scene>this.controller.scene).startOrResume(this.controller);
+        (<GameScene>this.controller.scene).startOrResume(this.controller);
 
         const gameLoop: FrameRequestCallback = (): void => {
             const current = window.performance.now();

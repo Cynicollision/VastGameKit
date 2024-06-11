@@ -1,12 +1,12 @@
 
-import { ActorInstance, Instance } from './../engine/actorInstance';
+import { Instance, ActorInstance } from './../engine/actorInstance';
 import { InstanceStatus } from './../engine/core';
 import { Game } from './../engine/game';
 import { TestUtil } from './testUtil';
 
 describe('ActorInstance', () => {
     let game: Game;
-    let testInstance: ActorInstance;
+    let testInstance: Instance;
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
@@ -35,7 +35,7 @@ describe('ActorInstance', () => {
         game.defaultScene.defaultCamera.x = 110;
         game.defaultScene.defaultCamera.y = 220;
         testInstance.activate();
-        (<Instance>testInstance).step(game.controller);
+        (<ActorInstance>testInstance).step(game.controller);
 
         expect(testInstance.x).toBe(120);
         expect(testInstance.y).toBe(240);
@@ -51,7 +51,7 @@ describe('ActorInstance', () => {
         otherInstance.x = 50;
         otherInstance.y = 70;
         testInstance.activate();
-        (<Instance>testInstance).step(game.controller);
+        (<ActorInstance>testInstance).step(game.controller);
 
         expect(testInstance.x).toBe(60);
         expect(testInstance.y).toBe(90);

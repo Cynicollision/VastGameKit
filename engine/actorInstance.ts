@@ -1,8 +1,8 @@
 import { ActorBehaviorName, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
 import { GameCanvas } from './device/canvas';
 import { ActorMotionBehavior } from './ext/behaviors/motionBehavior';
-import { Actor, ActorBehavior } from './actor';
-import { SceneController } from './controller';
+import { ActorDefinition, ActorBehavior, Actor } from './actor';
+import { Controller } from './controller';
 import { FollowEntityOptions, PositionedEntity } from './entity';
 import { SpriteAnimation } from './spriteAnimation';
 
@@ -12,8 +12,7 @@ export type ActorInstanceOptions = {
     y?: number;
 }
 
-// TODO rename -> Instance
-export interface ActorInstance extends PositionedEntity {
+export interface Instance extends PositionedEntity {
     readonly id: number;
     readonly animation: SpriteAnimation;
     readonly actor: Actor;
@@ -24,21 +23,20 @@ export interface ActorInstance extends PositionedEntity {
     x: number;
     y: number;
     activate(): void;
-    collidesWith(other: ActorInstance): boolean;
+    collidesWith(other: Instance): boolean;
     destroy(): void;
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
     inactivate(): void;
     useBehavior(behavior: ActorBehavior): void;
 }
 
-// TODO rename -> ActorInstance
-export class Instance implements ActorInstance {
+export class ActorInstance implements Instance {
     private readonly behaviors: ActorBehavior[] = [];
     private _followTarget: PositionedEntity;
     private _followOptions: FollowEntityOptions = {};
     
     readonly id: number;
-    readonly actor: Actor;
+    readonly actor: ActorDefinition;
     readonly state: ObjMap<any> = {};
 
     private _animation: SpriteAnimation;
@@ -62,8 +60,8 @@ export class Instance implements ActorInstance {
         return this.actor.boundary ? this.actor.boundary.width : 0;
     }
 
-    static spawn(id: number, actor: Actor, options: ActorInstanceOptions = {}): ActorInstance {
-        const instance = new Instance(id, actor);
+    static spawn(id: number, actor: ActorDefinition, options: ActorInstanceOptions = {}): Instance {
+        const instance = new ActorInstance(id, actor);
         instance.x = options.x || 0; 
         instance.y = options.y || 0;
 
@@ -80,7 +78,7 @@ export class Instance implements ActorInstance {
         return instance;
     }
 
-    private constructor(id: number, actor: Actor) {
+    private constructor(id: number, actor: ActorDefinition) {
         this.id = id;
         this.actor = actor;
         this._status = InstanceStatus.New;
@@ -98,7 +96,7 @@ export class Instance implements ActorInstance {
         this._status = InstanceStatus.Active;
     }
 
-    callAfterStepBehaviors(sc: SceneController): void {
+    callAfterStepBehaviors(sc: Controller): void {
         for (const behavior of this.behaviors) {
             if (behavior.afterStep) {
                 behavior.afterStep(this, sc);
@@ -106,7 +104,7 @@ export class Instance implements ActorInstance {
         }
     }
 
-    callBeforeStepBehaviors(sc: SceneController): void {
+    callBeforeStepBehaviors(sc: Controller): void {
         for (const behavior of this.behaviors) {
             if (behavior.beforeStep) {
                 behavior.beforeStep(this, sc);
@@ -114,7 +112,7 @@ export class Instance implements ActorInstance {
         }
     }
 
-    collidesWith(other: ActorInstance): boolean {
+    collidesWith(other: Instance): boolean {
         if (this.actor.boundary && other.actor.boundary) {
             return this.actor.boundary.atPosition(this.x, this.y).collidesWith(other.actor.boundary.atPosition(other.x, other.y));
         }
@@ -126,7 +124,7 @@ export class Instance implements ActorInstance {
         this._status = InstanceStatus.Destroyed;
     }
 
-    draw(canvas: GameCanvas, sc: SceneController): void {
+    draw(canvas: GameCanvas, sc: Controller): void {
         if (this._status !== InstanceStatus.Active) {
             return;
         }
@@ -145,19 +143,19 @@ export class Instance implements ActorInstance {
         this._followOptions.offsetY = options.offsetY || 0;
     }
 
-    handleGameEvent(self: ActorInstance, event: GameEvent, sc: SceneController): void {
+    handleGameEvent(self: Instance, event: GameEvent, sc: Controller): void {
         if (!event.isCancelled) {
             this.actor.callGameEvent(self, event, sc);
         }
     }
 
-    handleKeyboardEvent(self: ActorInstance, event: KeyboardInputEvent, sc: SceneController): void {
+    handleKeyboardEvent(self: Instance, event: KeyboardInputEvent, sc: Controller): void {
         if (!event.isCancelled) {
             this.actor.callKeyboardEvent(self, event, sc);
         }
     }
 
-    handlePointerEvent(self: ActorInstance, event: PointerInputEvent, sc: SceneController): void {
+    handlePointerEvent(self: Instance, event: PointerInputEvent, sc: Controller): void {
         if (!event.isCancelled) {
             if (self.actor.boundary && self.actor.boundary.atPosition(self.x, self.y).containsPosition(event.x, event.y)) {
                 this.actor.callPointerEvent(self, event, sc);
@@ -169,7 +167,7 @@ export class Instance implements ActorInstance {
         this._status = InstanceStatus.Inactive;
     }
 
-    step(sc: SceneController): void {
+    step(sc: Controller): void {
         if (this._status === InstanceStatus.Active) {
             this.actor.callStep(this, sc);
             this.updateFollowPosition();

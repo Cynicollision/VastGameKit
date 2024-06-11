@@ -1,11 +1,11 @@
 import { GameTimerStatus, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
-import { GameScene, Scene } from './../engine/scene';
+import { Scene, GameScene } from './../engine/scene';
 import { TestUtil } from './testUtil';
 
 describe('SceneController', () => {
     let game: Game;
-    let scnTwo: GameScene;
+    let scnTwo: Scene;
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
@@ -13,7 +13,7 @@ describe('SceneController', () => {
     });
 
     it('changes the current Scene', () => {
-        (<Scene>game.defaultScene).startOrResume(game.controller);
+        (<GameScene>game.defaultScene).startOrResume(game.controller);
         expect(game.controller.scene).toBe(game.defaultScene);
         expect(game.defaultScene.status).toBe(SceneStatus.Running);
         expect(scnTwo.status).toBe(SceneStatus.NotStarted);
@@ -66,7 +66,7 @@ describe('SceneController', () => {
 
         expect(sceneStepCalled).toBeFalse();
 
-        (<Scene>game.controller.scene).startOrResume(game.controller);
+        (<GameScene>game.controller.scene).startOrResume(game.controller);
         game.controller.step();
 
         expect(sceneStepCalled).toBeTrue();

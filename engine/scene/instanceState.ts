@@ -1,43 +1,43 @@
 import { Boundary, InstanceStatus, ObjMap, RuntimeID } from './../core';
 import { GameCanvas } from '../device/canvas';
-import { Actor } from './../actor';
-import { ActorInstance, ActorInstanceOptions, Instance } from './../actorInstance';
-import { SceneController } from '../controller';
+import { ActorDefinition } from './../actor';
+import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
+import { Controller } from '../controller';
 import { GameResources } from './../resources';
 
 export class SceneInstanceState {
     private readonly resources: GameResources;
-    private instanceMap: ObjMap<Instance> = {};
+    private instanceMap: ObjMap<ActorInstance> = {};
 
     constructor(resources: GameResources) {
         this.resources = resources;
     }
 
-    private delete(instance: ActorInstance): void {
+    private delete(instance: Instance): void {
         delete this.instanceMap[instance.id];
     }
 
-    private getByDepth(actorName?: string): ActorInstance[] {
+    private getByDepth(actorName?: string): Instance[] {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
-    draw(canvas: GameCanvas, sc: SceneController): void {
-        for (const instance of <Instance[]>this.getByDepth()) {
+    draw(canvas: GameCanvas, sc: Controller): void {
+        for (const instance of <ActorInstance[]>this.getByDepth()) {
             instance.draw(canvas, sc);
         }
     }
 
-    create(actorName: string, options?: ActorInstanceOptions): ActorInstance {
+    create(actorName: string, options?: ActorInstanceOptions): Instance {
         const instanceId = RuntimeID.next();
-        const actor = <Actor>this.resources.getActor(actorName);
+        const actor = <ActorDefinition>this.resources.getActor(actorName);
 
-        const newInstance = <Instance>Instance.spawn(instanceId, actor, options);
+        const newInstance = <ActorInstance>ActorInstance.spawn(instanceId, actor, options);
         this.instanceMap[instanceId] = newInstance;
 
         return newInstance;
     }
 
-    createFromMap(gridSize: number, map: string[], instanceKey: {[char: string]: string }): ActorInstance[] {
+    createFromMap(gridSize: number, map: string[], instanceKey: {[char: string]: string }): Instance[] {
         const instances = [];
 
         for (let i = 0; i < map.length; i++) {
@@ -52,14 +52,14 @@ export class SceneInstanceState {
         return instances;
     }
 
-    forEach(callback: (self: ActorInstance) => void): void {
+    forEach(callback: (self: Instance) => void): void {
         for (const a in this.instanceMap) {
             callback(this.instanceMap[a]);
         }
     }
 
-    getAll(actorName?: string): ActorInstance[] {
-        const instances: Instance[] = [];
+    getAll(actorName?: string): Instance[] {
+        const instances: ActorInstance[] = [];
 
         for (const instanceId in this.instanceMap) {
             const instance = this.instanceMap[instanceId];
@@ -71,7 +71,7 @@ export class SceneInstanceState {
         return instances;
     }
 
-    getAtPosition(x: number, y: number, solid: boolean = false): ActorInstance[] {
+    getAtPosition(x: number, y: number, solid: boolean = false): Instance[] {
         const instances = [];
 
         for (const a in this.instanceMap) {
@@ -86,7 +86,7 @@ export class SceneInstanceState {
         return instances;
     }
 
-    getWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid: boolean = false): ActorInstance[] {
+    getWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid: boolean = false): Instance[] {
         const instances = [];
 
         for (const a in this.instanceMap) {
@@ -112,7 +112,7 @@ export class SceneInstanceState {
         return true;
     }
 
-    step(sc: SceneController): void {
+    step(sc: Controller): void {
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
             if (instance.status === InstanceStatus.Destroyed) {

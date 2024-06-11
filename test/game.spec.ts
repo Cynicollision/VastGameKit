@@ -1,4 +1,4 @@
-import { Scene } from '../engine/scene';
+import { GameScene } from '../engine/scene';
 import { Game } from './../engine/game';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
@@ -13,8 +13,8 @@ describe('Game', () => {
     it('initializes with a default Scene', () => {
         expect(testGame.defaultScene).toBeDefined();
         expect(testGame.defaultScene.name).toBe(Game.DefaultSceneName);
-        expect(testGame.defaultScene.height).toBe(Scene.DefaultSceneHeight);
-        expect(testGame.defaultScene.width).toBe(Scene.DefaultSceneWidth);
+        expect(testGame.defaultScene.height).toBe(GameScene.DefaultSceneHeight);
+        expect(testGame.defaultScene.width).toBe(GameScene.DefaultSceneWidth);
     });
 
     it('loads resources successfully', (done) => {

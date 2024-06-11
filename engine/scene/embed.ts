@@ -1,5 +1,5 @@
 import { SceneEmbedDisplayMode } from './../core';
-import { GameScene } from './../scene';
+import { Scene } from './../scene';
 
 export type SceneEmbedOptions = {
     displayMode?: SceneEmbedDisplayMode;
@@ -10,12 +10,12 @@ export type SceneEmbedOptions = {
 export class SceneEmbed {
     readonly id: number;
     readonly displayMode: SceneEmbedDisplayMode = SceneEmbedDisplayMode.Embed;
-    readonly parent: GameScene;
-    readonly scene: GameScene;
+    readonly parent: Scene;
+    readonly scene: Scene;
     readonly x: number = 0;
     readonly y: number = 0;
 
-    constructor(id: number, parent: GameScene, subScene: GameScene, options: SceneEmbedOptions = {}) {
+    constructor(id: number, parent: Scene, subScene: Scene, options: SceneEmbedOptions = {}) {
         this.id = id;
         this.parent = parent;
         this.scene = subScene;

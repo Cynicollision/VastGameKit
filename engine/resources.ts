@@ -1,22 +1,22 @@
 import { GameError, ObjMap } from './core';
 import { GameAudio, GameAudioOptions } from './device/audio';
-import { Actor, ActorDefinition, ActorOptions } from './actor';
-import { GameScene, Scene, SceneOptions } from './scene';
+import { ActorDefinition, Actor, ActorOptions } from './actor';
+import { Scene, GameScene, SceneOptions } from './scene';
 import { Sprite, SpriteOptions } from './sprite';
 
 export class GameResources {
-    private readonly actorMap: ObjMap<Actor> = {};
+    private readonly actorMap: ObjMap<ActorDefinition> = {};
     private readonly audioMap: ObjMap<GameAudio> = {};
-    private readonly sceneMap: ObjMap<Scene> = {};
+    private readonly sceneMap: ObjMap<GameScene> = {};
     private readonly spriteMap: ObjMap<Sprite> = {};
 
-    defineActor(actorName: string, options: ActorOptions = {}): ActorDefinition {
+    defineActor(actorName: string, options: ActorOptions = {}): Actor {
         if (this.actorMap[actorName]) {
             throw new GameError(`Actor defined with existing Actor name: ${actorName}.`);
         }
         
-        const actor = Actor.new(actorName, options);
-        this.actorMap[actorName] = <Actor>actor;
+        const actor = ActorDefinition.new(actorName, options);
+        this.actorMap[actorName] = <ActorDefinition>actor;
 
         return actor;
     }
@@ -32,12 +32,12 @@ export class GameResources {
         return audio;
     }
 
-    defineScene(sceneName: string, options: SceneOptions = {}): GameScene {
+    defineScene(sceneName: string, options: SceneOptions = {}): Scene {
         if (this.sceneMap[sceneName]) {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }
 
-        const scene = <Scene>Scene.new(sceneName, this, options);
+        const scene = <GameScene>GameScene.new(sceneName, this, options);
         this.sceneMap[sceneName] = scene;
 
         return scene;
@@ -54,7 +54,7 @@ export class GameResources {
         return newSprite;
     }
 
-    getActor(actorName: string): ActorDefinition {
+    getActor(actorName: string): Actor {
         if (!this.actorMap[actorName]) {
             throw new GameError(`Actor retrieved by name that does not exist: ${actorName}.`);
         }
@@ -70,7 +70,7 @@ export class GameResources {
         return this.audioMap[audioName];
     }
 
-    getScene(sceneName: string): GameScene {
+    getScene(sceneName: string): Scene {
         if (!this.sceneMap[sceneName]) {
             throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
         }
@@ -90,22 +90,24 @@ export class GameResources {
         const promises: Promise<void | string>[] = [];
 
         // TODO: add audio loading.
+        // TODO: error handling
 
         for (const s in this.spriteMap) {
             const sprite = this.spriteMap[s];
             promises.push(sprite.load());
         }
 
-        return Promise.all(promises).then(() => {
-            for (const a in this.actorMap) {
-                const actor = this.actorMap[a];
-                actor.load();
-            }
+        return Promise.all(promises)
+            .then(() => {
+                for (const a in this.actorMap) {
+                    const actor = this.actorMap[a];
+                    actor.load();
+                }
 
-            // TODO add callback for game setup code, to be called last.
-            //  see Actor and Scene load.
+                // TODO add callback for game setup code, to be called last.
+                //  see Actor and Scene load.
 
-            return Promise.resolve();
-        });
+                return Promise.resolve();
+            });
     }
 }

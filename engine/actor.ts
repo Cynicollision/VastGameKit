@@ -1,13 +1,13 @@
 import { ActorBehaviorName, Boundary, GameError, ObjMap } from './core';
 import { CircleBoundary, RectBoundary } from './core/boundaries';
-import { ActorInstance } from './actorInstance';
-import { SceneController } from './controller';
+import { Instance } from './actorInstance';
+import { Controller } from './controller';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
 import { Sprite } from './sprite';
 
 export type ActorBehavior = {
-    beforeStep?: EntityLifecycleCb<ActorInstance>;
-    afterStep?: EntityLifecycleCb<ActorInstance>;
+    beforeStep?: EntityLifecycleCb<Instance>;
+    afterStep?: EntityLifecycleCb<Instance>;
 };
 
 export type ActorOptions = {
@@ -17,33 +17,31 @@ export type ActorOptions = {
 };
 
 type ActorLifecycleCollisionCallback = {
-    (self: ActorInstance, other: ActorInstance, sc: SceneController): void;
+    (self: Instance, other: Instance, sc: Controller): void;
 };
 
-// TODO rename -> Actor
-export interface ActorDefinition extends LifecycleEntityBase<ActorDefinition, ActorInstance> {
+export interface Actor extends LifecycleEntityBase<Actor, Instance> {
     readonly name: string;
     readonly behaviors: ActorBehaviorName[];
     readonly boundary: Boundary;
     sprite: Sprite;
     solid: boolean;
     onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void;
-    onCreate(callback: EntityLifecycleCb<ActorInstance>): void;
-    onDestroy(callback: EntityLifecycleCb<ActorInstance>): void;
-    onLoad(callback: (scene: ActorDefinition) => void);
+    onCreate(callback: EntityLifecycleCb<Instance>): void;
+    onDestroy(callback: EntityLifecycleCb<Instance>): void;
+    onLoad(callback: (scene: Actor) => void);
     setCircleBoundary(radius: number, originX: number, originY: number): CircleBoundary;
     setCircleBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): CircleBoundary;
     setRectBoundary(width: number, height: number, originX?: number, originY?: number): RectBoundary
     setRectBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): RectBoundary;
-    useBasicMotionBehavior(): ActorDefinition;
-    useBehavior(behaviorName: ActorBehaviorName): ActorDefinition;
+    useBasicMotionBehavior(): Actor;
+    useBehavior(behaviorName: ActorBehaviorName): Actor;
 }
 
-// TODO rename -> ActorDefinition
-export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> implements ActorDefinition {
-    private onCreateCallback: EntityLifecycleCb<ActorInstance>;
-    private onDestroyCallback: EntityLifecycleCb<ActorInstance>;
-    private onLoadCallback: (self: Actor) => void;
+export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implements Actor {
+    private onCreateCallback: EntityLifecycleCb<Instance>;
+    private onDestroyCallback: EntityLifecycleCb<Instance>;
+    private onLoadCallback: (self: ActorDefinition) => void;
 
     private collisionHandlerRegistry: ObjMap<ActorLifecycleCollisionCallback> = {};
 
@@ -57,8 +55,8 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
 
-    static new(name: string, options: ActorOptions = {}): ActorDefinition {
-        return new Actor(name, options);
+    static new(name: string, options: ActorOptions = {}): Actor {
+        return new ActorDefinition(name, options);
     }
 
     private constructor(name: string, options: ActorOptions) {
@@ -69,19 +67,19 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         this.sprite = options.sprite;
     }
 
-    callCollision(self: ActorInstance, other: ActorInstance, sc: SceneController): void {
+    callCollision(self: Instance, other: Instance, sc: Controller): void {
         if (this.collisionHandlerRegistry[other.actor.name]) {
             this.collisionHandlerRegistry[other.actor.name](self, other, sc);
         }
     }
 
-    callCreate(self: ActorInstance, sc: SceneController): void {
+    callCreate(self: Instance, sc: Controller): void {
         if (this.onCreateCallback) {
             this.onCreateCallback(self, sc);
         }
     }
 
-    callDestroy(self: ActorInstance, sc: SceneController): void {
+    callDestroy(self: Instance, sc: Controller): void {
         if (this.onDestroyCallback) {
             this.onDestroyCallback(self, sc);
         }
@@ -103,7 +101,7 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         }
     }
 
-    onCreate(callback: EntityLifecycleCb<ActorInstance>): void {
+    onCreate(callback: EntityLifecycleCb<Instance>): void {
         this.onCreateCallback = callback;
     }
 
@@ -115,11 +113,11 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         this.collisionHandlerRegistry[actorName] = callback;
     }
 
-    onDestroy(callback:  EntityLifecycleCb<ActorInstance>): void {
+    onDestroy(callback:  EntityLifecycleCb<Instance>): void {
         this.onDestroyCallback = callback;
     }
 
-    onLoad(callback: (actor: ActorDefinition) => void): void {
+    onLoad(callback: (actor: Actor) => void): void {
         this.onLoadCallback = callback;
     }
 
@@ -163,11 +161,11 @@ export class Actor extends LifecycleEntityBase<ActorDefinition, ActorInstance> i
         return boundary;
     }
 
-    useBasicMotionBehavior(): ActorDefinition {
+    useBasicMotionBehavior(): Actor {
         return this.useBehavior(ActorBehaviorName.BasicMotion);
     }
 
-    useBehavior(behaviorName: ActorBehaviorName): ActorDefinition {
+    useBehavior(behaviorName: ActorBehaviorName): Actor {
         if (this._behaviors[behaviorName]) {
             throw new GameError(`Actor ${this.name} is alreadying using Behavior ${behaviorName}.`)
         }

@@ -1,7 +1,7 @@
 import { MathUtil } from './../../core';
 import { GameCanvas } from './../../device/canvas';
-import { Scene } from './../../scene';
-import { SceneTransition, SceneTransitionOptions } from './../../scene/transition';
+import { GameScene } from './../../scene';
+import { SceneTransition, SceneTransitionOptions } from './../../transition';
 
 export class SceneFadeTransition implements SceneTransition {
     private static readonly DefaultColor = '#000';
@@ -19,7 +19,7 @@ export class SceneFadeTransition implements SceneTransition {
         this.options.durationMs = options.durationMs || SceneFadeTransition.DefaultDurationMs;
     }
 
-    draw(scene: Scene, canvas: GameCanvas): void {
+    draw(scene: GameScene, canvas: GameCanvas): void {
         const increment = (1000 / this.options.durationMs) / SceneFadeTransition.TransitionIncrements;
         this.currentValue += this.transitionIn ? increment : -increment;
         this.currentValue = MathUtil.clamp(this.currentValue, 0, 1);

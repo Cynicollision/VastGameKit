@@ -1,6 +1,6 @@
 import { Geometry, MathUtil } from './core';
 import { FollowEntityOptions, PositionedEntity } from './entity';
-import { Scene } from './scene';
+import { GameScene } from './scene';
 
 export type SceneCameraOptions = {
     x?: number;
@@ -13,7 +13,7 @@ export type SceneCameraOptions = {
     portHeight?: number;
 };
 
-export interface SceneCamera extends PositionedEntity {
+export interface Camera extends PositionedEntity {
     readonly name: string
     portX: number;
     portY: number;
@@ -22,8 +22,8 @@ export interface SceneCamera extends PositionedEntity {
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
 }
 
-export class Camera implements SceneCamera {
-    private readonly _scene: Scene;
+export class SceneCamera implements Camera {
+    private readonly _scene: GameScene;
     private _followTarget: PositionedEntity;
     private _followOptions: FollowEntityOptions = {};
 
@@ -37,11 +37,11 @@ export class Camera implements SceneCamera {
     x: number = 0;
     y: number = 0;
 
-    static new(cameraName: string, scene: Scene, options: SceneCameraOptions = {}): SceneCamera {
-        return new Camera(cameraName, scene, options);
+    static new(cameraName: string, scene: GameScene, options: SceneCameraOptions = {}): SceneCamera {
+        return new SceneCamera(cameraName, scene, options);
     }
     
-    private constructor(name: string, scene: Scene, options: SceneCameraOptions = {}) {
+    private constructor(name: string, scene: GameScene, options: SceneCameraOptions = {}) {
         this.name = name;
         this._scene = scene;
         this.x = options.x || 0;

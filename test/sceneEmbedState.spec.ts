@@ -1,7 +1,7 @@
 import { SceneEmbedDisplayMode } from '../engine/core';
 import { Game } from './../engine/game';
 import { GameResources } from './../engine/resources';
-import { Scene } from './../engine/scene';
+import { GameScene } from './../engine/scene';
 import { SceneEmbedState } from './../engine/scene/embedState';
 import { TestUtil } from './testUtil';
 
@@ -13,7 +13,7 @@ describe('SceneEmbedState', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testResources = new GameResources();
-        testEmbedState = new SceneEmbedState(testResources, <Scene>testGame.defaultScene);
+        testEmbedState = new SceneEmbedState(testResources, <GameScene>testGame.defaultScene);
 
         testResources.defineScene('scnEmbed', { width: 300, height: 200 });
     });

@@ -1,6 +1,6 @@
 import { GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
-import { Scene } from './../engine/scene';
+import { GameScene } from './../engine/scene';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { TestUtil } from './testUtil';
 
@@ -9,16 +9,16 @@ describe('Scene', () => {
     const TestSceneWidth = 800;
 
     let testGame: Game;
-    let testScene: Scene;
+    let testScene: GameScene;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testScene = <Scene>testGame.resources.defineScene('scnTest', { width: TestSceneWidth, height: TestSceneHeight });
+        testScene = <GameScene>testGame.resources.defineScene('scnTest', { width: TestSceneWidth, height: TestSceneHeight });
     });
 
     it('initializes with a default Camera', () => {
         expect(testScene.defaultCamera).toBeDefined();
-        expect(testScene.defaultCamera.name).toBe(Scene.DefaultCameraName);
+        expect(testScene.defaultCamera.name).toBe(GameScene.DefaultCameraName);
         expect(testScene.defaultCamera.height).toBe(TestSceneHeight);
         expect(testScene.defaultCamera.width).toBe(TestSceneWidth);
     });

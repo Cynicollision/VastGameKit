@@ -3,18 +3,14 @@ import { Game } from './../../engine/game';
 
 export function buildPlayerActor(game: Game) {
 
-    const sprGuySheet = game.resources.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
     const actPlayer = game.resources.defineActor('actPlayer', { 
-        sprite: sprGuySheet,
+        sprite: game.resources.getSprite('sprLink'),
     });
 
+    actPlayer.setRectBoundaryFromSprite();
     actPlayer.useBasicMotionBehavior();
 
-    actPlayer.onLoad(player => {
-        player.setRectBoundaryFromSprite();
-    });
-
-    actPlayer.onCreate((self, gc) => {
+    actPlayer.onCreate((self, sc) => {
         self.state.stats = { health: 100 };
     });
 
@@ -84,6 +80,6 @@ export function buildPlayerActor(game: Game) {
     });
 
     actPlayer.onDraw((self, canvas, sc) => {
-        // canvas.drawText(`(${self.x},${self.y})`, self.x + 32, self.y + 10);
+        canvas.drawText(`(${self.x},${self.y})`, self.x + 32, self.y + 10);
     });
 }

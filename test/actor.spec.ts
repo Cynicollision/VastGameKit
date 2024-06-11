@@ -1,6 +1,6 @@
 
 
-import { Actor } from './../engine/actor';
+import { ActorDefinition } from './../engine/actor';
 import { ActorBehaviorName, GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { Game } from './../engine/game';
 import { TestImage } from './mocks/testImage';
@@ -8,11 +8,11 @@ import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
     let testGame: Game;
-    let testActor: Actor;
+    let testActor: ActorDefinition;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testActor = <Actor>testGame.resources.defineActor('testActor');
+        testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
     });
 
     it('defines an onLoad callback', () => {

@@ -1,6 +1,6 @@
 import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
-import { Scene, GameScene } from './../engine/scene';
+import { GameScene, Scene } from './../engine/scene';
 import { Sprite, SpriteOptions } from './../engine/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestImage } from './mocks/testImage';
@@ -24,7 +24,7 @@ export class TestUtil {
         return Sprite.fromSource('testSprite', TestImage.Source, options);
     }
 
-    static startScene(game: Game, scene: GameScene): void {
-        (<Scene>scene).startOrResume(game.controller);
+    static startScene(game: Game, scene: Scene): void {
+        (<GameScene>scene).startOrResume(game.controller);
     }
 }

@@ -1,7 +1,7 @@
-import { SceneTransitionType } from './../core';
-import { GameCanvas } from './../device/canvas';
-import { SceneFadeTransition } from './../ext/transitions/sceneFadeTransition';
-import { GameScene } from './../scene';
+import { SceneTransitionType } from './core';
+import { GameCanvas } from './device/canvas';
+import { SceneFadeTransition } from './ext/transitions/sceneFadeTransition';
+import { Scene } from './scene';
 
 export type SceneTransitionOptions = {
     color?: string;
@@ -14,7 +14,7 @@ export type SceneTransitionOptions = {
 
 export interface SceneTransition {
     start(onTransitionallback: () => void, onEndCallback: () => void): void;
-    draw(scene: GameScene, canvas: GameCanvas): void
+    draw(scene: Scene, canvas: GameCanvas): void
 }
 
 export class SceneTransitionFactory {

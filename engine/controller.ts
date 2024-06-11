@@ -1,18 +1,17 @@
 import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneTransitionType } from './core';
 import { GameCanvas } from './device/canvas';
 import { GameResources } from './resources';
-import { Scene, GameScene } from './scene';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './scene/transition';
+import { GameScene, Scene } from './scene';
+import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
 export type ControllerOptions = { 
     pulseLength: number;
 };
 
-// TODO rename -> Controller
-export interface SceneController {
+export interface Controller {
     readonly currentStep: number;
     readonly resources: GameResources;
-    readonly scene: GameScene;
+    readonly scene: Scene;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string): void;
     publishEvent(eventName: string, data?: any): void;
@@ -20,8 +19,7 @@ export interface SceneController {
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;
 }
 
-// TODO rename -> SceneController
-export class Controller implements SceneController {
+export class SceneController implements Controller {
     private _eventQueue: GameEvent[] = [];
     private _options: ControllerOptions;
     private _timers: GameTimer[] = [];
@@ -33,10 +31,10 @@ export class Controller implements SceneController {
     private _currentStep = 0;
     get currentStep() { return this._currentStep; }
 
-    private _scene: Scene;
-    get scene(): GameScene { return this._scene; }
+    private _scene: GameScene;
+    get scene(): Scene { return this._scene; }
 
-    constructor(resources: GameResources, scene: Scene, _options: ControllerOptions) {
+    constructor(resources: GameResources, scene: GameScene, _options: ControllerOptions) {
         this.resources = resources;
         this._scene = scene;
         this._options = _options;
@@ -72,7 +70,7 @@ export class Controller implements SceneController {
     // TODO: allow data to be passed to next scene
     goToScene(sceneName: string): void {
         this._scene.suspend(this);
-        this._scene = <Scene>this.resources.getScene(sceneName);
+        this._scene = <GameScene>this.resources.getScene(sceneName);
         this._scene.startOrResume(this);
     }
 
@@ -106,7 +104,7 @@ export class Controller implements SceneController {
         this._scene.suspend(this);
         this._transition = SceneTransitionFactory.new(transitionType, options);
         this._transition.start(() => {
-            this._scene = <Scene>this.resources.getScene(sceneName);
+            this._scene = <GameScene>this.resources.getScene(sceneName);
             this._scene.startOrResume(this);
         }, () => {
             this._transition = null;
