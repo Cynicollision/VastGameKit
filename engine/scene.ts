@@ -283,23 +283,23 @@ export class GameScene extends LifecycleEntityBase<Scene> implements Scene {
         return this;
     }
 
-    startOrResume(sc: Controller): void {
+    startOrResume(sc: Controller, data = {}): void {
 
         if (this._status === SceneStatus.NotStarted) {
             if (this.onStartCallback) {
-                this.onStartCallback(this, sc);
+                this.onStartCallback(this, sc, data);
             }
         }
         else if (this._status === SceneStatus.Suspended) {
             if (this.onResumeCallback) {
-                this.onResumeCallback(this, sc);
+                this.onResumeCallback(this, sc, data);
             }
         }
 
         this._status = SceneStatus.Running;
 
         for (const embed of this.embeds.getAll()) {
-            (<GameScene>embed.scene).startOrResume(sc);
+            (<GameScene>embed.scene).startOrResume(sc, data);
         }
     }
 

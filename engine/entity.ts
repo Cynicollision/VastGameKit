@@ -3,7 +3,7 @@ import { GameCanvas } from './device/canvas';
 import { Controller } from './controller';
 
 export type EntityLifecycleCb<T> = {
-    (self: T, sc: Controller): void;
+    (self: T, sc: Controller, data?: any): void;
 };
 
 export type EntityLifecycleDrawCb<T> = {

@@ -9,6 +9,7 @@ export type SceneTransitionOptions = {
     height?: number;
     portX?: number;
     portY?: number;
+    type?: SceneTransitionType;
     width?: number;
 }
 
@@ -19,10 +20,13 @@ export interface SceneTransition {
 
 export class SceneTransitionFactory {
     private static readonly DefaultDurationMs = 1000;
+    private static readonly DefaultTransitionType = SceneTransitionType.Fade;
     
-    static new(type: SceneTransitionType, options: SceneTransitionOptions = {}): SceneTransition {
+    static new(options: SceneTransitionOptions = {}): SceneTransition {
         options.durationMs = options.durationMs || this.DefaultDurationMs;
-        switch (type) {
+        options.type = options.type || this.DefaultTransitionType;
+
+        switch (options.type) {
             case SceneTransitionType.Fade:
                 return new SceneFadeTransition(options);  
         }

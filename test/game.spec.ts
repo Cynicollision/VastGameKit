@@ -17,7 +17,7 @@ describe('Game', () => {
         expect(testGame.defaultScene.width).toBe(GameScene.DefaultSceneWidth);
     });
 
-    it('loads resources successfully', (done) => {
+    it('loads resources successfully', done => {
         testGame.resources.defineSprite('testSprite', TestImage.Source);
 
         testGame.load().then(() => {
@@ -29,7 +29,7 @@ describe('Game', () => {
         });
     });
 
-    it('loads resources and handles errors', (done) => {
+    it('loads resources and handles errors', done => {
         testGame.resources.defineSprite('testSprite', 'bogusImageSource');
 
         testGame.load().catch(() => {

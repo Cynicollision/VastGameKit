@@ -1,4 +1,4 @@
-import { Direction } from './../../engine/core';
+import { Direction, SceneTransitionType } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildPlayerActor(game: Game) {
@@ -16,7 +16,7 @@ export function buildPlayerActor(game: Game) {
 
     actPlayer.onGameEvent('something', (self, ev, sc) => {
         const nextRoom = sc.scene.name === 'default' ? 'room1' : 'default';
-        sc.transitionToScene(nextRoom, { durationMs: 800, portY: 120 });
+        sc.transitionToScene(nextRoom, { durationMs: 800, portY: 120 }, { foo: 'bar123' });
         ev.cancel();
     });
 

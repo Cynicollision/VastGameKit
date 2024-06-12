@@ -12,23 +12,49 @@ describe('SceneController', () => {
         scnTwo = game.resources.defineScene('scnTwo');
     });
 
-    it('changes the current Scene', () => {
+    it('changes the current Scene and passes data to the next', () => {
         (<GameScene>game.defaultScene).startOrResume(game.controller);
         expect(game.controller.scene).toBe(game.defaultScene);
         expect(game.defaultScene.status).toBe(SceneStatus.Running);
         expect(scnTwo.status).toBe(SceneStatus.NotStarted);
 
-        game.controller.goToScene('scnTwo');
+        let sceneData = null;
+        scnTwo.onStart((self, sc, data) => {
+            sceneData = data;
+        });
+
+        game.controller.goToScene('scnTwo', { test: 123 });
 
         expect(game.controller.scene).toBe(scnTwo);
         expect(game.defaultScene.status).toBe(SceneStatus.Suspended);
         expect(scnTwo.status).toBe(SceneStatus.Running);
+        expect(sceneData.test).toBe(123);
         
         game.controller.goToScene('default');
 
         expect(game.controller.scene).toBe(game.defaultScene);
         expect(game.defaultScene.status).toBe(SceneStatus.Running);
         expect(scnTwo.status).toBe(SceneStatus.Suspended);
+    });
+
+    it('transitions the current Scene and passes data to the next', done => {
+        (<GameScene>game.defaultScene).startOrResume(game.controller);
+        expect(game.controller.scene).toBe(game.defaultScene);
+        expect(game.defaultScene.status).toBe(SceneStatus.Running);
+        expect(scnTwo.status).toBe(SceneStatus.NotStarted);
+
+        let sceneData = null;
+        scnTwo.onStart((self, sc, data) => {
+            sceneData = data;
+        });
+
+        game.controller.transitionToScene('scnTwo', { durationMs: 50 }, { test: 456 }).then(() => {
+            expect(game.controller.scene).toBe(scnTwo);
+            expect(game.defaultScene.status).toBe(SceneStatus.Suspended);
+            expect(scnTwo.status).toBe(SceneStatus.Running);
+            expect(sceneData.test).toBe(456);
+            done();
+        });
     });
 
     it('starts a GameTimer', () => {

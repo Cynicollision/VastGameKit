@@ -7,7 +7,7 @@ export function buildRoom1(game: Game) {
 
     room1.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
-    room1.onStart((self, sc) => {
+    room1.onStart((self, sc, data) => {
         console.log('room1.onStart');
         self.instances.create('actPlayer', { x: 32, y: 160 });
     });

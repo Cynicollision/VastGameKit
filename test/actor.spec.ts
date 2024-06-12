@@ -179,7 +179,7 @@ describe('Actor', () => {
             expect(testActor.boundary.atPosition(32, 32).containsPosition(42, 42)).toBeFalse();
         });
 
-        it('as a circle the size of its Sprite', (done) => {
+        it('as a circle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
             testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source, { height: TestImage.Height, width: TestImage.Height });
@@ -205,7 +205,7 @@ describe('Actor', () => {
             expect(testActor.boundary.width).toBe(width);
         });
 
-        it('as a rectangle the size of its Sprite', (done) => {
+        it('as a rectangle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
             testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source);

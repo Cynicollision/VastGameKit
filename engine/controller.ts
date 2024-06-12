@@ -13,10 +13,10 @@ export interface Controller {
     readonly resources: GameResources;
     readonly scene: Scene;
     readonly state: ObjMap<any>;
-    goToScene(sceneName: string): void;
+    goToScene(sceneName: string, data?: any): void;
     publishEvent(eventName: string, data?: any): void;
     startTimer(options: GameTimerOptions): GameTimer;
-    transitionToScene(sceneName: string, options?: SceneTransitionOptions, transitionType?: SceneTransitionType): void;
+    transitionToScene(sceneName: string, options?: SceneTransitionOptions, data?: any): Promise<void>;
 }
 
 export class SceneController implements Controller {
@@ -67,11 +67,11 @@ export class SceneController implements Controller {
         }
     }
 
-    // TODO: allow data to be passed to next scene
-    goToScene(sceneName: string): void {
+    // TODO: add/update tests for passing data between scenes
+    goToScene(sceneName: string, data?: any): void {
         this._scene.suspend(this);
         this._scene = <GameScene>this.resources.getScene(sceneName);
-        this._scene.startOrResume(this);
+        this._scene.startOrResume(this, data);
     }
 
     publishEvent(eventName: string, data?: any): void {
@@ -99,15 +99,21 @@ export class SceneController implements Controller {
         this._scene.step(this)
     }
 
-    // TODO: allow data to be passed to next scene
-    transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, transitionType: SceneTransitionType = SceneTransitionType.Fade): void {
-        this._scene.suspend(this);
-        this._transition = SceneTransitionFactory.new(transitionType, options);
-        this._transition.start(() => {
-            this._scene = <GameScene>this.resources.getScene(sceneName);
-            this._scene.startOrResume(this);
-        }, () => {
-            this._transition = null;
+    // TODO: add/update tests for passing data between scene transitions
+    // Return Promise<void?> for optional "on transition end" callback
+    //  (and for use in tests)
+    transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, data?: any): Promise<void> {
+        return new Promise((resolve, reject) => {
+            this._scene.suspend(this);
+            this._transition = SceneTransitionFactory.new(options);
+            this._transition.start(() => {
+                this._scene = <GameScene>this.resources.getScene(sceneName);
+                this._scene.startOrResume(this, data);
+            }, () => {
+                this._transition = null;
+                resolve();
+            });
         });
+        
     }
 }
