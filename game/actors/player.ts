@@ -15,7 +15,7 @@ export function buildPlayerActor(game: Game) {
     });
 
     actPlayer.onGameEvent('something', (self, ev, sc) => {
-        const nextRoom = sc.scene.name === 'default' ? 'room1' : 'default';
+        const nextRoom = sc.sceneState.scene.name === 'default' ? 'room1' : 'default';
         sc.transitionToScene(nextRoom, { durationMs: 800, portY: 120 }, { foo: 'bar123' });
         ev.cancel();
     });

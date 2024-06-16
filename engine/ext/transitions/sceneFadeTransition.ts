@@ -1,6 +1,6 @@
+import { SceneState } from '../../scene/sceneState';
 import { MathUtil } from './../../core';
 import { GameCanvas } from './../../device/canvas';
-import { GameScene } from './../../scene';
 import { SceneTransition, SceneTransitionOptions } from './../../transition';
 
 export class SceneFadeTransition implements SceneTransition {
@@ -19,7 +19,7 @@ export class SceneFadeTransition implements SceneTransition {
         this.options.durationMs = options.durationMs || SceneFadeTransition.DefaultDurationMs;
     }
 
-    draw(scene: GameScene, canvas: GameCanvas): void {
+    draw(sceneState: SceneState, canvas: GameCanvas): void {
         const increment = (1000 / this.options.durationMs) / SceneFadeTransition.TransitionIncrements;
         this.currentValue += this.transitionIn ? increment : -increment;
         this.currentValue = MathUtil.clamp(this.currentValue, 0, 1);

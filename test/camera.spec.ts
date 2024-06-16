@@ -12,13 +12,11 @@ describe('SceneCamera', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
-        testCamera = <SceneCamera>testGame.defaultScene.defaultCamera;
+        testCamera = <SceneCamera>testGame.controller.sceneState.defaultCamera;
         testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
-        TestUtil.startScene(testGame, testGame.defaultScene);
-
-        testInstance = <ActorInstance>testGame.defaultScene.instances.create('testActor');
+        testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor');
     });
 
     describe('defines valid dimensions', () => {
@@ -30,7 +28,7 @@ describe('SceneCamera', () => {
         });
 
         it('to be the specified dimensions for a new camera', () => {
-            const camera2 = testGame.defaultScene.defineCamera('camera2', { height: 200, width: 300, portHeight: 400, portWidth: 600 });
+            const camera2 = testGame.controller.sceneState.defineCamera('camera2', { height: 200, width: 300, portHeight: 400, portWidth: 600 });
             expect(camera2.height).toBe(200);
             expect(camera2.width).toBe(300);
             expect(camera2.portHeight).toBe(400);

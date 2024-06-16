@@ -17,7 +17,7 @@ export type ActorOptions = {
 };
 
 type ActorLifecycleCollisionCallback = {
-    (self: Instance, other: Instance, sc: Controller): void;
+    (self: Instance, other: Instance, controller: Controller): void;
 };
 
 export interface Actor extends LifecycleEntityBase<Actor, Instance> {
@@ -67,21 +67,21 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         this.sprite = options.sprite;
     }
 
-    callCollision(self: Instance, other: Instance, sc: Controller): void {
+    callCollision(self: Instance, other: Instance, controller: Controller): void {
         if (this.collisionHandlerRegistry[other.actor.name]) {
-            this.collisionHandlerRegistry[other.actor.name](self, other, sc);
+            this.collisionHandlerRegistry[other.actor.name](self, other, controller);
         }
     }
 
-    callCreate(self: Instance, sc: Controller): void {
+    callCreate(self: Instance, controller: Controller): void {
         if (this.onCreateCallback) {
-            this.onCreateCallback(self, sc);
+            this.onCreateCallback(self, controller);
         }
     }
 
-    callDestroy(self: Instance, sc: Controller): void {
+    callDestroy(self: Instance, controller: Controller): void {
         if (this.onDestroyCallback) {
-            this.onDestroyCallback(self, sc);
+            this.onDestroyCallback(self, controller);
         }
     }
 

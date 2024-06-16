@@ -1,7 +1,8 @@
-import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneTransitionType } from './core';
+import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent, RuntimeID, SceneTransitionType } from './core';
 import { GameCanvas } from './device/canvas';
 import { GameResources } from './resources';
-import { GameScene, Scene } from './scene';
+import { Scene } from './scene';
+import { SceneState } from './scene/sceneState';
 import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
 export type ControllerOptions = { 
@@ -11,7 +12,7 @@ export type ControllerOptions = {
 export interface Controller {
     readonly currentStep: number;
     readonly resources: GameResources;
-    readonly scene: Scene;
+    readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
     publishEvent(eventName: string, data?: any): void;
@@ -22,6 +23,7 @@ export interface Controller {
 export class SceneController implements Controller {
     private _eventQueue: GameEvent[] = [];
     private _options: ControllerOptions;
+    private _persistentSceneStateMap: ObjMap<SceneState> = {};
     private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
 
@@ -31,12 +33,12 @@ export class SceneController implements Controller {
     private _currentStep = 0;
     get currentStep() { return this._currentStep; }
 
-    private _scene: GameScene;
-    get scene(): Scene { return this._scene; }
+    private _currentSceneState: SceneState;
+    get sceneState(): SceneState { return this._currentSceneState; }
 
-    constructor(resources: GameResources, scene: GameScene, _options: ControllerOptions) {
+    constructor(resources: GameResources, initialScene: Scene, _options: ControllerOptions) {
         this.resources = resources;
-        this._scene = scene;
+        this._currentSceneState = this.getSceneState(initialScene.name);
         this._options = _options;
     }
 
@@ -46,11 +48,29 @@ export class SceneController implements Controller {
         return queue;
     }
 
-    private updateCurrentStep(): void {
+    private incrementCurrentStep(): void {
         this._currentStep++;
         if (this._currentStep === this._options.pulseLength) {
             this._currentStep = 0;
         }
+    }
+
+    getSceneState(sceneName: string): SceneState {
+        const scene = this.resources.getScene(sceneName);
+
+        if (scene.persistent) {
+            if (!this._persistentSceneStateMap[scene.name]) {
+                this._persistentSceneStateMap[scene.name] = this.newSceneState(scene);
+            }
+
+            return this._persistentSceneStateMap[scene.name];
+        }
+
+        return this.newSceneState(scene);
+    }
+
+    private newSceneState(scene: Scene): SceneState {
+        return new SceneState(RuntimeID.next(), this, scene);
     }
 
     startTimer(options: GameTimerOptions): GameTimer {
@@ -60,18 +80,19 @@ export class SceneController implements Controller {
     }
 
     draw(canvas: GameCanvas): void {
-        this._scene.draw(canvas, this);
+        this._currentSceneState.draw(canvas, this);
 
         if (this._transition) {
-            this._transition.draw(this.scene, canvas);
+            this._transition.draw(this._currentSceneState, canvas);
         }
     }
 
-    // TODO: add/update tests for passing data between scenes
-    goToScene(sceneName: string, data?: any): void {
-        this._scene.suspend(this);
-        this._scene = <GameScene>this.resources.getScene(sceneName);
-        this._scene.startOrResume(this, data);
+    goToScene(sceneName: string, data?: any): SceneState {
+        this._currentSceneState.suspend(this);
+        this._currentSceneState = this.getSceneState(sceneName);
+        this._currentSceneState.startOrResume(this, data);
+
+        return this._currentSceneState;
     }
 
     publishEvent(eventName: string, data?: any): void {
@@ -80,40 +101,35 @@ export class SceneController implements Controller {
     }
 
     onKeyboardEvent(event: KeyboardInputEvent): void {
-        this._scene.handleKeyboardEvent(event, this);
+        this._currentSceneState.handleKeyboardEvent(event, this);
     }
 
     onPointerEvent(event: PointerInputEvent): void {
-        this._scene.handlePointerEvent(event, this);
+        this._currentSceneState.handlePointerEvent(event, this);
     }
 
     step(): void {
-        this.updateCurrentStep();
-        
+        this.incrementCurrentStep();
         this._timers.forEach(t => t.tick());
 
         for (const event of this.flushEventQueue()) {
-            this._scene.handleGameEvent(event, this);
+            this._currentSceneState.handleGameEvent(event, this);
         }
         
-        this._scene.step(this)
+        this._currentSceneState.step(this)
     }
 
-    // TODO: add/update tests for passing data between scene transitions
-    // Return Promise<void?> for optional "on transition end" callback
-    //  (and for use in tests)
     transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, data?: any): Promise<void> {
-        return new Promise((resolve, reject) => {
-            this._scene.suspend(this);
+        return new Promise(resolve => {
+            this._currentSceneState.suspend(this);
             this._transition = SceneTransitionFactory.new(options);
             this._transition.start(() => {
-                this._scene = <GameScene>this.resources.getScene(sceneName);
-                this._scene.startOrResume(this, data);
+                this._currentSceneState = this.getSceneState(sceneName);
+                this._currentSceneState.startOrResume(this, data);
             }, () => {
                 this._transition = null;
                 resolve();
             });
         });
-        
     }
 }

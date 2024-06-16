@@ -1,5 +1,7 @@
+import { Controller } from '../controller';
+import { GameCanvas } from '../device/canvas';
 import { SceneEmbedDisplayMode } from './../core';
-import { Scene } from './../scene';
+import { SceneState } from './sceneState';
 
 export type SceneEmbedOptions = {
     displayMode?: SceneEmbedDisplayMode;
@@ -10,23 +12,35 @@ export type SceneEmbedOptions = {
 export class SceneEmbed {
     readonly id: number;
     readonly displayMode: SceneEmbedDisplayMode = SceneEmbedDisplayMode.Embed;
-    readonly parent: Scene;
-    readonly scene: Scene;
+    readonly parentSceneState: SceneState;
+    readonly sceneState: SceneState;
     readonly x: number = 0;
     readonly y: number = 0;
 
-    constructor(id: number, parent: Scene, subScene: Scene, options: SceneEmbedOptions = {}) {
+    constructor(id: number, parentSceneState: SceneState, thisSceneState: SceneState, options: SceneEmbedOptions = {}) {
         this.id = id;
-        this.parent = parent;
-        this.scene = subScene;
+        this.parentSceneState = parentSceneState;
+        this.sceneState = thisSceneState;
         this.displayMode = options.displayMode || SceneEmbedDisplayMode.Embed;
         this.x = options.x || 0;
         this.y = options.y || 0;
     }
 
-    containsPosition(x: number, y: number): boolean {
-        return x > this.x && x < this.x + this.scene.width && y > this.y && y < this.y + this.scene.height;
+    private getSceneEmbedCanvasKey(): string {
+        return `${this.parentSceneState.scene.name}_${this.sceneState.scene.name}_${this.id}`;
     }
 
-    // TODO add: hide() mechanism
+    containsPosition(x: number, y: number): boolean {
+        return x > this.x && x < this.x + this.sceneState.scene.width && y > this.y && y < this.y + this.sceneState.scene.height;
+    }
+    
+    draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: Controller): void {
+        const embedKey = this.getSceneEmbedCanvasKey();
+        const scene = this.sceneState.scene;
+        const embeddedSceneCanvas = mainCanvas.subCanvas(embedKey, { width: scene.width, height: scene.height });
+        this.sceneState.draw(embeddedSceneCanvas, controller);
+        targetCanvas.drawCanvas(embeddedSceneCanvas, 0, 0, scene.width, scene.height, this.x, this.y, scene.width, scene.height);
+    }
+
+    // TODO add: hide/destroy() mechanism
 }

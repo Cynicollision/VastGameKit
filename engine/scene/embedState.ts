@@ -1,24 +1,25 @@
 import { ObjMap, RuntimeID, SceneEmbedDisplayMode } from './../core';
-import { GameResources } from './../resources';
-import { GameScene } from './../scene';
 import { SceneEmbed, SceneEmbedOptions } from './embed';
+import { SceneState } from './sceneState';
 
 export class SceneEmbedState {
-    private readonly _parent: GameScene;
-    private readonly _resources: GameResources;
+    private readonly _parent: SceneState;
     private readonly _sceneEmbedMap: ObjMap<SceneEmbed> = {};
 
-    constructor(resources: GameResources, parent: GameScene) {
-        this._resources = resources;
+    constructor(parent: SceneState) {
         this._parent = parent;
+    }
+
+    private getSceneEmbedKey(name: string, id: number): string {
+        return `${name}_${id}`
     }
 
     create(sceneName: string, options: SceneEmbedOptions = {}): SceneEmbed {
         const sceneEmbedId = RuntimeID.next();
-        const subScene = <GameScene>this._resources.getScene(sceneName);
-        const embed = new SceneEmbed(sceneEmbedId, this._parent, subScene, options);
-
-        this._sceneEmbedMap[`${sceneName}_${sceneEmbedId}`] = embed;
+        const subSceneState = this._parent.controller.getSceneState(sceneName);
+        const embed = new SceneEmbed(sceneEmbedId, this._parent, subSceneState, options);
+        const embedKey = this.getSceneEmbedKey(sceneName, sceneEmbedId);
+        this._sceneEmbedMap[embedKey] = embed;
 
         return embed;
     }
@@ -29,6 +30,7 @@ export class SceneEmbedState {
         }
     }
 
+    // TODO: remove param, make separate e.g. 'getByDisplayMode'
     getAll(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
         const embeds: SceneEmbed[] = [];
 

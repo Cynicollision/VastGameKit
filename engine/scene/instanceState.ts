@@ -1,8 +1,8 @@
 import { Boundary, InstanceStatus, ObjMap, RuntimeID } from './../core';
-import { GameCanvas } from '../device/canvas';
+import { GameCanvas } from './../device/canvas';
 import { ActorDefinition } from './../actor';
 import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
-import { Controller } from '../controller';
+import { Controller } from './../controller';
 import { GameResources } from './../resources';
 
 export class SceneInstanceState {
@@ -21,9 +21,9 @@ export class SceneInstanceState {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
-    draw(canvas: GameCanvas, sc: Controller): void {
+    draw(canvas: GameCanvas, controller: Controller): void {
         for (const instance of <ActorInstance[]>this.getByDepth()) {
-            instance.draw(canvas, sc);
+            instance.draw(canvas, controller);
         }
     }
 
@@ -58,6 +58,7 @@ export class SceneInstanceState {
         }
     }
 
+    // TODO: remove param, make separate e.g. 'getByActor'
     getAll(actorName?: string): Instance[] {
         const instances: ActorInstance[] = [];
 
@@ -112,21 +113,21 @@ export class SceneInstanceState {
         return true;
     }
 
-    step(sc: Controller): void {
+    step(controller: Controller): void {
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
             if (instance.status === InstanceStatus.Destroyed) {
                 this.delete(instance);
-                instance.actor.callDestroy(instance, sc);
+                instance.actor.callDestroy(instance, controller);
             }
             else if (instance.status === InstanceStatus.New) {
                 instance.activate();
-                instance.actor.callCreate(instance, sc);
+                instance.actor.callCreate(instance, controller);
             }
             else if (instance.status === InstanceStatus.Active) {
-                instance.callBeforeStepBehaviors(sc);
-                instance.step(sc);
-                instance.callAfterStepBehaviors(sc);
+                instance.callBeforeStepBehaviors(controller);
+                instance.step(controller);
+                instance.callAfterStepBehaviors(controller);
             }
         }
     }

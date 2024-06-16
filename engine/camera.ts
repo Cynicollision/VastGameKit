@@ -1,6 +1,6 @@
 import { Geometry, MathUtil } from './core';
 import { FollowEntityOptions, PositionedEntity } from './entity';
-import { GameScene } from './scene';
+import { SceneState } from './scene/sceneState';
 
 export type SceneCameraOptions = {
     x?: number;
@@ -23,7 +23,7 @@ export interface Camera extends PositionedEntity {
 }
 
 export class SceneCamera implements Camera {
-    private readonly _scene: GameScene;
+    private readonly _sceneState: SceneState;
     private _followTarget: PositionedEntity;
     private _followOptions: FollowEntityOptions = {};
 
@@ -37,21 +37,21 @@ export class SceneCamera implements Camera {
     x: number = 0;
     y: number = 0;
 
-    static new(cameraName: string, scene: GameScene, options: SceneCameraOptions = {}): SceneCamera {
-        return new SceneCamera(cameraName, scene, options);
+    static new(cameraName: string, sceneState: SceneState, options: SceneCameraOptions = {}): SceneCamera {
+        return new SceneCamera(cameraName, sceneState, options);
     }
     
-    private constructor(name: string, scene: GameScene, options: SceneCameraOptions = {}) {
+    private constructor(name: string, sceneState: SceneState, options: SceneCameraOptions = {}) {
         this.name = name;
-        this._scene = scene;
+        this._sceneState = sceneState;
         this.x = options.x || 0;
         this.y = options.y || 0;
-        this.width = options.width ? options.width : scene.width;
-        this.height = options.height ? options.height : scene.height;
+        this.width = options.width ? options.width : sceneState.scene.width;
+        this.height = options.height ? options.height : sceneState.scene.height;
         this.portX = options.portX ? options.portX : 0;
         this.portY = options.portY ? options.portY : 0;
-        this.portWidth = options.portWidth ? options.portWidth : scene.width;
-        this.portHeight = options.portHeight ? options.portHeight : scene.height;
+        this.portWidth = options.portWidth ? options.portWidth : sceneState.scene.width;
+        this.portHeight = options.portHeight ? options.portHeight : sceneState.scene.height;
     }
 
     follow(target: PositionedEntity, options: FollowEntityOptions = {}): void {
@@ -78,7 +78,7 @@ export class SceneCamera implements Camera {
             newY -= this.height / 2 - this._followTarget.height / 2;
         }
 
-        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._scene.width - this.width);
-        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._scene.height - this.height);
+        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._sceneState.scene.width - this.width);
+        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._sceneState.scene.height - this.height);
     }
 }

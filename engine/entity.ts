@@ -3,23 +3,23 @@ import { GameCanvas } from './device/canvas';
 import { Controller } from './controller';
 
 export type EntityLifecycleCb<T> = {
-    (self: T, sc: Controller, data?: any): void;
+    (self: T, controller: Controller, data?: any): void;
 };
 
 export type EntityLifecycleDrawCb<T> = {
-    (self: T, canvas: GameCanvas, sc: Controller): void;
+    (self: T, canvas: GameCanvas, controller: Controller): void;
 };
 
 export type EntityLifecycleGameEventCb<T> = {
-    (self: T, ev: GameEvent, sc: Controller): void;
+    (self: T, ev: GameEvent, controller: Controller): void;
 };
 
 export type EntityLifecycleKeyboardEventCb<T> = {
-    (self: T, ev: KeyboardInputEvent, sc: Controller): void;
+    (self: T, ev: KeyboardInputEvent, controller: Controller): void;
 };
 
 export type EntityLifecyclePointerEventCb<T> = {
-    (self: T, ev: PointerInputEvent, sc: Controller): void;
+    (self: T, ev: PointerInputEvent, controller: Controller): void;
 };
 
 export type FollowEntityOptions = {
@@ -42,33 +42,33 @@ export abstract class LifecycleEntityBase<T, U = T> {
     protected onStepCallback: EntityLifecycleCb<U>;
     protected onDrawCallback: EntityLifecycleDrawCb<U>;
 
-    callDraw(self: U, canvas: GameCanvas, sc: Controller): void {
+    callDraw(self: U, canvas: GameCanvas, controller: Controller): void {
         if (this.onDrawCallback) {
-            this.onDrawCallback(self, canvas, sc);
+            this.onDrawCallback(self, canvas, controller);
         }
     }
 
-    callGameEvent(self: U, event: GameEvent, sc: Controller): void {
+    callGameEvent(self: U, event: GameEvent, controller: Controller): void {
         if (this.gameEventHandlerMap[event.name]) {
-            this.gameEventHandlerMap[event.name](self, event, sc);
+            this.gameEventHandlerMap[event.name](self, event, controller);
         }
     }
 
-    callKeyboardEvent(self: U, event: KeyboardInputEvent, sc: Controller): void {
+    callKeyboardEvent(self: U, event: KeyboardInputEvent, controller: Controller): void {
         if (this.keyboardInputEventHandlerMap[event.key]) {
-            this.keyboardInputEventHandlerMap[event.key](self, event, sc);
+            this.keyboardInputEventHandlerMap[event.key](self, event, controller);
         }
     }
 
-    callPointerEvent(self: U, event: PointerInputEvent, sc: Controller): void {
+    callPointerEvent(self: U, event: PointerInputEvent, controller: Controller): void {
         if (this.pointerInputEventHandlerMap[event.type]) {
-            this.pointerInputEventHandlerMap[event.type](self, event, sc);
+            this.pointerInputEventHandlerMap[event.type](self, event, controller);
         }
     }
 
-    callStep(self: U, sc: Controller): void {
+    callStep(self: U, controller: Controller): void {
         if (this.onStepCallback) {
-            this.onStepCallback(self, sc);
+            this.onStepCallback(self, controller);
         }
     }
 
@@ -88,7 +88,7 @@ export abstract class LifecycleEntityBase<T, U = T> {
         this.pointerInputEventHandlerMap[type] = callback;
     }
 
-    onStep(callback:  EntityLifecycleCb<U>): void {
+    onStep(callback: EntityLifecycleCb<U>): void {
         this.onStepCallback = callback;
     }
 }

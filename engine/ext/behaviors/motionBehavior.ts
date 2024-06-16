@@ -9,7 +9,7 @@ export class ActorMotionBehavior implements ActorBehavior {
     previousX: number = 0;
     previousY: number = 0;
 
-    beforeStep(self: ActorInstance, sc: Controller): void {
+    beforeStep(self: ActorInstance, controller: Controller): void {
         this.previousX = self.x;
         this.previousY = self.y;
 
@@ -23,10 +23,10 @@ export class ActorMotionBehavior implements ActorBehavior {
                 return;
             }
 
-            let instancesAtNewPositionX = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y, true);
+            let instancesAtNewPositionX = controller.sceneState.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + newX, self.y, true);
             let freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + newX, self.y)));
             
-            let instancesAtNewPositionY = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + newY, true);
+            let instancesAtNewPositionY = controller.sceneState.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + newY, true);
             let freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + newY)));
 
             if (freeAtNewPositionX && freeAtNewPositionY) {
@@ -43,7 +43,7 @@ export class ActorMotionBehavior implements ActorBehavior {
 
             if (tryNewX !== 0 && !freeAtNewPositionX) {
                 for (let i = 1; i < Math.abs(newX); i++) {
-                    instancesAtNewPositionX = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + tryNewX, self.y, true);
+                    instancesAtNewPositionX = controller.sceneState.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x + tryNewX, self.y, true);
                     freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x + tryNewX, self.y)));
                     if (!freeAtNewPositionX) {
                         break;
@@ -55,7 +55,7 @@ export class ActorMotionBehavior implements ActorBehavior {
             
             if (tryNewY !== 0 && !freeAtNewPositionY) {
                 for (let i = 1; i < Math.abs(newY); i++) {
-                    instancesAtNewPositionY = sc.scene.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + tryNewY, true);
+                    instancesAtNewPositionY = controller.sceneState.instances.getWithinBoundaryAtPosition(self.actor.boundary, self.x, self.y + tryNewY, true);
                     freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(self.actor.boundary.atPosition(self.x, self.y + tryNewY)));
                     if (!freeAtNewPositionY) {
                         break;
@@ -74,13 +74,13 @@ export class ActorMotionBehavior implements ActorBehavior {
         }
     }
 
-    afterStep(self: ActorInstance, sc: Controller): void {
+    afterStep(self: ActorInstance, controller: Controller): void {
         if (this.previousX !== self.x || this.previousY !== self.y) {
             for (const actorName of self.actor.getCollisionActorNames()) {
-                const otherInstances = sc.scene.instances.getAll(actorName);
+                const otherInstances = controller.sceneState.instances.getAll(actorName);
                 for (const other of otherInstances) {
                     if (self !== other && self.collidesWith(other)) {
-                        self.actor.callCollision(self, other, sc);
+                        self.actor.callCollision(self, other, controller);
                     }
                 }
             }

@@ -1,3 +1,4 @@
+import { SceneState } from '../engine/scene/sceneState';
 import { GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/scene';
@@ -5,6 +6,7 @@ import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { TestUtil } from './testUtil';
 
 describe('Scene', () => {
+    const TestSceneName = 'scnTest';
     const TestSceneHeight = 600;
     const TestSceneWidth = 800;
 
@@ -13,14 +15,7 @@ describe('Scene', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testScene = <GameScene>testGame.resources.defineScene('scnTest', { width: TestSceneWidth, height: TestSceneHeight });
-    });
-
-    it('initializes with a default Camera', () => {
-        expect(testScene.defaultCamera).toBeDefined();
-        expect(testScene.defaultCamera.name).toBe(GameScene.DefaultCameraName);
-        expect(testScene.defaultCamera.height).toBe(TestSceneHeight);
-        expect(testScene.defaultCamera.width).toBe(TestSceneWidth);
+        testScene = <GameScene>testGame.resources.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
     });
 
     it('defines an onLoad callback', () => {
@@ -36,49 +31,12 @@ describe('Scene', () => {
         expect(loadEventCalled).toBeTrue();
     });
 
-    xit('propgates KeyboardEvents to Embeds and Instances', () => {
-
-    });
-
-    xit('propgates GameEvents to Embeds and Instances', () => {
-
-    });
-
-    xit('propgates PointerEvents to Embeds and Instances', () => {
-
-    });
-
-    describe('status', () => {
-
-        it('begins as NotStarted', () => {
-            expect(testScene.status).toBe(SceneStatus.NotStarted);
-        });
-
-        it('when Starting, on scene start, changes to Running', () => {
-            testScene.startOrResume(testGame.controller);
-
-            expect(testScene.status).toBe(SceneStatus.Running);
-        });
-
-        it('when Running, on scene suspend, changes to Suspended', () => {
-            testScene.suspend(testGame.controller);
-
-            expect(testScene.status).toBe(SceneStatus.Suspended);
-        });
-
-        it('when Resuming, on scene start, changes to Running', () => {
-            testScene.options.persistent = true;
-            testScene.suspend(testGame.controller);
-
-            expect(testScene.status).toBe(SceneStatus.Suspended);
-
-            testScene.startOrResume(testGame.controller);
-
-            expect(testScene.status).toBe(SceneStatus.Running);
-        });
-    });
-
     describe('lifecycle callbacks', () => {
+        let testSceneState: SceneState;
+
+        beforeEach(() => {
+            testSceneState = testGame.controller.getSceneState(TestSceneName);
+        });
 
         it('defines an onDraw callback', () => {
             let drawCalled = false;
@@ -88,7 +46,7 @@ describe('Scene', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testScene.draw(testGame.canvas, testGame.controller);
+            testSceneState.draw(testGame.canvas, testGame.controller);
 
             expect(drawCalled).toBeTrue();
         });
@@ -101,7 +59,7 @@ describe('Scene', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testScene.handleGameEvent(GameEvent.new('testEvent'), testGame.controller);
+            testSceneState.handleGameEvent(GameEvent.new('testEvent'), testGame.controller);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -116,7 +74,7 @@ describe('Scene', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testScene.handleKeyboardEvent( new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
+            testSceneState.handleKeyboardEvent( new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -132,7 +90,7 @@ describe('Scene', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testScene.handlePointerEvent(new PointerInputEvent('pointertest', 20, 40), testGame.controller);
+            testSceneState.handlePointerEvent(new PointerInputEvent('pointertest', 20, 40), testGame.controller);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -146,9 +104,9 @@ describe('Scene', () => {
 
             expect(resumeCalled).toBeFalse();
 
-            testScene.startOrResume(testGame.controller);
-            testScene.suspend(testGame.controller);
-            testScene.startOrResume(testGame.controller);
+            testSceneState.startOrResume(testGame.controller);
+            testSceneState.suspend(testGame.controller);
+            testSceneState.startOrResume(testGame.controller);
 
             expect(resumeCalled).toBeTrue();
         });
@@ -161,7 +119,7 @@ describe('Scene', () => {
 
             expect(startCalled).toBeFalse();
 
-            testScene.startOrResume(testGame.controller);
+            testSceneState.startOrResume(testGame.controller);
 
             expect(startCalled).toBeTrue();
         });
@@ -172,8 +130,8 @@ describe('Scene', () => {
                 stepCalled = true;
             });
 
-            testScene.startOrResume(testGame.controller);
-            testScene.step(testGame.controller);
+            testSceneState.startOrResume(testGame.controller);
+            testSceneState.step(testGame.controller);
 
             expect(stepCalled).toBeTrue();
         });
@@ -186,7 +144,7 @@ describe('Scene', () => {
 
             expect(suspendCalled).toBeFalse();
 
-            testScene.suspend(testGame.controller);
+            testSceneState.suspend(testGame.controller);
 
             expect(suspendCalled).toBeTrue();
         });

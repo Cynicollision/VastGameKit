@@ -104,9 +104,6 @@ export class GameResources {
                     actor.load();
                 }
 
-                // TODO add callback for game setup code, to be called last.
-                //  see Actor and Scene load.
-
                 return Promise.resolve();
             });
     }

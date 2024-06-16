@@ -11,8 +11,8 @@ describe('ActorInstance', () => {
     beforeEach(() => {
         game = TestUtil.getTestGame();
         game.resources.defineActor('testActor');
-        TestUtil.startScene(game, game.defaultScene);
-        testInstance = game.defaultScene.instances.create('testActor');
+
+        testInstance = game.controller.sceneState.instances.create('testActor');
     });
 
     it('detects when it collides with another Instance', () => {
@@ -21,19 +21,19 @@ describe('ActorInstance', () => {
 
         const other = game.resources.defineActor('otherActor');
         other.setRectBoundary(40, 20);
-        const otherInstance = game.defaultScene.instances.create('otherActor', { x: 10, y: 15 });
+        const otherInstance = game.controller.sceneState.instances.create('otherActor', { x: 10, y: 15 });
         expect(testInstance.collidesWith(otherInstance)).toBeFalse();
         otherInstance.y = 5;
         expect(testInstance.collidesWith(otherInstance)).toBeTrue();
     });
 
     it('can follow a Camera', () => {
-        testInstance.follow(game.defaultScene.defaultCamera, { offsetX: 10, offsetY: 20 });
+        testInstance.follow(game.controller.sceneState.defaultCamera, { offsetX: 10, offsetY: 20 });
         expect(testInstance.x).toBe(0);
         expect(testInstance.y).toBe(0);
 
-        game.defaultScene.defaultCamera.x = 110;
-        game.defaultScene.defaultCamera.y = 220;
+        game.controller.sceneState.defaultCamera.x = 110;
+        game.controller.sceneState.defaultCamera.y = 220;
         testInstance.activate();
         (<ActorInstance>testInstance).step(game.controller);
 
@@ -43,7 +43,7 @@ describe('ActorInstance', () => {
 
     it('can follow another Instance', () => {
         const other = game.resources.defineActor('otherActor');
-        const otherInstance = game.defaultScene.instances.create('otherActor', { x: 10, y: 15 });
+        const otherInstance = game.controller.sceneState.instances.create('otherActor', { x: 10, y: 15 });
         testInstance.follow(otherInstance, { offsetX: 10, offsetY: 20 });
         expect(testInstance.x).toBe(0);
         expect(testInstance.y).toBe(0);

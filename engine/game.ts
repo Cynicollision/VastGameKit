@@ -74,7 +74,7 @@ export class Game {
         let previous = window.performance.now();
         const stepSize = 1 / this.options.targetFPS;
 
-        (<GameScene>this.controller.scene).startOrResume(this.controller);
+        this.controller.sceneState.startOrResume(this.controller);
 
         const gameLoop: FrameRequestCallback = (): void => {
             const current = window.performance.now();

@@ -41,11 +41,11 @@ export function buildDefaultRoom(game: Game) {
         self.instances.create('actButton', { x: 196, y: 32 });
     });
 
-    game.defaultScene.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
-    game.defaultScene.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
-
     game.defaultScene.onStart((self, sc) => {
         console.log('defaultRoom.onStart');
+
+        self.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
+        self.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
         const player = self.instances.create('actPlayer', { x: 32, y: 128 });
 
