@@ -12,7 +12,6 @@ export class SceneState {
 
     private readonly cameraMap: ObjMap<SceneCamera> = {};
 
-    readonly controller: SceneController;
     readonly embeds: SceneEmbedState;
     readonly instances: SceneInstanceState;
     readonly id: number;
@@ -28,13 +27,12 @@ export class SceneState {
     constructor(id: number, controller: SceneController, scene: Scene) {
         this.id = id;
 
-        this.controller = controller;
-        this.embeds = new SceneEmbedState(this);
-        this.instances = new SceneInstanceState(controller.resources);
+        this.embeds = new SceneEmbedState(controller, this);
+        this.instances = new SceneInstanceState(controller);
         this.scene = scene;
 
         this._status = SceneStatus.NotStarted;
-        this._defaultCamera = <SceneCamera>this.defineCamera(SceneState.DefaultCameraName);
+        this._defaultCamera = <SceneCamera>this.addCamera(SceneState.DefaultCameraName);
     }
 
     private getCameraCanvasKey(camera: SceneCamera): string {
@@ -53,12 +51,12 @@ export class SceneState {
         return translatedEvent;
     }
 
-    defineCamera(cameraName: string, options: SceneCameraOptions = {}): Camera {
+    addCamera(cameraName: string, options: SceneCameraOptions = {}): Camera {
         if (this.cameraMap[cameraName]) {
             throw new GameError((`Camera defined with existing Camera name: ${cameraName}.`)); 
         }
 
-        const camera = SceneCamera.new(cameraName, this, options);
+        const camera = new SceneCamera(cameraName, this, options);
         this.cameraMap[cameraName] = camera;
 
         return camera;
@@ -71,11 +69,13 @@ export class SceneState {
             this.scene.background.draw(sceneCanvas);
         }
 
-        for (const embed of this.embeds.getAll(SceneEmbedDisplayMode.Embed)) {
-            embed.draw(canvas, sceneCanvas, controller);
-        }
+        this.embeds.forEach(embed => {
+            if (embed.displayMode === SceneEmbedDisplayMode.Embed) {
+                embed.draw(canvas, sceneCanvas, controller);
+            }
+        });
 
-        this.instances.draw(sceneCanvas, controller);
+        this.instances.draw(sceneCanvas, <SceneController>controller);
 
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
@@ -83,16 +83,15 @@ export class SceneState {
             const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
             cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
-
-            // debug - TODO make a param somehow
-            sceneCanvas.drawRect('#F00', camera.x + 2, camera.y + 2, camera.width - 4, camera.height - 4);
         }
 
         this.scene.callDraw(this, canvas, controller);
 
-        for (const embed of this.embeds.getAll(SceneEmbedDisplayMode.Float)) {
-            embed.draw(canvas, canvas, controller);
-        }
+        this.embeds.forEach(embed => {
+            if (embed.displayMode === SceneEmbedDisplayMode.Float) {
+                embed.draw(canvas, canvas, controller);
+            }
+        });
     }
 
     getCamera(cameraName: string): SceneCamera {
@@ -118,9 +117,9 @@ export class SceneState {
             return;
         }
 
-        this.embeds.forEach(embed => embed.sceneState.handleKeyboardEvent(event, controller));
-        this.instances.forEach(instance => (<ActorInstance>instance).handleKeyboardEvent(instance, event, controller));
         this.scene.callKeyboardEvent(this, event, controller);
+        this.instances.forEach(instance => (<ActorInstance>instance).handleKeyboardEvent(instance, event, controller));
+        this.embeds.forEach(embed => embed.sceneState.handleKeyboardEvent(event, controller));
     }
 
     handlePointerEvent(event: PointerInputEvent, controller: Controller): void {
@@ -188,7 +187,7 @@ export class SceneState {
         }
 
         this.scene.callStep(this, controller);
-        this.instances.step(controller);
+        this.instances.step(<SceneController>controller);
 
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];

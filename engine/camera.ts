@@ -37,11 +37,7 @@ export class SceneCamera implements Camera {
     x: number = 0;
     y: number = 0;
 
-    static new(cameraName: string, sceneState: SceneState, options: SceneCameraOptions = {}): SceneCamera {
-        return new SceneCamera(cameraName, sceneState, options);
-    }
-    
-    private constructor(name: string, sceneState: SceneState, options: SceneCameraOptions = {}) {
+    constructor(name: string, sceneState: SceneState, options: SceneCameraOptions = {}) {
         this.name = name;
         this._sceneState = sceneState;
         this.x = options.x || 0;

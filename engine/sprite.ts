@@ -1,3 +1,5 @@
+import { SpriteAnimation } from "./spriteAnimation";
+
 export type SpriteOptions = {
     height?: number;
     width?: number;
@@ -31,24 +33,6 @@ export class Sprite {
         this.image.src = source;
     }
 
-    load(): Promise<void | string> {
-        if (this._loaded || !this.image) {
-            return Promise.resolve();
-        }
-
-        const spriteName = this.name;
-        const imageSrc = this.image.src ? this.image.src.substring(0, 100) : undefined;
-
-        return new Promise((resolve, reject) => {
-            this.image.onload = function(this: GlobalEventHandlers): void {
-                resolve();
-            };
-            this.image.onerror = function(this: GlobalEventHandlers): void {
-                reject(`Failed to load Sprite "${spriteName}" from source: ${imageSrc}.`);
-            };
-        });
-    }
-    
     getFrameImageSourceCoords(frame: number): [number, number] {
         const frameBorder = this.options.frameBorder || 0;
         let frameRow = 0;
@@ -67,5 +51,27 @@ export class Sprite {
         const srcY = frameRow * this.height + frameYOffset;
 
         return [srcX, srcY];
+    }
+
+    loadImage(): Promise<void | string> {
+        if (this._loaded || !this.image) {
+            return Promise.resolve();
+        }
+
+        const spriteName = this.name;
+        const imageSrc = this.image.src ? this.image.src.substring(0, 100) : undefined;
+
+        return new Promise((resolve, reject) => {
+            this.image.onload = function(this: GlobalEventHandlers): void {
+                resolve();
+            };
+            this.image.onerror = function(this: GlobalEventHandlers): void {
+                reject(`Failed to load Sprite "${spriteName}" from source: ${imageSrc}.`);
+            };
+        });
+    }
+
+    newAnimation(): SpriteAnimation {
+        return new SpriteAnimation(this);
     }
 }

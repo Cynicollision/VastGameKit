@@ -16,7 +16,7 @@ describe('SceneCamera', () => {
         testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
-        testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor');
+        testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor', 0, 0);
     });
 
     describe('defines valid dimensions', () => {
@@ -28,7 +28,7 @@ describe('SceneCamera', () => {
         });
 
         it('to be the specified dimensions for a new camera', () => {
-            const camera2 = testGame.controller.sceneState.defineCamera('camera2', { height: 200, width: 300, portHeight: 400, portWidth: 600 });
+            const camera2 = testGame.controller.sceneState.addCamera('camera2', { height: 200, width: 300, portHeight: 400, portWidth: 600 });
             expect(camera2.height).toBe(200);
             expect(camera2.width).toBe(300);
             expect(camera2.portHeight).toBe(400);

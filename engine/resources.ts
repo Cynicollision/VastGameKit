@@ -4,6 +4,7 @@ import { ActorDefinition, Actor, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
 import { Sprite, SpriteOptions } from './sprite';
 
+// TODO rename -> GameConstruct
 export class GameResources {
     private readonly actorMap: ObjMap<ActorDefinition> = {};
     private readonly audioMap: ObjMap<GameAudio> = {};
@@ -94,17 +95,9 @@ export class GameResources {
 
         for (const s in this.spriteMap) {
             const sprite = this.spriteMap[s];
-            promises.push(sprite.load());
+            promises.push(sprite.loadImage());
         }
 
-        return Promise.all(promises)
-            .then(() => {
-                for (const a in this.actorMap) {
-                    const actor = this.actorMap[a];
-                    actor.load();
-                }
-
-                return Promise.resolve();
-            });
+        return Promise.all(promises).then(() => Promise.resolve());
     }
 }

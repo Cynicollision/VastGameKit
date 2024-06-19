@@ -15,19 +15,6 @@ describe('Actor', () => {
         testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
     });
 
-    it('defines an onLoad callback', () => {
-        let loadEventCalled = false;
-        testActor.onLoad(actor => {
-            loadEventCalled = true;
-        });
-
-        expect(loadEventCalled).toBeFalse();
-
-        testActor.load();
-
-        expect(loadEventCalled).toBeTrue();
-    });
-
     it('gets actors who it has collision handlers for', () => {
         testGame.resources.defineActor('collisionActor1');
         testGame.resources.defineActor('collisionActor2');
@@ -53,7 +40,7 @@ describe('Actor', () => {
         it('defines an onCollision callback', () => {
             let collisionHandlerCalled = false;
             testGame.resources.defineActor('actor2');
-            const instance2 = testGame.controller.sceneState.instances.create('actor2');
+            const instance2 = testGame.controller.sceneState.instances.create('actor2', 0, 0);
 
             testActor.onCollision('actor2', (self, other, state) => {
                 collisionHandlerCalled = true;
@@ -183,7 +170,7 @@ describe('Actor', () => {
             expect(testActor.boundary).toBeUndefined();
     
             testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source, { height: TestImage.Height, width: TestImage.Height });
-            testActor.sprite.load().then(() => {
+            testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setCircleBoundaryFromSprite();
     
                 expect(testActor.boundary).toBe(boundary);
@@ -209,7 +196,7 @@ describe('Actor', () => {
             expect(testActor.boundary).toBeUndefined();
     
             testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source);
-            testActor.sprite.load().then(() => {
+            testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setRectBoundaryFromSprite();
     
                 expect(testActor.boundary).toBe(boundary);

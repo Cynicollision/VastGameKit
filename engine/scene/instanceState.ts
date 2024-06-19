@@ -1,16 +1,15 @@
-import { Boundary, InstanceStatus, ObjMap, RuntimeID } from './../core';
+import { Boundary, InstanceStatus, ObjMap } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { ActorDefinition } from './../actor';
 import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
-import { Controller } from './../controller';
-import { GameResources } from './../resources';
+import { SceneController } from './../controller';
 
 export class SceneInstanceState {
-    private readonly resources: GameResources;
+    private readonly controller: SceneController;
     private instanceMap: ObjMap<ActorInstance> = {};
 
-    constructor(resources: GameResources) {
-        this.resources = resources;
+    constructor(controller: SceneController) {
+        this.controller = controller;
     }
 
     private delete(instance: Instance): void {
@@ -21,18 +20,16 @@ export class SceneInstanceState {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
-    draw(canvas: GameCanvas, controller: Controller): void {
+    draw(canvas: GameCanvas, controller: SceneController): void {
         for (const instance of <ActorInstance[]>this.getByDepth()) {
             instance.draw(canvas, controller);
         }
     }
 
-    create(actorName: string, options?: ActorInstanceOptions): Instance {
-        const instanceId = RuntimeID.next();
-        const actor = <ActorDefinition>this.resources.getActor(actorName);
-
-        const newInstance = <ActorInstance>ActorInstance.spawn(instanceId, actor, options);
-        this.instanceMap[instanceId] = newInstance;
+    create(actorName: string, x: number, y: number, options?: ActorInstanceOptions): Instance {
+        const actor = <ActorDefinition>this.controller.resources.getActor(actorName);
+        const newInstance = actor.newInstance(x, y, options);
+        this.instanceMap[newInstance.id] = newInstance;
 
         return newInstance;
     }
@@ -44,7 +41,7 @@ export class SceneInstanceState {
             for (let j = 0; j < map[i].length; j++) {
                 const actorName = instanceKey[map[i][j]];
                 if (actorName) {
-                    instances.push(this.create(actorName, { x: j * gridSize, y: i * gridSize }));
+                    instances.push(this.create(actorName, j * gridSize, i * gridSize));
                 }
             }
         }
@@ -58,7 +55,6 @@ export class SceneInstanceState {
         }
     }
 
-    // TODO: remove param, make separate e.g. 'getByActor'
     getAll(actorName?: string): Instance[] {
         const instances: ActorInstance[] = [];
 
@@ -113,7 +109,7 @@ export class SceneInstanceState {
         return true;
     }
 
-    step(controller: Controller): void {
+    step(controller: SceneController): void {
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
             if (instance.status === InstanceStatus.Destroyed) {

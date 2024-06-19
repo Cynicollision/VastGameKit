@@ -1,22 +1,24 @@
 
-import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneEmbedDisplayMode, SceneStatus } from './core';
-import { GameCanvas } from './device/canvas';
-import { ActorInstance } from './actorInstance';
+import { RuntimeID } from './core';
 import { Background, BackgroundDrawOptions } from './background';
-import { SceneCamera, Camera, SceneCameraOptions } from './camera';
-import { Controller } from './controller';
+import { Controller, SceneController } from './controller';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
 import { GameResources } from './resources';
-import { SceneEmbed } from './scene/embed';
-import { SceneEmbedState } from './scene/embedState';
-import { SceneInstanceState } from './scene/instanceState';
 import { Sprite } from './sprite';
 import { SceneState } from './scene/sceneState';
+import { ActorInstanceOptions } from './actorInstance';
 
 export type SceneOptions = {
     height?: number;
     persistent?: boolean;
     width?: number;
+};
+
+export type SceneActorPlacement = {
+    actorName: string;
+    x: number;
+    y: number;
+    options?: ActorInstanceOptions;
 };
 
 export interface Scene extends LifecycleEntityBase<Scene, SceneState> {
@@ -25,7 +27,7 @@ export interface Scene extends LifecycleEntityBase<Scene, SceneState> {
     readonly persistent: boolean;
     readonly width: number;
     background: Background;
-    onLoad(callback: (scene: Scene) => void);
+    // TODO: 'placeActor' or similar
     onResume(callback: EntityLifecycleCb<SceneState>): void;
     onStart(callback: EntityLifecycleCb<SceneState>): void;
     onSuspend(callback: EntityLifecycleCb<SceneState>): void;
@@ -36,7 +38,6 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
     static readonly DefaultSceneHeight = 480;
     static readonly DefaultSceneWidth = 640;
 
-    private onLoadCallback: (self: Scene) => void;
     private onResumeCallback: EntityLifecycleCb<SceneState>;
     private onStartCallback: EntityLifecycleCb<SceneState>;
     private onSuspendCallback: EntityLifecycleCb<SceneState>;
@@ -78,15 +79,10 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         }
     }
 
-    load(): void {
-        // TODO: anything "internal" to do here?
-        if (this.onLoadCallback) {
-            this.onLoadCallback(this);
-        }
-    }
-
-    onLoad(callback: (scene: Scene) => void): void {
-        this.onLoadCallback = callback;
+    newState(controller: SceneController): SceneState {
+        const sceneState = new SceneState(RuntimeID.next(), controller, this);
+        // TODO: process ActorPlacements, EmbedPlacements, camera "constructs"(?), "pass" to sceneState
+        return sceneState;
     }
 
     onResume(callback: EntityLifecycleCb<SceneState>): void {

@@ -7,8 +7,8 @@ export function buildHUD(game: Game) {
     hud.onStart((self, sc) => {
         console.log('hud.onStart');
 
-        self.instances.create('actButton', { x: 32, y: 32 });
-        self.instances.create('actButton', { x: 96, y: 32 });
+        self.instances.create('actButton', 32, 32);
+        self.instances.create('actButton', 96, 32);
 
         self.state.currentlyIn = sc.sceneState.scene.name;
     });

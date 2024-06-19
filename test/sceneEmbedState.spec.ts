@@ -11,7 +11,7 @@ describe('SceneEmbedState', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testGame.controller.sceneState.startOrResume(testGame.controller);
-        testEmbedState = new SceneEmbedState(testGame.controller.sceneState);
+        testEmbedState = new SceneEmbedState(testGame.controller, testGame.controller.sceneState);
 
         testGame.resources.defineScene('scnEmbed', { width: 300, height: 200 });
     });

@@ -18,19 +18,6 @@ describe('Scene', () => {
         testScene = <GameScene>testGame.resources.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
     });
 
-    it('defines an onLoad callback', () => {
-        let loadEventCalled = false;
-        testScene.onLoad(actor => {
-            loadEventCalled = true;
-        });
-
-        expect(loadEventCalled).toBeFalse();
-
-        testScene.load();
-
-        expect(loadEventCalled).toBeTrue();
-    });
-
     describe('lifecycle callbacks', () => {
         let testSceneState: SceneState;
 

@@ -16,16 +16,10 @@ export class SpriteAnimation {
         return this._paused;
     }
 
-    static forSprite(sprite: Sprite): SpriteAnimation {
-        const animation: SpriteAnimation = new SpriteAnimation(sprite);
-        animation.setTransform(SpriteTransformation.Frame, 0);
-        animation.setTransform(SpriteTransformation.Opacity, 1);
-
-        return animation;
-    }
-
-    private constructor(sprite: Sprite) {
+    constructor(sprite: Sprite) {
         this.sprite = sprite;
+        this.setTransform(SpriteTransformation.Frame, 0);
+        this.setTransform(SpriteTransformation.Opacity, 1);
     }
 
     draw(canvas: GameCanvas, x: number, y: number, options: SpriteDrawOptions = {}): void {

@@ -1,5 +1,4 @@
 import { InstanceStatus } from '../engine/core';
-import { GameResources } from '../engine/resources';
 import { SceneInstanceState } from '../engine/scene/instanceState';
 import { RectBoundary } from './../engine/core/boundaries';
 import { Game } from './../engine/game';
@@ -8,23 +7,21 @@ import { TestUtil } from './testUtil';
 
 describe('manages ActorInstances', () => {
     let testGame: Game;
-    let testResources: GameResources;
     let testInstanceState: SceneInstanceState;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testResources = new GameResources();
-        testInstanceState = new SceneInstanceState(testResources);
+        testInstanceState = new SceneInstanceState(testGame.controller);
 
-        const testActor = testResources.defineActor('testActor');
+        const testActor = testGame.resources.defineActor('testActor');
         testActor.setRectBoundary(20, 20);
 
-        const testActor2 = testResources.defineActor('testActor2');
+        const testActor2 = testGame.resources.defineActor('testActor2');
         testActor2.setRectBoundary(20, 20);
     });
 
     it('creates ActorInstances', () => {
-        testInstanceState.create('testActor');
+        testInstanceState.create('testActor', 0, 0);
         const layerInstances = testInstanceState.getAll();
 
         expect(layerInstances.length).toBe(1);
@@ -32,16 +29,16 @@ describe('manages ActorInstances', () => {
     });
 
     it('enumerates a callback over its ActorInstances', () => {
-        testInstanceState.create('testActor');
-        testInstanceState.create('testActor');
-        testInstanceState.create('testActor');
+        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor', 0, 0);
 
         testInstanceState.forEach(instance => instance.state.foo = 'bar');
         testInstanceState.forEach(instance => expect(instance.state.foo).toBe('bar'));
     });
 
     it('checks if a position is free of any ActorInstances', () => {
-        testInstanceState.create('testActor', {x: 10, y: 10 });
+        testInstanceState.create('testActor', 10, 10);
 
         expect(testInstanceState.isPositionFree(0, 0)).toBeTrue()
         expect(testInstanceState.isPositionFree(20, 20)).toBeFalse();
@@ -49,7 +46,7 @@ describe('manages ActorInstances', () => {
     });
 
     it('checks if a position is free of solid ActorInstances', () => {
-        const instance = testInstanceState.create('testActor', {x: 10, y: 10 });
+        const instance = testInstanceState.create('testActor', 10, 10);
         instance.actor.solid = true;
 
         expect(testInstanceState.isPositionFree(20, 20, true)).toBeFalse();
@@ -60,11 +57,11 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances of a given Actor type', () => {
-        testInstanceState.create('testActor');
-        testInstanceState.create('testActor');
-        testInstanceState.create('testActor');
-        testInstanceState.create('testActor2');
-        testInstanceState.create('testActor2');
+        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor2', 0, 0);
+        testInstanceState.create('testActor2', 0, 0);
 
         expect(testInstanceState.getAll().length).toBe(5);
         expect(testInstanceState.getAll('testActor').length).toBe(3);
@@ -76,10 +73,10 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances at a position', () => {
-        const instance1 = testInstanceState.create('testActor', {x: 10, y: 10 });
+        const instance1 = testInstanceState.create('testActor', 10, 10);
         instance1.actor.solid = true;
 
-        const instance2 = testInstanceState.create('testActor2', {x: 15, y: 15 });
+        const instance2 = testInstanceState.create('testActor2', 15, 15);
         instance2.actor.solid = false;
 
         expect(testInstanceState.getAtPosition(5, 5).length).toBe(0);
@@ -88,10 +85,10 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances within a Boundary at a position', () => {
-        const instance1 = testInstanceState.create('testActor', {x: 20, y: 20 });
+        const instance1 = testInstanceState.create('testActor', 20, 20);
         instance1.actor.solid = true;
 
-        const instance2 = testInstanceState.create('testActor2', {x: 25, y: 25 });
+        const instance2 = testInstanceState.create('testActor2', 25, 25);
         instance2.actor.solid = false;
 
         const boundary = new RectBoundary(8, 8);
@@ -112,7 +109,7 @@ describe('manages ActorInstances', () => {
             actorOnStepCalled = false;
             actorOnDestroyCalled = false;
 
-            const testActor = testResources.getActor('testActor');
+            const testActor = testGame.resources.getActor('testActor');
             testActor.setRectBoundary(20, 20);
             testActor.onCreate((self, state) => {
                 actorOnCreatedCalled = true;
@@ -127,7 +124,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('activates new ActorInstances and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor');
+            const instance = testInstanceState.create('testActor', 0, 0);
 
             expect(actorOnCreatedCalled).toBeFalse();
             expect(instance.status).toBe(InstanceStatus.New);
@@ -138,7 +135,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('steps active ActorInstances, calls Behaviors, and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor');
+            const instance = testInstanceState.create('testActor', 0, 0);
             const mockBehavior = new MockActorInstanceBehavior();
             instance.useBehavior(mockBehavior);
             testInstanceState.step(testGame.controller);
@@ -155,7 +152,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('deletes destoyed ActorInstances and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor');
+            const instance = testInstanceState.create('testActor', 0, 0);
             instance.destroy();
             expect(actorOnDestroyCalled).toBeFalse();
             expect(instance.status).toBe(InstanceStatus.Destroyed);

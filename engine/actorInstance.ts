@@ -8,8 +8,6 @@ import { SpriteAnimation } from './spriteAnimation';
 
 export type ActorInstanceOptions = {
     depth?: number;
-    x?: number;
-    y?: number;
 }
 
 export interface Instance extends PositionedEntity {
@@ -60,28 +58,19 @@ export class ActorInstance implements Instance {
         return this.actor.boundary ? this.actor.boundary.width : 0;
     }
 
-    static spawn(id: number, actor: ActorDefinition, options: ActorInstanceOptions = {}): Instance {
-        const instance = new ActorInstance(id, actor);
-        instance.x = options.x || 0; 
-        instance.y = options.y || 0;
-
-        if (actor.sprite) {
-            instance._animation = SpriteAnimation.forSprite(actor.sprite);
-        }
-        
-        instance._status = InstanceStatus.New;
-
-        for (const behavior of actor.behaviors) {
-            instance.initBehavior(behavior);
-        }
-        
-        return instance;
-    }
-
-    private constructor(id: number, actor: ActorDefinition) {
+    constructor(id: number, actor: ActorDefinition, options: ActorInstanceOptions = {}) {
         this.id = id;
         this.actor = actor;
+        this.depth = options.depth !== undefined ? options.depth : 0;
         this._status = InstanceStatus.New;
+
+        if (actor.sprite) {
+            this._animation = actor.sprite.newAnimation();
+        }
+
+        for (const behavior of actor.behaviors) {
+            this.initBehavior(behavior);
+        }
     }
 
     private initBehavior(behaviorName: ActorBehaviorName): void {

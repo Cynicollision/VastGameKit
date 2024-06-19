@@ -23,7 +23,7 @@ describe('SceneState', () => {
         testGame.resources.defineActor(TestActorName);
         testGame.resources.defineScene(TestEmbedName);
 
-        testInstance = testSceneState.instances.create(TestActorName);
+        testInstance = testSceneState.instances.create(TestActorName, 0, 0);
         testGame.resources.getActor(TestActorName).setRectBoundary(10, 10);
 
         testSceneState.embeds.create(TestEmbedName);

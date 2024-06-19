@@ -1,7 +1,7 @@
-import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent, RuntimeID, SceneTransitionType } from './core';
+import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
 import { GameCanvas } from './device/canvas';
 import { GameResources } from './resources';
-import { Scene } from './scene';
+import { GameScene, Scene } from './scene';
 import { SceneState } from './scene/sceneState';
 import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
@@ -56,21 +56,17 @@ export class SceneController implements Controller {
     }
 
     getSceneState(sceneName: string): SceneState {
-        const scene = this.resources.getScene(sceneName);
+        const scene = <GameScene>this.resources.getScene(sceneName);
 
         if (scene.persistent) {
             if (!this._persistentSceneStateMap[scene.name]) {
-                this._persistentSceneStateMap[scene.name] = this.newSceneState(scene);
+                this._persistentSceneStateMap[scene.name] = scene.newState(this);
             }
 
             return this._persistentSceneStateMap[scene.name];
         }
 
-        return this.newSceneState(scene);
-    }
-
-    private newSceneState(scene: Scene): SceneState {
-        return new SceneState(RuntimeID.next(), this, scene);
+        return scene.newState(this);
     }
 
     startTimer(options: GameTimerOptions): GameTimer {

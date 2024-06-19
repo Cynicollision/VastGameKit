@@ -13,7 +13,7 @@ describe('Sprite', () => {
         const testSprite = testGame.resources.defineSprite('testSprite', TestImage.Source);
         let succeeded = false;
 
-        testSprite.load()
+        testSprite.loadImage()
             .then(() => succeeded = true)
             .finally(() => {
                 expect(succeeded).toBeTrue();
@@ -25,7 +25,7 @@ describe('Sprite', () => {
         const testSprite = testGame.resources.defineSprite('testSprite', 'bogusPath');
         let failed = false;
 
-        testSprite.load()
+        testSprite.loadImage()
             .catch(() => failed = true)
             .finally(() => {
                 expect(failed).toBeTrue();

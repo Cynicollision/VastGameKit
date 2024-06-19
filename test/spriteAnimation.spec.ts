@@ -14,8 +14,8 @@ describe('SpriteAnimation', () => {
     });
 
     it('is instantiated for an ActorInstance\'s Sprite', () => {
-        const testInstance1 = testGame.controller.sceneState.instances.create('actTest1');
-        const testInstance2 = testGame.controller.sceneState.instances.create('actTest2');
+        const testInstance1 = testGame.controller.sceneState.instances.create('actTest1', 0, 0);
+        const testInstance2 = testGame.controller.sceneState.instances.create('actTest2', 0, 0);
         expect(testInstance1.animation).toBeDefined();
         expect(testInstance2.animation).toBeUndefined();
     });

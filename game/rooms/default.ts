@@ -36,9 +36,9 @@ export function buildDefaultRoom(game: Game) {
     const embedded = game.resources.defineScene('embedded', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
-        self.instances.create('actButton', { x: 32, y: 32 });
-        self.instances.create('actButton', { x: 96, y: 32 });
-        self.instances.create('actButton', { x: 196, y: 32 });
+        self.instances.create('actButton', 32, 32);
+        self.instances.create('actButton', 96, 32);
+        self.instances.create('actButton', 196, 32);
     });
 
     game.defaultScene.onStart((self, sc) => {
@@ -47,12 +47,12 @@ export function buildDefaultRoom(game: Game) {
         self.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
         self.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
-        const player = self.instances.create('actPlayer', { x: 32, y: 128 });
+        const player = self.instances.create('actPlayer', 32, 128);
 
         // const follower1 = self.instances.create('actButton');
         // follower1.follow(player, { offsetX: 16, offsetY: 16 });
 
-        const follower2 = self.instances.create('actButton');
+        const follower2 = self.instances.create('actButton', 0, 0);
         follower2.follow(self.defaultCamera, { offsetX: 19, offsetY: 19 });
         follower2.depth = -100;
 
@@ -66,7 +66,7 @@ export function buildDefaultRoom(game: Game) {
         self.defaultCamera.portY = 120;
         self.defaultCamera.follow(player, { centerOnTarget: true });
 
-        self.defineCamera('minimap', { x: 0, y: 0, portX: 1000, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
+        self.addCamera('minimap', { x: 0, y: 0, portX: 1000, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
 
         const map = [
             'XXXXXXXXXXXXXXXXXXXXXXXX',
