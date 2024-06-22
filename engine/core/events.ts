@@ -1,4 +1,6 @@
 export class GameEvent {
+    protected innerEvent: GameEvent;
+
     private _name: string;
     get name(): string { return this._name; }
 
@@ -20,6 +22,9 @@ export class GameEvent {
 
     cancel(): void {
         this._isCancelled = true;
+        if (this.innerEvent) {
+            this.innerEvent.cancel();
+        }
     }
 }
 
@@ -54,15 +59,16 @@ export class PointerInputEvent extends GameEvent {
         return new PointerInputEvent(ev.type, touchX, touchY);
     }
 
-    constructor(type: string, x: number, y: number) {
+    constructor(type: string, x: number, y: number, innerEvent?: PointerInputEvent) {
         super(type);
+        this.innerEvent = innerEvent;
         this.type = type;
         this.x = x;
         this.y = y;
     }
 
     translate(diffX: number, diffY: number): PointerInputEvent {
-        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY);
+        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY, this);
     }
 }
 

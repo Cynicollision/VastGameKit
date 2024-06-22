@@ -25,6 +25,21 @@ describe('SceneEmbedState', () => {
         expect(embeds[0].sceneState.scene.height).toBe(200);
         expect(embeds[0].sceneState.scene.width).toBe(300);
     });
+
+    it('destroys SceneEmbeds by Scene name', () => {
+        testEmbedState.create('scnEmbed');
+        let embeds = testEmbedState.getAll();
+
+        expect(embeds.length).toBe(1);
+        expect(embeds[0].sceneState.scene.name).toBe('scnEmbed');
+        expect(embeds[0].sceneState.scene.height).toBe(200);
+        expect(embeds[0].sceneState.scene.width).toBe(300);
+
+        testEmbedState.destroy('scnEmbed');
+        embeds = testEmbedState.getAll();
+
+        expect(embeds.length).toBe(0);
+    });
     
     it('enumerates a callback over its ActorInstances', () => {
         testEmbedState.create('scnEmbed', { x: 10, y: 20 });

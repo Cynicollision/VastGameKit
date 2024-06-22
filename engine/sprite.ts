@@ -1,4 +1,4 @@
-import { SpriteAnimation } from "./spriteAnimation";
+import { SpriteAnimation } from './spriteAnimation';
 
 export type SpriteOptions = {
     height?: number;

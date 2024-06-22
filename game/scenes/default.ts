@@ -5,34 +5,7 @@ export function buildDefaultRoom(game: Game) {
 
     game.defaultScene.setBackground(game.construct.defineSprite('sky', './resources/sky.png'));
 
-    const button = game.construct.defineActor('actButton');
-    button.sprite = game.construct.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
-
-    button.onCreate((self, sc) => {
-        button.setRectBoundaryFromSprite();
-    });
-
-    button.onPointerInput('mousedown', (self, gc, event) => {
-        if (self.animation.stopped) {
-            self.animation.start(0, 1, 100);
-        }
-        else {
-            self.animation.stop();
-        }
-    });
-
-    button.onKeyboardInput('t', ((self, event, sc) => {
-        self.destroy();
-    }));
-
-    button.onGameEvent('startAll', (self, event, sc) => {
-        self.animation.start(0, 1, event.data.speed);
-    });
-
-    button.onGameEvent('endAll', (self, event, sc) => {
-        self.animation.stop();
-    });
-
+    // TODO: move to test/demo scenes
     const embedded = game.construct.defineScene('embedded', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
@@ -41,28 +14,22 @@ export function buildDefaultRoom(game: Game) {
         self.instances.create('actButton', 196, 32);
     });
 
-    game.defaultScene.onStart((self, sc) => {
+    game.defaultScene.onStart((self, controller) => {
         console.log('defaultRoom.onStart');
+        
+        controller.goToScene('scnAreaA1', { playerX: 32, playerY: 32 });
 
         self.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
         self.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
 
         const player = self.instances.create('actPlayer', 32, 128);
 
-        // const follower1 = self.instances.create('actButton');
-        // follower1.follow(player, { offsetX: 16, offsetY: 16 });
-
-        const follower2 = self.instances.create('actButton', 0, 0);
-        follower2.follow(self.defaultCamera, { offsetX: 19, offsetY: 19 });
-        follower2.depth = -100;
-
-        const scale = 4;
-
+        // TODO: should be sharable between all scene states that use the same camera settings
+        const scale = 4; // TODO should be game-level param
         self.defaultCamera.height = (960 - 120) / scale;
         self.defaultCamera.width = 1280 / scale;
         self.defaultCamera.portWidth = self.defaultCamera.width * scale;
         self.defaultCamera.portHeight = self.defaultCamera.height * scale;
-
         self.defaultCamera.portY = 120;
         self.defaultCamera.follow(player, { centerOnTarget: true });
 
@@ -115,5 +82,26 @@ export function buildDefaultRoom(game: Game) {
 
     game.defaultScene.onKeyboardInput('i', (self, event, sc) => {
         sc.publishEvent('endAll');
+    });
+
+    game.defaultScene.onKeyboardInput('m', (self, event, sc) => {
+        if (self.state.modalOpen) {
+            return;
+        }
+
+        const modalX = 20;
+        const modalY = 20;
+        self.state.modalOpen = true;
+        self.paused = true;
+        sc.sceneState.embeds.create('scnModal', { x: modalX, y: modalY, displayMode: SceneEmbedDisplayMode.Float })
+    });
+
+    game.defaultScene.onKeyboardInput('e', (self, event, sc) => {
+        if (!self.state.modalOpen) {
+            return;
+        }
+         sc.sceneState.embeds.destroy('scnModal');
+         self.paused = false
+         self.state.modalOpen = false;
     });
 }

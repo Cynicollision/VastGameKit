@@ -65,8 +65,14 @@ describe('SceneState', () => {
         });
     });
 
-    xit('starts embedded SceneStates', () => {
-        // TODO
+    it('starts embedded SceneStates upon creating them', () => {
+        let embedOnStartCalled = false;
+        testGame.construct.getScene(TestEmbedName).onStart((self, event, controller) => {
+            embedOnStartCalled = true;
+        });
+
+        testSceneState.embeds.create('scnEmbed');
+        expect(embedOnStartCalled).toBeTrue();
     });
 
     it('propgates KeyboardEvents to Embeds and Instances', () => {

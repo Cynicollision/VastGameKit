@@ -24,6 +24,8 @@ export class SceneState {
     private _status: SceneStatus;
     get status() { return this._status; }
 
+    paused: boolean = false;
+
     constructor(id: number, controller: SceneController, scene: Scene) {
         this.id = id;
 
@@ -148,14 +150,16 @@ export class SceneState {
 
         const propogatedEvent = transformedEvent || event;
 
-        // propagate to instances.
-        this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
-
         // propagate to embedded scenes.
-        this.embeds.forEach(embed => {
+        this.embeds.getByDepth().forEach(embed => {
+            if (event.isCancelled) {
+                return;
+            }
             if (embed.displayMode === (SceneEmbedDisplayMode.Float)) {
                 if (embed.containsPosition(event.x, event.y)) {
-                    embed.sceneState.handlePointerEvent(propogatedEvent, controller);
+                    const translatedFloatEvent = event.translate(-embed.x, -embed.y);
+                    embed.sceneState.handlePointerEvent(translatedFloatEvent, controller);
+                    event.cancel();
                 }
             }
             else {
@@ -163,6 +167,13 @@ export class SceneState {
                 embed.sceneState.handlePointerEvent(translatedEvent, controller);
             }  
         });
+
+        if (event.isCancelled) {
+            return;
+        }
+
+        // propagate to instances.
+        this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
 
         this.scene.callPointerEvent(this, event, controller);
     }
@@ -182,7 +193,7 @@ export class SceneState {
     step(controller: Controller): void {
         this.embeds.forEach(embed => embed.sceneState.step(controller));
 
-        if (this._status !== SceneStatus.Running) {
+        if (this.paused || this._status !== SceneStatus.Running) {
             return;
         }
 
