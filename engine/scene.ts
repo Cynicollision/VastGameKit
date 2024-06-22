@@ -3,7 +3,6 @@ import { RuntimeID } from './core';
 import { Background, BackgroundDrawOptions } from './background';
 import { Controller, SceneController } from './controller';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
-import { GameResources } from './resources';
 import { Sprite } from './sprite';
 import { SceneState } from './scene/sceneState';
 import { ActorInstanceOptions } from './actorInstance';
@@ -48,11 +47,11 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
     readonly width: number;
     background: Background;
 
-    static new(name: string, resources: GameResources, options: SceneOptions = {}): Scene {
-        return new GameScene(name, resources, options);
+    static new(name: string, options: SceneOptions = {}): Scene {
+        return new GameScene(name, options);
     }
 
-    private constructor(name: string,  resources: GameResources, options: SceneOptions = {}) {
+    private constructor(name: string, options: SceneOptions = {}) {
         super();
 
         this.name = name;

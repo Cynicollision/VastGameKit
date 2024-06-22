@@ -1,4 +1,4 @@
-import { SceneState } from '../engine/scene/sceneState';
+import { SceneState } from './../engine/scene/sceneState';
 import { GameEvent, InstanceStatus, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/scene';
@@ -15,7 +15,7 @@ describe('Scene', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testScene = <GameScene>testGame.resources.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
+        testScene = <GameScene>testGame.construct.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
     });
 
     describe('lifecycle callbacks', () => {

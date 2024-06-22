@@ -3,7 +3,7 @@ import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
 import { GameInputHandler } from './device/input';
 import { SceneController } from './controller';
 import { GameScene, Scene, SceneOptions } from './scene';
-import { GameResources } from './resources';
+import { GameConstruct } from './gameConstruct';
 
 export type GameOptions = {
     canvasElementId: string;
@@ -16,7 +16,7 @@ export class Game {
     private static readonly DefaultTargetFPS = 60;
 
     readonly controller: SceneController;
-    readonly resources: GameResources;
+    readonly construct: GameConstruct;
 
     private readonly _options: GameOptions;
     get options() { return this._options; }
@@ -51,10 +51,10 @@ export class Game {
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
 
-        this.resources = new GameResources();
+        this.construct = new GameConstruct();
 
-        this._defaultScene = <GameScene>this.resources.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this.controller = new SceneController(this.resources, this._defaultScene, { pulseLength: this.options.targetFPS });
+        this._defaultScene = <GameScene>this.construct.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this.controller = new SceneController(this.construct, this._defaultScene, { pulseLength: this.options.targetFPS });
     }
 
     private applyGameOptions(options: GameOptions): GameOptions {
@@ -63,7 +63,7 @@ export class Game {
     }
 
     load(): Promise<Game> {
-        return this.resources.load().then(() => Promise.resolve(this));
+        return this.construct.load().then(() => Promise.resolve(this));
     }
 
     start(): void {

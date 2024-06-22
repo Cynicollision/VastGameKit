@@ -13,7 +13,7 @@ describe('SceneCamera', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
         testCamera = <SceneCamera>testGame.controller.sceneState.defaultCamera;
-        testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
+        testActor = <ActorDefinition>testGame.construct.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
         testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor', 0, 0);

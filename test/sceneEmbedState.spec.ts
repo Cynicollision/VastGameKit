@@ -1,4 +1,4 @@
-import { SceneEmbedDisplayMode } from '../engine/core';
+import { SceneEmbedDisplayMode } from './../engine/core';
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/scene';
 import { SceneEmbedState } from './../engine/scene/embedState';
@@ -13,7 +13,7 @@ describe('SceneEmbedState', () => {
         testGame.controller.sceneState.startOrResume(testGame.controller);
         testEmbedState = new SceneEmbedState(testGame.controller, testGame.controller.sceneState);
 
-        testGame.resources.defineScene('scnEmbed', { width: 300, height: 200 });
+        testGame.construct.defineScene('scnEmbed', { width: 300, height: 200 });
     });
 
     it('creates SceneEmbeds', () => {
@@ -31,12 +31,12 @@ describe('SceneEmbedState', () => {
         testEmbedState.create('scnEmbed', { x: 10, y: 20 });
 
         testEmbedState.forEach(embed => embed.sceneState.state.foo = 'bar');
-        testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.resources.getScene('scnEmbed')));
+        testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construct.getScene('scnEmbed')));
         testEmbedState.forEach(embed => expect(embed.sceneState.state.foo).toBe('bar'));
     });
 
     it('gets all SceneEmbeds of a given display mode', () => {
-        testGame.resources.defineScene('scnEmbed2');
+        testGame.construct.defineScene('scnEmbed2');
 
         testEmbedState.create('scnEmbed', { displayMode: SceneEmbedDisplayMode.Embed });
         testEmbedState.create('scnEmbed', { displayMode: SceneEmbedDisplayMode.Embed });

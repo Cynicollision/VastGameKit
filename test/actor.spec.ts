@@ -12,13 +12,13 @@ describe('Actor', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testActor = <ActorDefinition>testGame.resources.defineActor('testActor');
+        testActor = <ActorDefinition>testGame.construct.defineActor('testActor');
     });
 
     it('gets actors who it has collision handlers for', () => {
-        testGame.resources.defineActor('collisionActor1');
-        testGame.resources.defineActor('collisionActor2');
-        testGame.resources.defineActor('otherActor3');
+        testGame.construct.defineActor('collisionActor1');
+        testGame.construct.defineActor('collisionActor2');
+        testGame.construct.defineActor('otherActor3');
 
         testActor.onCollision('collisionActor1', () => null);
         expect(testActor.getCollisionActorNames().length).toBe(1);
@@ -39,7 +39,7 @@ describe('Actor', () => {
 
         it('defines an onCollision callback', () => {
             let collisionHandlerCalled = false;
-            testGame.resources.defineActor('actor2');
+            testGame.construct.defineActor('actor2');
             const instance2 = testGame.controller.sceneState.instances.create('actor2', 0, 0);
 
             testActor.onCollision('actor2', (self, other, state) => {
@@ -169,7 +169,7 @@ describe('Actor', () => {
         it('as a circle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
-            testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source, { height: TestImage.Height, width: TestImage.Height });
+            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage.Source, { height: TestImage.Height, width: TestImage.Height });
             testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setCircleBoundaryFromSprite();
     
@@ -195,7 +195,7 @@ describe('Actor', () => {
         it('as a rectangle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
-            testActor.sprite = testGame.resources.defineSprite('testSprite', TestImage.Source);
+            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage.Source);
             testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setRectBoundaryFromSprite();
     

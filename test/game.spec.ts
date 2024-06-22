@@ -1,5 +1,5 @@
-import { GameScene } from '../engine/scene';
 import { Game } from './../engine/game';
+import { GameScene } from './../engine/scene';
 import { TestImage } from './mocks/testImage';
 import { TestUtil } from './testUtil';
 
@@ -17,11 +17,11 @@ describe('Game', () => {
         expect(testGame.defaultScene.width).toBe(GameScene.DefaultSceneWidth);
     });
 
-    it('loads resources successfully', done => {
-        testGame.resources.defineSprite('testSprite', TestImage.Source);
+    it('loads Sprites successfully', done => {
+        testGame.construct.defineSprite('testSprite', TestImage.Source);
 
         testGame.load().then(() => {
-            const sprite = testGame.resources.getSprite('testSprite');
+            const sprite = testGame.construct.getSprite('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(TestImage.Height);
             expect(sprite.image.width).toBe(TestImage.Width);
@@ -29,11 +29,11 @@ describe('Game', () => {
         });
     });
 
-    it('loads resources and handles errors', done => {
-        testGame.resources.defineSprite('testSprite', 'bogusImageSource');
+    it('loads Sprites and handles errors', done => {
+        testGame.construct.defineSprite('testSprite', 'bogusImageSource');
 
         testGame.load().catch(() => {
-            const sprite = testGame.resources.getSprite('testSprite');
+            const sprite = testGame.construct.getSprite('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(0);
             expect(sprite.image.width).toBe(0);

@@ -1,44 +1,44 @@
-import { GameResources } from './../engine/resources';
+import { GameConstruct } from './../engine/gameConstruct';
 import { TestImage } from './mocks/testImage';
 
 describe('GameResource', () => {
-    let testResources: GameResources;
+    let testConstruct: GameConstruct;
 
     beforeEach(() => {
-        testResources = new GameResources();
+        testConstruct = new GameConstruct();
     })
 
     it('defines and gets Actors', () => {
-        testResources.defineActor('testActor');
+        testConstruct.defineActor('testActor');
 
-        const actor = testResources.getActor('testActor');
+        const actor = testConstruct.getActor('testActor');
 
         expect(actor).toBeDefined();
         expect(actor.name).toBe('testActor');
     });
 
     it('defines and gets Audio', () => {
-        testResources.defineAudio('testAudio', null);
+        testConstruct.defineAudio('testAudio', null);
 
-        const audio = testResources.getAudio('testAudio');
+        const audio = testConstruct.getAudio('testAudio');
 
         expect(audio).toBeDefined();
         expect(audio.name).toBe('testAudio');
     });
 
     it('defines and gets Scenes', () => {
-        testResources.defineScene('testScene');
+        testConstruct.defineScene('testScene');
 
-        const scene = testResources.getScene('testScene');
+        const scene = testConstruct.getScene('testScene');
 
         expect(scene).toBeDefined();
         expect(scene.name).toBe('testScene');
     });
 
     it('defines and gets Sprites', () => {
-        testResources.defineSprite('testSprite', TestImage.Source);
+        testConstruct.defineSprite('testSprite', TestImage.Source);
 
-        const sprite = testResources.getSprite('testSprite');
+        const sprite = testConstruct.getSprite('testSprite');
 
         expect(sprite).toBeDefined();
         expect(sprite.name).toBe('testSprite');

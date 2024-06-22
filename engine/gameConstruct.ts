@@ -4,8 +4,7 @@ import { ActorDefinition, Actor, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
 import { Sprite, SpriteOptions } from './sprite';
 
-// TODO rename -> GameConstruct
-export class GameResources {
+export class GameConstruct {
     private readonly actorMap: ObjMap<ActorDefinition> = {};
     private readonly audioMap: ObjMap<GameAudio> = {};
     private readonly sceneMap: ObjMap<GameScene> = {};
@@ -38,7 +37,7 @@ export class GameResources {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
         }
 
-        const scene = <GameScene>GameScene.new(sceneName, this, options);
+        const scene = <GameScene>GameScene.new(sceneName, options);
         this.sceneMap[sceneName] = scene;
 
         return scene;

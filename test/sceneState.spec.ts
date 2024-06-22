@@ -17,14 +17,14 @@ describe('SceneState', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testGame.resources.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight, persistent: false });
+        testGame.construct.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight, persistent: false });
         testSceneState = testGame.controller.getSceneState(TestSceneName);
 
-        testGame.resources.defineActor(TestActorName);
-        testGame.resources.defineScene(TestEmbedName);
+        testGame.construct.defineActor(TestActorName);
+        testGame.construct.defineScene(TestEmbedName);
 
         testInstance = testSceneState.instances.create(TestActorName, 0, 0);
-        testGame.resources.getActor(TestActorName).setRectBoundary(10, 10);
+        testGame.construct.getActor(TestActorName).setRectBoundary(10, 10);
 
         testSceneState.embeds.create(TestEmbedName);
     });
@@ -71,12 +71,12 @@ describe('SceneState', () => {
 
     it('propgates KeyboardEvents to Embeds and Instances', () => {
         let actorEventHandlerCalled = false;
-        testGame.resources.getActor(TestActorName).onKeyboardInput('testKey', (self, event, controller) => {
+        testGame.construct.getActor(TestActorName).onKeyboardInput('testKey', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.resources.getScene(TestEmbedName).onKeyboardInput('testKey', (self, event, controller) => {
+        testGame.construct.getScene(TestEmbedName).onKeyboardInput('testKey', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -93,12 +93,12 @@ describe('SceneState', () => {
     it('propgates GameEvents to Embeds and Instances', () => {
 
         let actorEventHandlerCalled = false;
-        testGame.resources.getActor(TestActorName).onGameEvent('testEvent', (self, event, controller) => {
+        testGame.construct.getActor(TestActorName).onGameEvent('testEvent', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.resources.getScene(TestEmbedName).onGameEvent('testEvent', (self, event, controller) => {
+        testGame.construct.getScene(TestEmbedName).onGameEvent('testEvent', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -115,12 +115,12 @@ describe('SceneState', () => {
 
     it('propgates PointerEvents to Embeds and Instances', () => {
         let actorEventHandlerCalled = false;
-        testGame.resources.getActor(TestActorName).onPointerInput('testPointer', (self, event, controller) => {
+        testGame.construct.getActor(TestActorName).onPointerInput('testPointer', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.resources.getScene(TestEmbedName).onPointerInput('testPointer', (self, event, controller) => {
+        testGame.construct.getScene(TestEmbedName).onPointerInput('testPointer', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 

@@ -1,7 +1,7 @@
-import { InstanceStatus } from '../engine/core';
-import { SceneInstanceState } from '../engine/scene/instanceState';
+import { InstanceStatus } from './../engine/core';
 import { RectBoundary } from './../engine/core/boundaries';
 import { Game } from './../engine/game';
+import { SceneInstanceState } from './../engine/scene/instanceState';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { TestUtil } from './testUtil';
 
@@ -13,10 +13,10 @@ describe('manages ActorInstances', () => {
         testGame = TestUtil.getTestGame();
         testInstanceState = new SceneInstanceState(testGame.controller);
 
-        const testActor = testGame.resources.defineActor('testActor');
+        const testActor = testGame.construct.defineActor('testActor');
         testActor.setRectBoundary(20, 20);
 
-        const testActor2 = testGame.resources.defineActor('testActor2');
+        const testActor2 = testGame.construct.defineActor('testActor2');
         testActor2.setRectBoundary(20, 20);
     });
 
@@ -109,7 +109,7 @@ describe('manages ActorInstances', () => {
             actorOnStepCalled = false;
             actorOnDestroyCalled = false;
 
-            const testActor = testGame.resources.getActor('testActor');
+            const testActor = testGame.construct.getActor('testActor');
             testActor.setRectBoundary(20, 20);
             testActor.onCreate((self, state) => {
                 actorOnCreatedCalled = true;

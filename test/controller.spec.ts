@@ -9,7 +9,7 @@ describe('SceneController', () => {
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
-        scnTwo = game.resources.defineScene('scnTwo');
+        scnTwo = game.construct.defineScene('scnTwo');
     });
 
     it('changes the current SceneState and passes data to the next', () => {

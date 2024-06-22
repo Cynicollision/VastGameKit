@@ -10,7 +10,7 @@ describe('ActorInstance', () => {
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
-        game.resources.defineActor('testActor');
+        game.construct.defineActor('testActor');
 
         testInstance = game.controller.sceneState.instances.create('testActor', 0, 0);
     });
@@ -19,7 +19,7 @@ describe('ActorInstance', () => {
         testInstance.actor.setRectBoundary(20, 10);
         testInstance.x = testInstance.y = 0;
 
-        const other = game.resources.defineActor('otherActor');
+        const other = game.construct.defineActor('otherActor');
         other.setRectBoundary(40, 20);
         const otherInstance = game.controller.sceneState.instances.create('otherActor', 10, 15);
         expect(testInstance.collidesWith(otherInstance)).toBeFalse();
@@ -42,7 +42,7 @@ describe('ActorInstance', () => {
     });
 
     it('can follow another Instance', () => {
-        const other = game.resources.defineActor('otherActor');
+        const other = game.construct.defineActor('otherActor');
         const otherInstance = game.controller.sceneState.instances.create('otherActor', 10, 15);
         testInstance.follow(otherInstance, { offsetX: 10, offsetY: 20 });
         expect(testInstance.x).toBe(0);

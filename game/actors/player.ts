@@ -3,8 +3,8 @@ import { Game } from './../../engine/game';
 
 export function buildPlayerActor(game: Game) {
 
-    const actPlayer = game.resources.defineActor('actPlayer', { 
-        sprite: game.resources.getSprite('sprLink'),
+    const actPlayer = game.construct.defineActor('actPlayer', { 
+        sprite: game.construct.getSprite('sprLink'),
     });
 
     actPlayer.setRectBoundaryFromSprite();

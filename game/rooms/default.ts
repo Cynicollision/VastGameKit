@@ -3,10 +3,10 @@ import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {
 
-    game.defaultScene.setBackground(game.resources.defineSprite('sky', './resources/sky.png'));
+    game.defaultScene.setBackground(game.construct.defineSprite('sky', './resources/sky.png'));
 
-    const button = game.resources.defineActor('actButton');
-    button.sprite = game.resources.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
+    const button = game.construct.defineActor('actButton');
+    button.sprite = game.construct.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 
     button.onCreate((self, sc) => {
         button.setRectBoundaryFromSprite();
@@ -33,7 +33,7 @@ export function buildDefaultRoom(game: Game) {
         self.animation.stop();
     });
 
-    const embedded = game.resources.defineScene('embedded', { width: 250, height: 250, persistent: false });
+    const embedded = game.construct.defineScene('embedded', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
         self.instances.create('actButton', 32, 32);

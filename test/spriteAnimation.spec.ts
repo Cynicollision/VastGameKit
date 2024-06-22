@@ -8,8 +8,8 @@ describe('SpriteAnimation', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testGame.resources.defineActor('actTest1', { sprite: TestUtil.getTestSprite() });
-        testGame.resources.defineActor('actTest2');
+        testGame.construct.defineActor('actTest1', { sprite: TestUtil.getTestSprite() });
+        testGame.construct.defineActor('actTest2');
         
     });
 

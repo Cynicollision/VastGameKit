@@ -27,7 +27,7 @@ export class SceneInstanceState {
     }
 
     create(actorName: string, x: number, y: number, options?: ActorInstanceOptions): Instance {
-        const actor = <ActorDefinition>this.controller.resources.getActor(actorName);
+        const actor = <ActorDefinition>this.controller.gameConstruct.getActor(actorName);
         const newInstance = actor.newInstance(x, y, options);
         this.instanceMap[newInstance.id] = newInstance;
 

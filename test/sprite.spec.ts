@@ -10,7 +10,7 @@ describe('Sprite', () => {
     });
 
     it('successfully loads a valid image', done => {
-        const testSprite = testGame.resources.defineSprite('testSprite', TestImage.Source);
+        const testSprite = testGame.construct.defineSprite('testSprite', TestImage.Source);
         let succeeded = false;
 
         testSprite.loadImage()
@@ -22,7 +22,7 @@ describe('Sprite', () => {
     });
 
     it('fails to load an invalid image', done => {
-        const testSprite = testGame.resources.defineSprite('testSprite', 'bogusPath');
+        const testSprite = testGame.construct.defineSprite('testSprite', 'bogusPath');
         let failed = false;
 
         testSprite.loadImage()

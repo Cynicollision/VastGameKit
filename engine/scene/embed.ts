@@ -1,6 +1,6 @@
-import { Controller } from '../controller';
-import { GameCanvas } from '../device/canvas';
 import { SceneEmbedDisplayMode } from './../core';
+import { GameCanvas } from './../device/canvas';
+import { Controller } from './../controller';
 import { SceneState } from './sceneState';
 
 export type SceneEmbedOptions = {

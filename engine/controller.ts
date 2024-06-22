@@ -1,6 +1,6 @@
 import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
 import { GameCanvas } from './device/canvas';
-import { GameResources } from './resources';
+import { GameConstruct } from './gameConstruct';
 import { GameScene, Scene } from './scene';
 import { SceneState } from './scene/sceneState';
 import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
@@ -11,7 +11,7 @@ export type ControllerOptions = {
 
 export interface Controller {
     readonly currentStep: number;
-    readonly resources: GameResources;
+    readonly gameConstruct: GameConstruct;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
@@ -27,7 +27,7 @@ export class SceneController implements Controller {
     private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
 
-    readonly resources: GameResources;
+    readonly gameConstruct: GameConstruct;
     readonly state: ObjMap<any> = {};
 
     private _currentStep = 0;
@@ -36,8 +36,8 @@ export class SceneController implements Controller {
     private _currentSceneState: SceneState;
     get sceneState(): SceneState { return this._currentSceneState; }
 
-    constructor(resources: GameResources, initialScene: Scene, _options: ControllerOptions) {
-        this.resources = resources;
+    constructor(construct: GameConstruct, initialScene: Scene, _options: ControllerOptions) {
+        this.gameConstruct = construct;
         this._currentSceneState = this.getSceneState(initialScene.name);
         this._options = _options;
     }
@@ -56,7 +56,7 @@ export class SceneController implements Controller {
     }
 
     getSceneState(sceneName: string): SceneState {
-        const scene = <GameScene>this.resources.getScene(sceneName);
+        const scene = <GameScene>this.gameConstruct.getScene(sceneName);
 
         if (scene.persistent) {
             if (!this._persistentSceneStateMap[scene.name]) {

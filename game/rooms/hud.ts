@@ -1,7 +1,7 @@
 import { Game } from './../../engine/game';
 
 export function buildHUD(game: Game) {
-    const hud = game.resources.defineScene('hud', { width: game.canvas.width, height: 120, persistent: true });
+    const hud = game.construct.defineScene('hud', { width: game.canvas.width, height: 120, persistent: true });
     hud.setBackground('#0F0');
 
     hud.onStart((self, sc) => {

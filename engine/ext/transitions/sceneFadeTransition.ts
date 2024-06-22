@@ -1,6 +1,6 @@
-import { SceneState } from '../../scene/sceneState';
 import { MathUtil } from './../../core';
 import { GameCanvas } from './../../device/canvas';
+import { SceneState } from './../../scene/sceneState';
 import { SceneTransition, SceneTransitionOptions } from './../../transition';
 
 export class SceneFadeTransition implements SceneTransition {
