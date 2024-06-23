@@ -83,25 +83,4 @@ export function buildDefaultRoom(game: Game) {
     game.defaultScene.onKeyboardInput('i', (self, event, sc) => {
         sc.publishEvent('endAll');
     });
-
-    game.defaultScene.onKeyboardInput('m', (self, event, sc) => {
-        if (self.state.modalOpen) {
-            return;
-        }
-
-        const modalX = 20;
-        const modalY = 20;
-        self.state.modalOpen = true;
-        self.paused = true;
-        sc.sceneState.embeds.create('scnModal', { x: modalX, y: modalY, displayMode: SceneEmbedDisplayMode.Float })
-    });
-
-    game.defaultScene.onKeyboardInput('e', (self, event, sc) => {
-        if (!self.state.modalOpen) {
-            return;
-        }
-         sc.sceneState.embeds.destroy('scnModal');
-         self.paused = false
-         self.state.modalOpen = false;
-    });
 }

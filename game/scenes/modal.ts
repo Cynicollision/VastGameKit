@@ -1,7 +1,7 @@
 import { Game } from './../../engine/game';
 
 export function buildModal(game: Game): void {
-    const modal = game.construct.defineScene('scnModal', { width: 960, height: 640 });
+    const modal = game.construct.defineScene('scnModal', { width: 240, height: 160 });
     modal.setBackground('#CC0');
 
     modal.onStart((self, controller, data) => {

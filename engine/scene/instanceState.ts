@@ -20,12 +20,6 @@ export class SceneInstanceState {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
-    draw(canvas: GameCanvas, controller: SceneController): void {
-        for (const instance of <ActorInstance[]>this.getByDepth()) {
-            instance.draw(canvas, controller);
-        }
-    }
-
     create(actorName: string, x: number, y: number, options?: ActorInstanceOptions): Instance {
         const actor = <ActorDefinition>this.controller.gameConstruct.getActor(actorName);
         const newInstance = actor.newInstance(x, y, options);
@@ -47,6 +41,12 @@ export class SceneInstanceState {
         }
 
         return instances;
+    }
+
+    draw(canvas: GameCanvas, controller: SceneController): void {
+        for (const instance of <ActorInstance[]>this.getByDepth()) {
+            instance.draw(canvas, controller);
+        }
     }
 
     forEach(callback: (self: Instance) => void): void {

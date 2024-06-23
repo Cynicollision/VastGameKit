@@ -2,7 +2,7 @@ import { GameInputHandler } from './../engine/device/input';
 import { Game, GameOptions } from './../engine/game';
 import { Sprite, SpriteOptions } from './../engine/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
-import { TestImage } from './mocks/testImage';
+import { TestImage1, TestImage2 } from './mocks/testImages';
 
 export class TestUtil {
 
@@ -16,7 +16,10 @@ export class TestUtil {
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
-        return Sprite.fromSource('testSprite', TestImage.Source, options);
+        return Sprite.fromSource('testSprite', TestImage1.Source, options);
     }
 
+    static getTestSprite2(options?: SpriteOptions): Sprite {
+        return Sprite.fromSource('testSprite2', TestImage2.Source, options);
+    }
 }

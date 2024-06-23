@@ -1,6 +1,6 @@
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/scene';
-import { TestImage } from './mocks/testImage';
+import { TestImage1 } from './mocks/testImages';
 import { TestUtil } from './testUtil';
 
 describe('Game', () => {
@@ -18,13 +18,13 @@ describe('Game', () => {
     });
 
     it('loads Sprites successfully', done => {
-        testGame.construct.defineSprite('testSprite', TestImage.Source);
+        testGame.construct.defineSprite('testSprite', TestImage1.Source);
 
         testGame.load().then(() => {
             const sprite = testGame.construct.getSprite('testSprite');
             expect(sprite.image).toBeDefined();
-            expect(sprite.image.height).toBe(TestImage.Height);
-            expect(sprite.image.width).toBe(TestImage.Width);
+            expect(sprite.image.height).toBe(TestImage1.Height);
+            expect(sprite.image.width).toBe(TestImage1.Width);
             done();
         });
     });

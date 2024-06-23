@@ -27,7 +27,7 @@ describe('SceneEmbedState', () => {
     });
 
     it('destroys SceneEmbeds by Scene name', () => {
-        testEmbedState.create('scnEmbed');
+        const embed = testEmbedState.create('scnEmbed');
         let embeds = testEmbedState.getAll();
 
         expect(embeds.length).toBe(1);
@@ -35,11 +35,14 @@ describe('SceneEmbedState', () => {
         expect(embeds[0].sceneState.scene.height).toBe(200);
         expect(embeds[0].sceneState.scene.width).toBe(300);
 
-        testEmbedState.destroy('scnEmbed');
+        embed.destroy();
+        testEmbedState.step(testGame.controller);
         embeds = testEmbedState.getAll();
 
         expect(embeds.length).toBe(0);
     });
+
+    it('draws SceneEmbeds by depth')
     
     it('enumerates a callback over its ActorInstances', () => {
         testEmbedState.create('scnEmbed', { x: 10, y: 20 });

@@ -39,16 +39,6 @@ export class SceneEmbedState {
         }
     }
 
-    destroy(sceneName: string): void {
-        for (const a in this.sceneEmbedMap) {
-            const embed = this.sceneEmbedMap[a];
-            if (embed.sceneName == sceneName) {
-                const embedKey = this.getSceneEmbedKey(sceneName, embed.id); 
-                this.delete(embedKey);
-            }
-        }
-    }
-
     getAll(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
         const embeds: SceneEmbed[] = [];
 
@@ -62,7 +52,22 @@ export class SceneEmbedState {
         return embeds;
     }
 
-    getByDepth(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
+    getByDepthAsc(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
+        return this.getAll(displayMode).sort((a, b) => b.depth - a.depth);
+    }
+
+    getByDepthDesc(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
         return this.getAll(displayMode).sort((a, b) => a.depth - b.depth);
+    }
+
+    step(controller: SceneController): void {
+        for (const a in this.sceneEmbedMap) {
+            const embed = this.sceneEmbedMap[a];
+            if (embed.isDestroyed) {
+                const embedKey = this.getSceneEmbedKey(embed.sceneName, embed.id); 
+                this.delete(embedKey);
+            }
+            embed.sceneState.step(controller);
+        };
     }
 }

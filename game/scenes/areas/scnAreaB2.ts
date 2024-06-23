@@ -1,10 +1,10 @@
 import { Game } from './../../../engine/game';
-import { initArea, setCommonAreaEvents } from './../../scripts/areaSceneSetup';
+import { initArea, setupAreaCommon } from './../../scripts/areaSceneSetup';
 
 export function buildAreaB2(game: Game) {
     const area = game.construct.defineScene('scnAreaB2', { width: 640, height: 480, persistent: true });
     area.setBackground(game.construct.getSprite('sprGrass'));
-    setCommonAreaEvents(area);
+    setupAreaCommon(game, area);
 
     area.onStart((self, controller, data) => {
         initArea(game, self, data);

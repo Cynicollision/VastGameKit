@@ -55,6 +55,14 @@ export class SceneController implements Controller {
         }
     }
 
+    draw(canvas: GameCanvas): void {
+        this._currentSceneState.draw(canvas, this);
+
+        if (this._transition) {
+            this._transition.draw(this._currentSceneState, canvas);
+        }
+    }
+
     getSceneState(sceneName: string): SceneState {
         const scene = <GameScene>this.gameConstruct.getScene(sceneName);
 
@@ -67,20 +75,6 @@ export class SceneController implements Controller {
         }
 
         return scene.newState(this);
-    }
-
-    startTimer(options: GameTimerOptions): GameTimer {
-        const timer = GameTimer.start(options);
-        this._timers.push(timer);
-        return timer;
-    }
-
-    draw(canvas: GameCanvas): void {
-        this._currentSceneState.draw(canvas, this);
-
-        if (this._transition) {
-            this._transition.draw(this._currentSceneState, canvas);
-        }
     }
 
     goToScene(sceneName: string, data?: any): SceneState {
@@ -102,6 +96,12 @@ export class SceneController implements Controller {
 
     onPointerEvent(event: PointerInputEvent): void {
         this._currentSceneState.handlePointerEvent(event, this);
+    }
+
+    startTimer(options: GameTimerOptions): GameTimer {
+        const timer = GameTimer.start(options);
+        this._timers.push(timer);
+        return timer;
     }
 
     step(): void {

@@ -1,5 +1,5 @@
 import { Game } from './../engine/game';
-import { TestImage } from './mocks/testImage';
+import { TestImage1 } from './mocks/testImages';
 import { TestUtil } from './testUtil';
 
 describe('Sprite', () => {
@@ -10,7 +10,7 @@ describe('Sprite', () => {
     });
 
     it('successfully loads a valid image', done => {
-        const testSprite = testGame.construct.defineSprite('testSprite', TestImage.Source);
+        const testSprite = testGame.construct.defineSprite('testSprite', TestImage1.Source);
         let succeeded = false;
 
         testSprite.loadImage()

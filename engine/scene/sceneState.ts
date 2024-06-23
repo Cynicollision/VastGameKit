@@ -71,7 +71,7 @@ export class SceneState {
             this.scene.background.draw(sceneCanvas);
         }
 
-        this.embeds.forEach(embed => {
+        this.embeds.getByDepthAsc().forEach(embed => {
             if (embed.displayMode === SceneEmbedDisplayMode.Embed) {
                 embed.draw(canvas, sceneCanvas, controller);
             }
@@ -89,7 +89,7 @@ export class SceneState {
 
         this.scene.callDraw(this, canvas, controller);
 
-        this.embeds.forEach(embed => {
+        this.embeds.getByDepthAsc().forEach(embed => {
             if (embed.displayMode === SceneEmbedDisplayMode.Float) {
                 embed.draw(canvas, canvas, controller);
             }
@@ -108,10 +108,12 @@ export class SceneState {
         if (event.isCancelled) {
             return;
         }
-
-        this.scene.callGameEvent(this, event, controller);
-        this.instances.forEach(instance => (<ActorInstance>instance).handleGameEvent(instance, event, controller));
         this.embeds.forEach(embed => embed.sceneState.handleGameEvent(event, controller));
+
+        if (!this.paused) {
+            this.instances.forEach(instance => (<ActorInstance>instance).handleGameEvent(instance, event, controller));
+            this.scene.callGameEvent(this, event, controller);
+        }
     }
 
     handleKeyboardEvent(event: KeyboardInputEvent, controller: Controller): void {
@@ -151,11 +153,11 @@ export class SceneState {
         const propogatedEvent = transformedEvent || event;
 
         // propagate to embedded scenes.
-        this.embeds.getByDepth().forEach(embed => {
+        this.embeds.getByDepthDesc().forEach(embed => {
             if (event.isCancelled) {
                 return;
             }
-            if (embed.displayMode === (SceneEmbedDisplayMode.Float)) {
+            if (embed.displayMode === SceneEmbedDisplayMode.Float) {
                 if (embed.containsPosition(event.x, event.y)) {
                     const translatedFloatEvent = event.translate(-embed.x, -embed.y);
                     embed.sceneState.handlePointerEvent(translatedFloatEvent, controller);
@@ -172,10 +174,11 @@ export class SceneState {
             return;
         }
 
-        // propagate to instances.
-        this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
-
-        this.scene.callPointerEvent(this, event, controller);
+        // propagate to instances and self
+        if (!this.paused) {
+            this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
+            this.scene.callPointerEvent(this, event, controller);
+        }
     }
 
     startOrResume(controller: Controller, data = {}): void {
@@ -191,7 +194,7 @@ export class SceneState {
     }
 
     step(controller: Controller): void {
-        this.embeds.forEach(embed => embed.sceneState.step(controller));
+        this.embeds.step(<SceneController>controller);
 
         if (this.paused || this._status !== SceneStatus.Running) {
             return;

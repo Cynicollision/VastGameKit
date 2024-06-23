@@ -3,7 +3,7 @@
 import { ActorDefinition } from './../engine/actor';
 import { ActorBehaviorName, GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { Game } from './../engine/game';
-import { TestImage } from './mocks/testImage';
+import { TestImage1 } from './mocks/testImages';
 import { TestUtil } from './testUtil';
 
 describe('Actor', () => {
@@ -169,14 +169,14 @@ describe('Actor', () => {
         it('as a circle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
-            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage.Source, { height: TestImage.Height, width: TestImage.Height });
+            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage1.Source, { height: TestImage1.Height, width: TestImage1.Height });
             testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setCircleBoundaryFromSprite();
     
                 expect(testActor.boundary).toBe(boundary);
-                expect(boundary.radius).toBe(TestImage.Height / 2);
-                expect(boundary.height).toBe(TestImage.Height);
-                expect(boundary.width).toBe(TestImage.Height);
+                expect(boundary.radius).toBe(TestImage1.Height / 2);
+                expect(boundary.height).toBe(TestImage1.Height);
+                expect(boundary.width).toBe(TestImage1.Height);
     
                 done();
             });
@@ -195,13 +195,13 @@ describe('Actor', () => {
         it('as a rectangle the size of its Sprite', done => {
             expect(testActor.boundary).toBeUndefined();
     
-            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage.Source);
+            testActor.sprite = testGame.construct.defineSprite('testSprite', TestImage1.Source);
             testActor.sprite.loadImage().then(() => {
                 const boundary = testActor.setRectBoundaryFromSprite();
     
                 expect(testActor.boundary).toBe(boundary);
-                expect(boundary.height).toBe(TestImage.Height);
-                expect(boundary.width).toBe(TestImage.Width);
+                expect(boundary.height).toBe(TestImage1.Height);
+                expect(boundary.width).toBe(TestImage1.Width);
     
                 done();
             });

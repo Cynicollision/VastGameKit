@@ -3,9 +3,13 @@ import { RectBoundary } from './../engine/core/boundaries';
 import { Game } from './../engine/game';
 import { SceneInstanceState } from './../engine/scene/instanceState';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
+import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
 
 describe('manages ActorInstances', () => {
+    const testSprite1 = TestUtil.getTestSprite();
+    const testSprite2 = TestUtil.getTestSprite2();
+
     let testGame: Game;
     let testInstanceState: SceneInstanceState;
 
@@ -13,10 +17,10 @@ describe('manages ActorInstances', () => {
         testGame = TestUtil.getTestGame();
         testInstanceState = new SceneInstanceState(testGame.controller);
 
-        const testActor = testGame.construct.defineActor('testActor');
+        const testActor = testGame.construct.defineActor('testActor', { sprite: testSprite1 });
         testActor.setRectBoundary(20, 20);
 
-        const testActor2 = testGame.construct.defineActor('testActor2');
+        const testActor2 = testGame.construct.defineActor('testActor2', { sprite: testSprite2 });
         testActor2.setRectBoundary(20, 20);
     });
 
@@ -68,8 +72,29 @@ describe('manages ActorInstances', () => {
         expect(testInstanceState.getAll('testActor2').length).toBe(2);
     });
 
-    xit('TODO draws ActorInstances by depth', () => {
-        // utilize MockCanvas drawn image order
+    it('draws ActorInstances by depth ascending', () => {
+        const mockCanvas = <MockGameCanvas>testGame.canvas;
+        const inst1 = testInstanceState.create('testActor', 0, 0);
+        const inst2 = testInstanceState.create('testActor2', 0, 0);
+        testInstanceState.step(testGame.controller);
+
+        inst1.depth = 10;
+        inst2.depth = 20;
+        testInstanceState.draw(mockCanvas, testGame.controller);
+    
+        expect(mockCanvas.drawnImages.length).toBe(2);
+        expect(mockCanvas.drawnImages[0].src).toBe(testSprite2.image);
+        expect(mockCanvas.drawnImages[1].src).toBe(testSprite1.image);
+
+        mockCanvas.clear();
+
+        inst1.depth = 20;
+        inst2.depth = 10;
+        testInstanceState.draw(mockCanvas, testGame.controller);
+    
+        expect(mockCanvas.drawnImages.length).toBe(2);
+        expect(mockCanvas.drawnImages[0].src).toBe(testSprite1.image);
+        expect(mockCanvas.drawnImages[1].src).toBe(testSprite2.image);
     });
 
     it('gets ActorInstances at a position', () => {
