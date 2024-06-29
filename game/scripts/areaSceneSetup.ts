@@ -1,4 +1,3 @@
-import { SceneEmbedDisplayMode } from '../../engine/core';
 import { Game } from './../../engine/game';
 import { SceneState } from '../../engine/scene/sceneState';
 import { Scene } from '../../engine/scene';
@@ -6,9 +5,9 @@ import Constants from './../constants';
 
 export function initArea(game: Game, areaState: SceneState, data: any): void {
     const player = areaState.instances.create('actPlayer', data.playerX, data.playerY);
-    const hud = areaState.embeds.create('hud', { x: 0, y: 0, width: game.canvas.width, displayMode: SceneEmbedDisplayMode.Float });
+    const hud = areaState.floatSubScene('scnHUD', { x: 0, y: 0, width: game.canvas.width });
 
-    const scale = 4; // TODO should be game-level param and passed to floating embeds
+    const scale = 4; // TODO should be game-level param and available when setting up floating sub scenes
     areaState.defaultCamera.height = (game.canvas.height - Constants.HUDHeight) / scale;
     areaState.defaultCamera.width = game.canvas.width / scale;
     areaState.defaultCamera.portWidth = areaState.defaultCamera.width * scale;
@@ -35,7 +34,6 @@ export function setupAreaCommon(game: Game, areaScene: Scene): void {
         const modalWidth = 960;
 
         const modalConfig = {
-            displayMode: SceneEmbedDisplayMode.Float,
             depth: -100, 
             height: modalHeight,
             width: modalWidth,
@@ -43,7 +41,7 @@ export function setupAreaCommon(game: Game, areaScene: Scene): void {
             y: (game.canvas.height - modalHeight) / 2, 
         };
         
-        const modal = controller.sceneState.embeds.create('scnModal', modalConfig);
+        const modal = controller.sceneState.floatSubScene('scnModal', modalConfig);
         self.state.openModal = modal;
         self.paused = true;
         controller.state.hud.paused = true;

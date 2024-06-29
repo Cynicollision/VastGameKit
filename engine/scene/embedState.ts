@@ -1,73 +1,86 @@
-import { ObjMap, RuntimeID, SceneEmbedDisplayMode } from './../core';
+import { ObjMap, PointerInputEvent, RuntimeID } from './../core';
+import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../controller';
-import { SceneEmbed, SceneEmbedOptions } from './embed';
-import { SceneState } from './sceneState';
+import { SubScene, SubSceneOptions } from './subScene';
 
+// TODO rename -> SubSceneState ? SceneSubSceneState
 export class SceneEmbedState {
     private readonly controller: SceneController;
-    private readonly parent: SceneState;
-    private readonly sceneEmbedMap: ObjMap<SceneEmbed> = {};
+    private readonly subSceneMap: ObjMap<SubScene> = {};
 
-    constructor(controller: SceneController, parent: SceneState) {
+    constructor(controller: SceneController) {
         this.controller = controller;
-        this.parent = parent;
     }
 
-    private delete(embedKey: string): void {
-        delete this.sceneEmbedMap[embedKey];
+    private delete(subSceneKey: string): void {
+        delete this.subSceneMap[subSceneKey];
     }
 
-    private getSceneEmbedKey(name: string, id: number): string {
+    private getByDepthAsc(): SubScene[] {
+        return this.toList().sort((a, b) => b.depth - a.depth);
+    }
+
+    private getByDepthDesc(): SubScene[] {
+        return this.toList().sort((a, b) => a.depth - b.depth);
+    }
+
+    private getSubSceneKey(name: string, id: number): string {
         return `${name}_${id}`
     }
 
-    create(sceneName: string, options: SceneEmbedOptions = {}, data: any = {}): SceneEmbed {
-        const sceneEmbedId = RuntimeID.next();
+    create(sceneName: string, options: SubSceneOptions = {}, data: any = {}): SubScene {
+        const subSceneId = RuntimeID.next();
         const subSceneState = this.controller.getSceneState(sceneName);
-        const embed = new SceneEmbed(sceneEmbedId, this.parent, subSceneState, options);
-        const embedKey = this.getSceneEmbedKey(sceneName, sceneEmbedId);
-        this.sceneEmbedMap[embedKey] = embed;
+        const subScene = new SubScene(subSceneId, subSceneState, options);
+        const subSceneKey = this.getSubSceneKey(sceneName, subSceneId);
+        this.subSceneMap[subSceneKey] = subScene;
 
-        embed.sceneState.startOrResume(this.controller, data);
+        subScene.sceneState.startOrResume(this.controller, data);
 
-        return embed;
+        return subScene;
     }
 
-    forEach(callback: (self: SceneEmbed) => void): void {
-        for (const embedId in this.sceneEmbedMap) {
-            callback(this.sceneEmbedMap[embedId]);
+    draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: SceneController): void {
+        this.getByDepthAsc().forEach(subScene => subScene.draw(mainCanvas, targetCanvas, controller));
+    }
+
+    forEach(callback: (self: SubScene) => void): void {
+        for (const subSceneId in this.subSceneMap) {
+            callback(this.subSceneMap[subSceneId]);
         }
     }
 
-    getAll(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
-        const embeds: SceneEmbed[] = [];
-
-        for (const a in this.sceneEmbedMap) {
-            const embed = this.sceneEmbedMap[a];
-            if (!displayMode || displayMode === embed.displayMode) {
-                embeds.push(this.sceneEmbedMap[a]);
+    handlePointerEvent(event: PointerInputEvent, controller: SceneController): void {
+        this.getByDepthDesc().forEach(embed => {
+            if (embed.containsPosition(event.x, event.y)) {
+                const relativeEvent = event.translate(-embed.x, -embed.y);
+                embed.sceneState.handlePointerEvent(relativeEvent, controller);
+                event.cancel();
             }
+        });
+    }
+
+    // TODO make private, tests that use this should test differently.
+    toList(): SubScene[] {
+        const subScenes: SubScene[] = [];
+
+        for (const a in this.subSceneMap) {
+            subScenes.push(this.subSceneMap[a]);
         }
 
-        return embeds;
-    }
-
-    getByDepthAsc(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
-        return this.getAll(displayMode).sort((a, b) => b.depth - a.depth);
-    }
-
-    getByDepthDesc(displayMode?: SceneEmbedDisplayMode): SceneEmbed[] {
-        return this.getAll(displayMode).sort((a, b) => a.depth - b.depth);
+        return subScenes;
     }
 
     step(controller: SceneController): void {
-        for (const a in this.sceneEmbedMap) {
-            const embed = this.sceneEmbedMap[a];
-            if (embed.isDestroyed) {
-                const embedKey = this.getSceneEmbedKey(embed.sceneName, embed.id); 
-                this.delete(embedKey);
+        for (const a in this.subSceneMap) {
+            const subScene = this.subSceneMap[a];
+            if (subScene.isDestroyed) {
+                const subSceneKey = this.getSubSceneKey(subScene.sceneName, subScene.id); 
+                this.delete(subSceneKey);
             }
-            embed.sceneState.step(controller);
-        };
+            else {
+                subScene.sceneState.step(controller);
+            }
+        }
     }
 }

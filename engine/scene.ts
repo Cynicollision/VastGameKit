@@ -80,7 +80,7 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
 
     newState(controller: SceneController): SceneState {
         const sceneState = new SceneState(RuntimeID.next(), controller, this);
-        // TODO: process ActorPlacements, EmbedPlacements, camera "constructs"(?), "pass" to sceneState
+        // TODO: process ActorPlacements, SubScenePlacements, camera "constructs"(?), "pass" to sceneState
         return sceneState;
     }
 

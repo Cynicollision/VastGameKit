@@ -4,6 +4,7 @@ import { ActorDefinition } from './../actor';
 import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
 import { SceneController } from './../controller';
 
+// TODO rename file
 export class SceneInstanceState {
     private readonly controller: SceneController;
     private instanceMap: ObjMap<ActorInstance> = {};
@@ -16,7 +17,7 @@ export class SceneInstanceState {
         delete this.instanceMap[instance.id];
     }
 
-    private getByDepth(actorName?: string): Instance[] {
+    private getByDepthAsc(actorName?: string): Instance[] {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
@@ -44,7 +45,7 @@ export class SceneInstanceState {
     }
 
     draw(canvas: GameCanvas, controller: SceneController): void {
-        for (const instance of <ActorInstance[]>this.getByDepth()) {
+        for (const instance of <ActorInstance[]>this.getByDepthAsc()) {
             instance.draw(canvas, controller);
         }
     }

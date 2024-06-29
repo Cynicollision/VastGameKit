@@ -21,11 +21,6 @@ export enum InstanceStatus {
     New = 'New',
 }
 
-export enum SceneEmbedDisplayMode {
-    Embed = 'Embed',
-    Float = 'Float'
-}
-
 export enum SceneStatus {
     NotStarted = 'NotStarted',
     Running = 'Running',

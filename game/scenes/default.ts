@@ -1,4 +1,3 @@
-import { SceneEmbedDisplayMode } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildDefaultRoom(game: Game) {
@@ -6,7 +5,7 @@ export function buildDefaultRoom(game: Game) {
     game.defaultScene.setBackground(game.construct.defineSprite('sky', './resources/sky.png'));
 
     // TODO: move to test/demo scenes
-    const embedded = game.construct.defineScene('embedded', { width: 250, height: 250, persistent: false });
+    const embedded = game.construct.defineScene('scnEmbedTest', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
         self.instances.create('actButton', 32, 32);
@@ -19,13 +18,13 @@ export function buildDefaultRoom(game: Game) {
         
         controller.goToScene('scnAreaA1', { playerX: 32, playerY: 32 });
 
-        self.embeds.create('embedded', { x: 200, y: 400, displayMode: SceneEmbedDisplayMode.Embed });
-        self.embeds.create('hud', { x: 0, y: 0, displayMode: SceneEmbedDisplayMode.Float });
+        // TODO: rest to demo scenes
+        self.embedSubScene('scnEmbedTest', { x: 200, y: 400 });
+        self.floatSubScene('scnHUD', { x: 0, y: 0 });
 
         const player = self.instances.create('actPlayer', 32, 128);
 
-        // TODO: should be sharable between all scene states that use the same camera settings
-        const scale = 4; // TODO should be game-level param
+        const scale = 4;
         self.defaultCamera.height = (960 - 120) / scale;
         self.defaultCamera.width = 1280 / scale;
         self.defaultCamera.portWidth = self.defaultCamera.width * scale;
@@ -51,7 +50,7 @@ export function buildDefaultRoom(game: Game) {
             'X X X X         XXXXX  X',
             'X X                    X',
             'X                      X',
-            'XXXXXXXXXXXXXXXXXXXXXXXX',
+            'XXXXXXXX   XXXXXXXXXXXXX',
         ];
 
         const key = {

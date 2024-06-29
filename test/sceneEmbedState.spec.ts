@@ -1,4 +1,3 @@
-import { SceneEmbedDisplayMode } from './../engine/core';
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/scene';
 import { SceneEmbedState } from './../engine/scene/embedState';
@@ -11,14 +10,14 @@ describe('SceneEmbedState', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testGame.controller.sceneState.startOrResume(testGame.controller);
-        testEmbedState = new SceneEmbedState(testGame.controller, testGame.controller.sceneState);
+        testEmbedState = new SceneEmbedState(testGame.controller);
 
         testGame.construct.defineScene('scnEmbed', { width: 300, height: 200 });
     });
 
     it('creates SceneEmbeds', () => {
         testEmbedState.create('scnEmbed');
-        const embeds = testEmbedState.getAll();
+        const embeds = testEmbedState.toList();
 
         expect(embeds.length).toBe(1);
         expect(embeds[0].sceneState.scene.name).toBe('scnEmbed');
@@ -26,9 +25,9 @@ describe('SceneEmbedState', () => {
         expect(embeds[0].sceneState.scene.width).toBe(300);
     });
 
-    it('destroys SceneEmbeds by Scene name', () => {
+    it('deletes destroyed SceneEmbeds during step', () => {
         const embed = testEmbedState.create('scnEmbed');
-        let embeds = testEmbedState.getAll();
+        let embeds = testEmbedState.toList();
 
         expect(embeds.length).toBe(1);
         expect(embeds[0].sceneState.scene.name).toBe('scnEmbed');
@@ -37,12 +36,14 @@ describe('SceneEmbedState', () => {
 
         embed.destroy();
         testEmbedState.step(testGame.controller);
-        embeds = testEmbedState.getAll();
+        embeds = testEmbedState.toList();
 
         expect(embeds.length).toBe(0);
     });
 
-    it('draws SceneEmbeds by depth')
+    xit('TODO draws SceneEmbeds by depth', () => {
+
+    });
     
     it('enumerates a callback over its ActorInstances', () => {
         testEmbedState.create('scnEmbed', { x: 10, y: 20 });
@@ -51,19 +52,5 @@ describe('SceneEmbedState', () => {
         testEmbedState.forEach(embed => embed.sceneState.state.foo = 'bar');
         testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construct.getScene('scnEmbed')));
         testEmbedState.forEach(embed => expect(embed.sceneState.state.foo).toBe('bar'));
-    });
-
-    it('gets all SceneEmbeds of a given display mode', () => {
-        testGame.construct.defineScene('scnEmbed2');
-
-        testEmbedState.create('scnEmbed', { displayMode: SceneEmbedDisplayMode.Embed });
-        testEmbedState.create('scnEmbed', { displayMode: SceneEmbedDisplayMode.Embed });
-        testEmbedState.create('scnEmbed', { displayMode: SceneEmbedDisplayMode.Float });
-        testEmbedState.create('scnEmbed2', { displayMode: SceneEmbedDisplayMode.Embed });
-        testEmbedState.create('scnEmbed2', { displayMode: SceneEmbedDisplayMode.Float });
-
-        expect(testEmbedState.getAll().length).toBe(5);
-        expect(testEmbedState.getAll(SceneEmbedDisplayMode.Embed).length).toBe(3);
-        expect(testEmbedState.getAll(SceneEmbedDisplayMode.Float).length).toBe(2);
     });
 });

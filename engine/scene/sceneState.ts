@@ -1,9 +1,10 @@
-import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneEmbedDisplayMode, SceneStatus } from './../core';
+import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { ActorInstance } from './../actorInstance';
 import { Camera, SceneCamera, SceneCameraOptions } from './../camera';
 import { Controller, SceneController } from './../controller';
 import { GameScene, Scene } from './../scene';
+import { SubScene, SubSceneOptions } from './subScene';
 import { SceneEmbedState } from './embedState';
 import { SceneInstanceState } from './instanceState';
 
@@ -11,8 +12,8 @@ export class SceneState {
     static readonly DefaultCameraName = 'default';
 
     private readonly cameraMap: ObjMap<SceneCamera> = {};
-
-    readonly embeds: SceneEmbedState;
+    private readonly embeddedSubScenes: SceneEmbedState;
+    private readonly floatingSubScenes: SceneEmbedState;
     readonly instances: SceneInstanceState;
     readonly id: number;
     readonly scene: Scene;
@@ -29,7 +30,8 @@ export class SceneState {
     constructor(id: number, controller: SceneController, scene: Scene) {
         this.id = id;
 
-        this.embeds = new SceneEmbedState(controller, this);
+        this.embeddedSubScenes = new SceneEmbedState(controller);
+        this.floatingSubScenes = new SceneEmbedState(controller);
         this.instances = new SceneInstanceState(controller);
         this.scene = scene;
 
@@ -71,14 +73,10 @@ export class SceneState {
             this.scene.background.draw(sceneCanvas);
         }
 
-        this.embeds.getByDepthAsc().forEach(embed => {
-            if (embed.displayMode === SceneEmbedDisplayMode.Embed) {
-                embed.draw(canvas, sceneCanvas, controller);
-            }
-        });
-
+        this.embeddedSubScenes.draw(canvas, sceneCanvas, <SceneController>controller);
         this.instances.draw(sceneCanvas, <SceneController>controller);
 
+        // TODO: Camera.draw(scenCanvas)
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
             const cameraCanvasKey = this.getCameraCanvasKey(camera);
@@ -88,12 +86,15 @@ export class SceneState {
         }
 
         this.scene.callDraw(this, canvas, controller);
+        this.floatingSubScenes.draw(canvas, canvas, <SceneController>controller);
+    }
 
-        this.embeds.getByDepthAsc().forEach(embed => {
-            if (embed.displayMode === SceneEmbedDisplayMode.Float) {
-                embed.draw(canvas, canvas, controller);
-            }
-        });
+    embedSubScene(sceneName: string, options: SubSceneOptions = {}): SubScene {
+        return this.embeddedSubScenes.create(sceneName, options)
+    }
+
+    floatSubScene(sceneName: string, options: SubSceneOptions = {}): SubScene {
+        return this.floatingSubScenes.create(sceneName, options)
     }
 
     getCamera(cameraName: string): SceneCamera {
@@ -108,11 +109,13 @@ export class SceneState {
         if (event.isCancelled) {
             return;
         }
-        this.embeds.forEach(embed => embed.sceneState.handleGameEvent(event, controller));
+
+        this.floatingSubScenes.forEach(subScene => subScene.sceneState.handleGameEvent(event, controller));
+        this.scene.callGameEvent(this, event, controller);
 
         if (!this.paused) {
+            this.embeddedSubScenes.forEach(subScene => subScene.sceneState.handleGameEvent(event, controller));
             this.instances.forEach(instance => (<ActorInstance>instance).handleGameEvent(instance, event, controller));
-            this.scene.callGameEvent(this, event, controller);
         }
     }
 
@@ -121,13 +124,20 @@ export class SceneState {
             return;
         }
 
+        this.floatingSubScenes.forEach(subScene => subScene.sceneState.handleKeyboardEvent(event, controller));
         this.scene.callKeyboardEvent(this, event, controller);
-        this.instances.forEach(instance => (<ActorInstance>instance).handleKeyboardEvent(instance, event, controller));
-        this.embeds.forEach(embed => embed.sceneState.handleKeyboardEvent(event, controller));
+
+        if (!this.paused) {
+            this.embeddedSubScenes.forEach(subScene => subScene.sceneState.handleKeyboardEvent(event, controller));
+            this.instances.forEach(instance => (<ActorInstance>instance).handleKeyboardEvent(instance, event, controller));
+        }
     }
 
     handlePointerEvent(event: PointerInputEvent, controller: Controller): void {
-        if (event.isCancelled) {
+        // pass to floating sub scenes first.
+        this.floatingSubScenes.handlePointerEvent(event, <SceneController>controller);
+
+        if (this.paused || event.isCancelled) {
             return;
         }
 
@@ -138,6 +148,7 @@ export class SceneState {
                 continue;
             }
 
+            // TODO: camera.handlePointerEvent
             const camera = this.getCamera(cameraName);
             if (camera.portContainsPosition(event.x, event.y)) {
                 transformedEvent = this.scalePointerEventToCamera(event, camera);
@@ -151,34 +162,10 @@ export class SceneState {
         }
 
         const propogatedEvent = transformedEvent || event;
-
-        // propagate to embedded scenes.
-        this.embeds.getByDepthDesc().forEach(embed => {
-            if (event.isCancelled) {
-                return;
-            }
-            if (embed.displayMode === SceneEmbedDisplayMode.Float) {
-                if (embed.containsPosition(event.x, event.y)) {
-                    const translatedFloatEvent = event.translate(-embed.x, -embed.y);
-                    embed.sceneState.handlePointerEvent(translatedFloatEvent, controller);
-                    event.cancel();
-                }
-            }
-            else {
-                const translatedEvent = propogatedEvent.translate(-embed.x, -embed.y);
-                embed.sceneState.handlePointerEvent(translatedEvent, controller);
-            }  
-        });
-
-        if (event.isCancelled) {
-            return;
-        }
-
-        // propagate to instances and self
-        if (!this.paused) {
-            this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
-            this.scene.callPointerEvent(this, event, controller);
-        }
+        this.embeddedSubScenes.handlePointerEvent(propogatedEvent, <SceneController>controller);
+        
+        this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
+        this.scene.callPointerEvent(this, event, controller);
     }
 
     startOrResume(controller: Controller, data = {}): void {
@@ -190,11 +177,14 @@ export class SceneState {
         }
 
         this._status = SceneStatus.Running;
-        this.embeds.forEach(embed => embed.sceneState.startOrResume(controller, data));
+
+        // TODO probably unnecessary/redundant
+        //this.embeddedSubScenes.forEach(embed => embed.sceneState.startOrResume(controller, data));
+        //this.floatingSubScenes.forEach(embed => embed.sceneState.startOrResume(controller, data));
     }
 
     step(controller: Controller): void {
-        this.embeds.step(<SceneController>controller);
+        this.floatingSubScenes.step(<SceneController>controller);
 
         if (this.paused || this._status !== SceneStatus.Running) {
             return;
@@ -202,6 +192,7 @@ export class SceneState {
 
         this.scene.callStep(this, controller);
         this.instances.step(<SceneController>controller);
+        this.embeddedSubScenes.step(<SceneController>controller);
 
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
@@ -212,6 +203,7 @@ export class SceneState {
     suspend(controller: Controller, data?: any): void {
         this._status = SceneStatus.Suspended;
         (<GameScene>this.scene).callOnSuspend(this, controller, data);
-        this.embeds.forEach(embed => embed.sceneState.suspend(controller, data));
+        this.embeddedSubScenes.forEach(subScene => subScene.sceneState.suspend(controller, data));
+        this.floatingSubScenes.forEach(subScene => subScene.sceneState.suspend(controller, data));
     }
 }

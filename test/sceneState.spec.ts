@@ -1,12 +1,14 @@
 import { GameEvent, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Instance } from './../engine/actorInstance';
+import { SubScene } from '../engine/scene/subScene';
 import { Game } from './../engine/game';
 import { SceneState } from './../engine/scene/sceneState';
 import { TestUtil } from './testUtil';
 
+
 describe('SceneState', () => {
     const TestActorName = 'actTest';
-    const TestEmbedName = 'scnEmbed';
+    const TestEmbedSubSceneName = 'scnEmbed';
     const TestSceneName = 'scnTest';
     const TestSceneHeight = 600;
     const TestSceneWidth = 800;
@@ -14,6 +16,7 @@ describe('SceneState', () => {
     let testGame: Game;
     let testSceneState: SceneState;
     let testInstance: Instance;
+    let testEmbeddedSubScene: SubScene;
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
@@ -21,12 +24,12 @@ describe('SceneState', () => {
         testSceneState = testGame.controller.getSceneState(TestSceneName);
 
         testGame.construct.defineActor(TestActorName);
-        testGame.construct.defineScene(TestEmbedName);
+        testGame.construct.defineScene(TestEmbedSubSceneName, { height: 100, width: 100 });
 
         testInstance = testSceneState.instances.create(TestActorName, 0, 0);
         testGame.construct.getActor(TestActorName).setRectBoundary(10, 10);
 
-        testSceneState.embeds.create(TestEmbedName);
+        testEmbeddedSubScene = testSceneState.embedSubScene(TestEmbedSubSceneName, { x: 50, y: 50 });
     });
 
     it('initializes with a default Camera', () => {
@@ -67,22 +70,22 @@ describe('SceneState', () => {
 
     it('starts embedded SceneStates upon creating them', () => {
         let embedOnStartCalled = false;
-        testGame.construct.getScene(TestEmbedName).onStart((self, event, controller) => {
+        testGame.construct.getScene(TestEmbedSubSceneName).onStart((self, event, controller) => {
             embedOnStartCalled = true;
         });
 
-        testSceneState.embeds.create('scnEmbed');
+        testSceneState.embedSubScene('scnEmbed');
         expect(embedOnStartCalled).toBeTrue();
     });
 
-    it('propgates KeyboardEvents to Embeds and Instances', () => {
+    it('propgates KeyboardEvents to SubScenes and Instances', () => {
         let actorEventHandlerCalled = false;
         testGame.construct.getActor(TestActorName).onKeyboardInput('testKey', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.construct.getScene(TestEmbedName).onKeyboardInput('testKey', (self, event, controller) => {
+        testGame.construct.getScene(TestEmbedSubSceneName).onKeyboardInput('testKey', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -96,7 +99,7 @@ describe('SceneState', () => {
         expect(sceneEventHandlerCalled).toBeTrue();
     });
 
-    it('propgates GameEvents to Embeds and Instances', () => {
+    it('propgates GameEvents to SubScenes and Instances', () => {
 
         let actorEventHandlerCalled = false;
         testGame.construct.getActor(TestActorName).onGameEvent('testEvent', (self, event, controller) => {
@@ -104,7 +107,7 @@ describe('SceneState', () => {
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.construct.getScene(TestEmbedName).onGameEvent('testEvent', (self, event, controller) => {
+        testGame.construct.getScene(TestEmbedSubSceneName).onGameEvent('testEvent', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -119,24 +122,28 @@ describe('SceneState', () => {
         expect(sceneEventHandlerCalled).toBeTrue();
     });
 
-    it('propgates PointerEvents to Embeds and Instances', () => {
+    it('propgates PointerEvents to embedded SubScenes and Instances', () => {
         let actorEventHandlerCalled = false;
         testGame.construct.getActor(TestActorName).onPointerInput('testPointer', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
-        let sceneEventHandlerCalled = false;
-        testGame.construct.getScene(TestEmbedName).onPointerInput('testPointer', (self, event, controller) => {
-            sceneEventHandlerCalled = true;
+        let embeddedSceneEventHandlerCalled = false;
+        testGame.construct.getScene(TestEmbedSubSceneName).onPointerInput('testPointer', (self, event, controller) => {
+            embeddedSceneEventHandlerCalled = true;
         });
 
         expect(actorEventHandlerCalled).toBeFalse();
-        expect(sceneEventHandlerCalled).toBeFalse();
+        expect(embeddedSceneEventHandlerCalled).toBeFalse();
 
         const pointerEvent = new PointerInputEvent('testPointer', testInstance.x + 2, testInstance.y + 2);
         testSceneState.handlePointerEvent(pointerEvent, testGame.controller);
 
         expect(actorEventHandlerCalled).toBeTrue();
-        expect(sceneEventHandlerCalled).toBeTrue();
+        expect(embeddedSceneEventHandlerCalled).toBeFalse();
+
+        const pointerEvent2 = new PointerInputEvent('testPointer', testEmbeddedSubScene.x + 2, testEmbeddedSubScene.y + 2);
+        testSceneState.handlePointerEvent(pointerEvent2, testGame.controller);
+        expect(embeddedSceneEventHandlerCalled).toBeTrue();
     });
 });

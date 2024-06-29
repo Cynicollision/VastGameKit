@@ -1,21 +1,18 @@
-import { SceneEmbedDisplayMode } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { Controller } from './../controller';
 import { SceneState } from './sceneState';
+import { RectBoundary } from '../core/boundaries';
 
-export type SceneEmbedOptions = {
+export type SubSceneOptions = {
     depth?: number;
-    displayMode?: SceneEmbedDisplayMode;
     height?: number;
     width?: number;
     x?: number;
     y?: number;
 }
 
-export class SceneEmbed {
+export class SubScene {
     readonly id: number;
-    readonly displayMode: SceneEmbedDisplayMode = SceneEmbedDisplayMode.Embed;
-    readonly parentSceneState: SceneState;
     readonly sceneState: SceneState;
     readonly depth: number = 0;
     readonly height: number;
@@ -30,11 +27,9 @@ export class SceneEmbed {
         return this.sceneState.scene.name;
     }
 
-    constructor(id: number, parentSceneState: SceneState, thisSceneState: SceneState, options: SceneEmbedOptions = {}) {
+    constructor(id: number, thisSceneState: SceneState, options: SubSceneOptions = {}) {
         this.id = id;
-        this.parentSceneState = parentSceneState;
         this.sceneState = thisSceneState;
-        this.displayMode = options.displayMode || SceneEmbedDisplayMode.Embed;
         this.depth = options.depth !== undefined ? options.depth : 0;
         this.height = options.height || thisSceneState.scene.height;
         this.width = options.width || thisSceneState.scene.width;
@@ -42,12 +37,12 @@ export class SceneEmbed {
         this.y = options.y || 0;
     }
 
-    private getSceneEmbedCanvasKey(): string {
-        return `${this.parentSceneState.scene.name}_${this.sceneState.scene.name}_${this.id}`;
+    private getSubSceneCanvasKey(): string {
+        return `${this.sceneState.scene.name}_${this.id}`;
     }
 
     containsPosition(x: number, y: number): boolean {
-        return x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height;
+        return new RectBoundary(this.width, this.height).atPosition(this.x, this.y).containsPosition(x, y);
     }
 
     destroy(): void {
@@ -55,9 +50,9 @@ export class SceneEmbed {
     }
 
     draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: Controller): void {
-        const embedKey = this.getSceneEmbedCanvasKey();
-        const embeddedSceneCanvas = mainCanvas.subCanvas(embedKey, { width: this.width, height: this.height });
-        this.sceneState.draw(embeddedSceneCanvas, controller);
-        targetCanvas.drawCanvas(embeddedSceneCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+        const subSceneKey = this.getSubSceneCanvasKey();
+        const subSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: this.width, height: this.height });
+        this.sceneState.draw(subSceneCanvas, controller);
+        targetCanvas.drawCanvas(subSceneCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }
 }
