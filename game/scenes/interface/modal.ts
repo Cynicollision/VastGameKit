@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../../engine/game';
 
 export function buildModal(game: Game): void {
     const modal = game.construct.defineScene('scnModal', { width: 240, height: 160 });
@@ -12,7 +12,7 @@ export function buildModal(game: Game): void {
         self.defaultCamera.portWidth = 960;
         self.defaultCamera.portHeight = 640;
 
-        self.instances.create('actButton', 4, 4);
+        self.instances.create('actButton', { x: 4, y: 4 });
     });
 
     modal.onKeyboardInput('u', (self, event, sc) => {

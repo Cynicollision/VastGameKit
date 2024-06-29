@@ -3,8 +3,7 @@ import { GameCanvas } from './../device/canvas';
 import { SceneController } from './../controller';
 import { SubScene, SubSceneOptions } from './subScene';
 
-// TODO rename -> SubSceneState ? SceneSubSceneState
-export class SceneEmbedState {
+export class SceneSubSceneState {
     private readonly controller: SceneController;
     private readonly subSceneMap: ObjMap<SubScene> = {};
 
@@ -16,11 +15,11 @@ export class SceneEmbedState {
         delete this.subSceneMap[subSceneKey];
     }
 
-    private getByDepthAsc(): SubScene[] {
+    private getByDepthDesc(): SubScene[] {
         return this.toList().sort((a, b) => b.depth - a.depth);
     }
 
-    private getByDepthDesc(): SubScene[] {
+    private getByDepthAsc(): SubScene[] {
         return this.toList().sort((a, b) => a.depth - b.depth);
     }
 
@@ -41,7 +40,7 @@ export class SceneEmbedState {
     }
 
     draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: SceneController): void {
-        this.getByDepthAsc().forEach(subScene => subScene.draw(mainCanvas, targetCanvas, controller));
+        this.getByDepthDesc().forEach(subScene => subScene.draw(mainCanvas, targetCanvas, controller));
     }
 
     forEach(callback: (self: SubScene) => void): void {
@@ -51,7 +50,7 @@ export class SceneEmbedState {
     }
 
     handlePointerEvent(event: PointerInputEvent, controller: SceneController): void {
-        this.getByDepthDesc().forEach(embed => {
+        this.getByDepthAsc().forEach(embed => {
             if (embed.containsPosition(event.x, event.y)) {
                 const relativeEvent = event.translate(-embed.x, -embed.y);
                 embed.sceneState.handlePointerEvent(relativeEvent, controller);

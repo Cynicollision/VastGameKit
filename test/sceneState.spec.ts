@@ -1,6 +1,6 @@
 import { GameEvent, KeyboardInputEvent, PointerInputEvent, SceneStatus } from './../engine/core';
 import { Instance } from './../engine/actorInstance';
-import { SubScene } from '../engine/scene/subScene';
+import { SubScene } from './../engine/scene/subScene';
 import { Game } from './../engine/game';
 import { SceneState } from './../engine/scene/sceneState';
 import { TestUtil } from './testUtil';
@@ -26,7 +26,7 @@ describe('SceneState', () => {
         testGame.construct.defineActor(TestActorName);
         testGame.construct.defineScene(TestEmbedSubSceneName, { height: 100, width: 100 });
 
-        testInstance = testSceneState.instances.create(TestActorName, 0, 0);
+        testInstance = testSceneState.instances.create(TestActorName);
         testGame.construct.getActor(TestActorName).setRectBoundary(10, 10);
 
         testEmbeddedSubScene = testSceneState.embedSubScene(TestEmbedSubSceneName, { x: 50, y: 50 });

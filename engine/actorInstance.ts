@@ -8,7 +8,9 @@ import { SpriteAnimation } from './spriteAnimation';
 
 export type ActorInstanceOptions = {
     depth?: number;
-}
+    x?: number;
+    y?: number;
+};
 
 export interface Instance extends PositionedEntity {
     readonly id: number;
@@ -61,8 +63,11 @@ export class ActorInstance implements Instance {
     constructor(id: number, actor: ActorDefinition, options: ActorInstanceOptions = {}) {
         this.id = id;
         this.actor = actor;
-        this.depth = options.depth !== undefined ? options.depth : 0;
         this._status = InstanceStatus.New;
+
+        this.depth = options.depth !== undefined ? options.depth : 0;
+        this.x = options.x !== undefined ? options.x : 0;
+        this.y = options.y !== undefined ? options.y : 0;
 
         if (actor.sprite) {
             this._animation = actor.sprite.newAnimation();

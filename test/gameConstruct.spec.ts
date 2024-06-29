@@ -1,7 +1,7 @@
 import { GameConstruct } from './../engine/gameConstruct';
 import { TestImage1 } from './mocks/testImages';
 
-describe('GameResource', () => {
+describe('GameConstruct', () => {
     let testConstruct: GameConstruct;
 
     beforeEach(() => {

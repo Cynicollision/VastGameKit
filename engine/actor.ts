@@ -93,12 +93,8 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         return actorNames;
     }
 
-    newInstance(x: number, y: number, options: ActorInstanceOptions = {}): ActorInstance {
-        const instance = new ActorInstance(RuntimeID.next(), this, options);
-        instance.x = x; 
-        instance.y = y;
-        
-        return instance;
+    newInstance(options: ActorInstanceOptions = {}): ActorInstance {
+        return new ActorInstance(RuntimeID.next(), this, options);
     }
 
     onCreate(callback: EntityLifecycleCb<Instance>): void {
@@ -116,10 +112,6 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
     onDestroy(callback:  EntityLifecycleCb<Instance>): void {
         this.onDestroyCallback = callback;
     }
-
-    // onLoad(callback: (actor: Actor) => void): void {
-    //     this.onLoadCallback = callback;
-    // }
 
     setCircleBoundary(radius: number, originX: number = 0, originY: number = 0): CircleBoundary {
         const boundary = new CircleBoundary(radius, originX, originY);

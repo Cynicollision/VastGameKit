@@ -3,9 +3,9 @@ import { Game } from './../engine/game';
 import { buildWallActor } from './actors/wall';
 import { buildPlayerActor } from './actors/player';
 import { buildCoinActor } from './actors/coin';
-import { buildDefaultRoom } from './scenes/default';
-import { buildHUD } from './scenes/hud';
-import { buildModal } from './scenes/modal';
+import { buildDefaultScene } from './scenes/default';
+import { buildHUD } from './scenes/interface/hud';
+import { buildModal } from './scenes/interface/modal';
 import { buildAreaA1 } from './scenes/areas/scnAreaA1';
 import { buildAreaA2 } from './scenes/areas/scnAreaA2';
 import { buildAreaB1 } from './scenes/areas/scnAreaB1';
@@ -37,7 +37,7 @@ vastGame.load().then(game => {
     buildHUD(game);
     buildModal(game);
 
-    buildDefaultRoom(game);
+    buildDefaultScene(game);
     buildAreaA1(game);
     buildAreaA2(game);
     buildAreaB1(game);

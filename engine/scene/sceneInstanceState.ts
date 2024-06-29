@@ -4,7 +4,6 @@ import { ActorDefinition } from './../actor';
 import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
 import { SceneController } from './../controller';
 
-// TODO rename file
 export class SceneInstanceState {
     private readonly controller: SceneController;
     private instanceMap: ObjMap<ActorInstance> = {};
@@ -21,9 +20,10 @@ export class SceneInstanceState {
         return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
     }
 
-    create(actorName: string, x: number, y: number, options?: ActorInstanceOptions): Instance {
+    // TODO: move x, y back to ActorInstanceOptions for consistency w/ SubScenes
+    create(actorName: string, options?: ActorInstanceOptions): Instance {
         const actor = <ActorDefinition>this.controller.gameConstruct.getActor(actorName);
-        const newInstance = actor.newInstance(x, y, options);
+        const newInstance = actor.newInstance(options);
         this.instanceMap[newInstance.id] = newInstance;
 
         return newInstance;
@@ -36,7 +36,7 @@ export class SceneInstanceState {
             for (let j = 0; j < map[i].length; j++) {
                 const actorName = instanceKey[map[i][j]];
                 if (actorName) {
-                    instances.push(this.create(actorName, j * gridSize, i * gridSize));
+                    instances.push(this.create(actorName, { x: j * gridSize, y: i * gridSize }));
                 }
             }
         }

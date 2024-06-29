@@ -1,5 +1,5 @@
-import { Game } from '../../engine/game';
-import Constants from './../constants';
+import { Game } from './../../../engine/game';
+import Constants from './../../constants';
 
 export function buildHUD(game: Game) {
     const hud = game.construct.defineScene('scnHUD', { width: 320, height: Constants.HUDHeight, persistent: true });
@@ -15,8 +15,8 @@ export function buildHUD(game: Game) {
         self.defaultCamera.portWidth = 1280;
         self.defaultCamera.portHeight = Constants.HUDHeight;
 
-        self.instances.create('actButton', 8, 8);
-        self.instances.create('actButton', 96, 16);
+        self.instances.create('actButton', { x: 8, y: 8 });
+        self.instances.create('actButton', { x: 96, y: 16 });
 
         self.state.currentlyIn = controller.sceneState.scene.name;
     });

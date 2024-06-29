@@ -1,6 +1,6 @@
 import { Game } from './../../engine/game';
 
-export function buildDefaultRoom(game: Game) {
+export function buildDefaultScene(game: Game) {
 
     game.defaultScene.setBackground(game.construct.defineSprite('sky', './resources/sky.png'));
 
@@ -8,21 +8,18 @@ export function buildDefaultRoom(game: Game) {
     const embedded = game.construct.defineScene('scnEmbedTest', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
-        self.instances.create('actButton', 32, 32);
-        self.instances.create('actButton', 96, 32);
-        self.instances.create('actButton', 196, 32);
+        self.instances.create('actButton', { x: 32, y: 32 });
+        self.instances.create('actButton', { x: 96, y: 32 });
+        self.instances.create('actButton', { x: 196, y: 32 });
     });
 
     game.defaultScene.onStart((self, controller) => {
         console.log('defaultRoom.onStart');
-        
-        controller.goToScene('scnAreaA1', { playerX: 32, playerY: 32 });
 
-        // TODO: rest to demo scenes
         self.embedSubScene('scnEmbedTest', { x: 200, y: 400 });
         self.floatSubScene('scnHUD', { x: 0, y: 0 });
 
-        const player = self.instances.create('actPlayer', 32, 128);
+        const player = self.instances.create('actPlayer', { x: 32, y: 128 });
 
         const scale = 4;
         self.defaultCamera.height = (960 - 120) / scale;
@@ -64,11 +61,15 @@ export function buildDefaultRoom(game: Game) {
 
     game.defaultScene.onResume((self, sc) => {
         console.log('defaultRoom.onResume');
-    })
+    });
 
-    game.defaultScene.onGameEvent('something', (self, ev, sc) => {
-        console.log('game.defaultScene.onGameEvent.something!');
-        console.log('game.defaultScene.onGameEvent.something data = '+ev.data);
+    game.defaultScene.onKeyboardInput('q', (self, event, controller) => {
+        controller.publishEvent('goToGame', { sceneName: 'scnAreaA1' });
+    });
+
+    game.defaultScene.onGameEvent('goToGame', (self, ev, controller) => {
+        console.log('game.defaultScene.onGameEvent.goToGame');
+        controller.goToScene(ev.data.sceneName, { playerX: 32, playerY: 32 });
     });
 
     game.defaultScene.onKeyboardInput('y', (self, event, sc) => {

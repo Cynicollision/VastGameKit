@@ -1,10 +1,10 @@
 import { Game } from './../../engine/game';
-import { SceneState } from '../../engine/scene/sceneState';
-import { Scene } from '../../engine/scene';
+import { Scene } from './../../engine/scene';
+import { SceneState } from './../../engine/scene/sceneState';
 import Constants from './../constants';
 
 export function initArea(game: Game, areaState: SceneState, data: any): void {
-    const player = areaState.instances.create('actPlayer', data.playerX, data.playerY);
+    const player = areaState.instances.create('actPlayer', { x: data.playerX, y: data.playerY });
     const hud = areaState.floatSubScene('scnHUD', { x: 0, y: 0, width: game.canvas.width });
 
     const scale = 4; // TODO should be game-level param and available when setting up floating sub scenes

@@ -1,7 +1,7 @@
 import { InstanceStatus } from './../engine/core';
 import { RectBoundary } from './../engine/core/boundaries';
 import { Game } from './../engine/game';
-import { SceneInstanceState } from './../engine/scene/instanceState';
+import { SceneInstanceState } from './../engine/scene/sceneInstanceState';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
@@ -25,7 +25,7 @@ describe('manages ActorInstances', () => {
     });
 
     it('creates ActorInstances', () => {
-        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor');
         const layerInstances = testInstanceState.getAll();
 
         expect(layerInstances.length).toBe(1);
@@ -33,16 +33,16 @@ describe('manages ActorInstances', () => {
     });
 
     it('enumerates a callback over its ActorInstances', () => {
-        testInstanceState.create('testActor', 0, 0);
-        testInstanceState.create('testActor', 0, 0);
-        testInstanceState.create('testActor', 0, 0);
+        testInstanceState.create('testActor');
+        testInstanceState.create('testActor');
+        testInstanceState.create('testActor');
 
         testInstanceState.forEach(instance => instance.state.foo = 'bar');
         testInstanceState.forEach(instance => expect(instance.state.foo).toBe('bar'));
     });
 
     it('checks if a position is free of any ActorInstances', () => {
-        testInstanceState.create('testActor', 10, 10);
+        testInstanceState.create('testActor', { x: 10, y: 10 });
 
         expect(testInstanceState.isPositionFree(0, 0)).toBeTrue()
         expect(testInstanceState.isPositionFree(20, 20)).toBeFalse();
@@ -50,7 +50,7 @@ describe('manages ActorInstances', () => {
     });
 
     it('checks if a position is free of solid ActorInstances', () => {
-        const instance = testInstanceState.create('testActor', 10, 10);
+        const instance = testInstanceState.create('testActor', { x: 10, y: 10 });
         instance.actor.solid = true;
 
         expect(testInstanceState.isPositionFree(20, 20, true)).toBeFalse();
@@ -61,21 +61,21 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances of a given Actor type', () => {
-        testInstanceState.create('testActor', 0, 0);
-        testInstanceState.create('testActor', 0, 0);
-        testInstanceState.create('testActor', 0, 0);
-        testInstanceState.create('testActor2', 0, 0);
-        testInstanceState.create('testActor2', 0, 0);
+        testInstanceState.create('testActor');
+        testInstanceState.create('testActor');
+        testInstanceState.create('testActor');
+        testInstanceState.create('testActor2');
+        testInstanceState.create('testActor2');
 
         expect(testInstanceState.getAll().length).toBe(5);
         expect(testInstanceState.getAll('testActor').length).toBe(3);
         expect(testInstanceState.getAll('testActor2').length).toBe(2);
     });
 
-    it('draws ActorInstances by depth ascending', () => {
+    it('draws ActorInstances by depth', () => {
         const mockCanvas = <MockGameCanvas>testGame.canvas;
-        const inst1 = testInstanceState.create('testActor', 0, 0);
-        const inst2 = testInstanceState.create('testActor2', 0, 0);
+        const inst1 = testInstanceState.create('testActor');
+        const inst2 = testInstanceState.create('testActor2');
         testInstanceState.step(testGame.controller);
 
         inst1.depth = 10;
@@ -98,10 +98,10 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances at a position', () => {
-        const instance1 = testInstanceState.create('testActor', 10, 10);
+        const instance1 = testInstanceState.create('testActor', { x: 10, y: 10 });
         instance1.actor.solid = true;
 
-        const instance2 = testInstanceState.create('testActor2', 15, 15);
+        const instance2 = testInstanceState.create('testActor2', { x: 15, y: 15 });
         instance2.actor.solid = false;
 
         expect(testInstanceState.getAtPosition(5, 5).length).toBe(0);
@@ -110,10 +110,10 @@ describe('manages ActorInstances', () => {
     });
 
     it('gets ActorInstances within a Boundary at a position', () => {
-        const instance1 = testInstanceState.create('testActor', 20, 20);
+        const instance1 = testInstanceState.create('testActor', { x: 20, y: 20 });
         instance1.actor.solid = true;
 
-        const instance2 = testInstanceState.create('testActor2', 25, 25);
+        const instance2 = testInstanceState.create('testActor2', { x: 25, y: 25 });
         instance2.actor.solid = false;
 
         const boundary = new RectBoundary(8, 8);
@@ -149,7 +149,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('activates new ActorInstances and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor', 0, 0);
+            const instance = testInstanceState.create('testActor');
 
             expect(actorOnCreatedCalled).toBeFalse();
             expect(instance.status).toBe(InstanceStatus.New);
@@ -160,7 +160,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('steps active ActorInstances, calls Behaviors, and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor', 0, 0);
+            const instance = testInstanceState.create('testActor');
             const mockBehavior = new MockActorInstanceBehavior();
             instance.useBehavior(mockBehavior);
             testInstanceState.step(testGame.controller);
@@ -177,7 +177,7 @@ describe('manages ActorInstances', () => {
         });
 
         it('deletes destoyed ActorInstances and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor', 0, 0);
+            const instance = testInstanceState.create('testActor');
             instance.destroy();
             expect(actorOnDestroyCalled).toBeFalse();
             expect(instance.status).toBe(InstanceStatus.Destroyed);

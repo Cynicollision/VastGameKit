@@ -16,7 +16,7 @@ describe('SceneCamera', () => {
         testActor = <ActorDefinition>testGame.construct.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
-        testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor', 0, 0);
+        testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor');
     });
 
     describe('defines valid dimensions', () => {

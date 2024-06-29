@@ -5,15 +5,15 @@ import { Camera, SceneCamera, SceneCameraOptions } from './../camera';
 import { Controller, SceneController } from './../controller';
 import { GameScene, Scene } from './../scene';
 import { SubScene, SubSceneOptions } from './subScene';
-import { SceneEmbedState } from './embedState';
-import { SceneInstanceState } from './instanceState';
+import { SceneSubSceneState } from './sceneSubSceneState';
+import { SceneInstanceState } from './sceneInstanceState';
 
 export class SceneState {
     static readonly DefaultCameraName = 'default';
 
     private readonly cameraMap: ObjMap<SceneCamera> = {};
-    private readonly embeddedSubScenes: SceneEmbedState;
-    private readonly floatingSubScenes: SceneEmbedState;
+    private readonly embeddedSubScenes: SceneSubSceneState;
+    private readonly floatingSubScenes: SceneSubSceneState;
     readonly instances: SceneInstanceState;
     readonly id: number;
     readonly scene: Scene;
@@ -30,8 +30,8 @@ export class SceneState {
     constructor(id: number, controller: SceneController, scene: Scene) {
         this.id = id;
 
-        this.embeddedSubScenes = new SceneEmbedState(controller);
-        this.floatingSubScenes = new SceneEmbedState(controller);
+        this.embeddedSubScenes = new SceneSubSceneState(controller);
+        this.floatingSubScenes = new SceneSubSceneState(controller);
         this.instances = new SceneInstanceState(controller);
         this.scene = scene;
 

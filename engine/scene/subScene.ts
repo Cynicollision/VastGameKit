@@ -1,7 +1,7 @@
+import { RectBoundary } from './../core/boundaries';
 import { GameCanvas } from './../device/canvas';
 import { Controller } from './../controller';
 import { SceneState } from './sceneState';
-import { RectBoundary } from '../core/boundaries';
 
 export type SubSceneOptions = {
     depth?: number;

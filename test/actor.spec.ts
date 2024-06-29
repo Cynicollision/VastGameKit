@@ -40,7 +40,7 @@ describe('Actor', () => {
         it('defines an onCollision callback', () => {
             let collisionHandlerCalled = false;
             testGame.construct.defineActor('actor2');
-            const instance2 = testGame.controller.sceneState.instances.create('actor2', 0, 0);
+            const instance2 = testGame.controller.sceneState.instances.create('actor2');
 
             testActor.onCollision('actor2', (self, other, state) => {
                 collisionHandlerCalled = true;
