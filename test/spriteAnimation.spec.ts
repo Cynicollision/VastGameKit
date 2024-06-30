@@ -1,6 +1,4 @@
-import { Instance } from './../engine/actorInstance';
 import { Game } from './../engine/game';
-import { SceneState } from './../engine/scene/sceneState';
 import { TestUtil } from './testUtil';
 
 describe('SpriteAnimation', () => {
@@ -8,8 +6,8 @@ describe('SpriteAnimation', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testGame.construct.defineActor('actTest1', { sprite: TestUtil.getTestSprite() });
-        testGame.construct.defineActor('actTest2');
+        testGame.construction.defineActor('actTest1', { sprite: TestUtil.getTestSprite() });
+        testGame.construction.defineActor('actTest2');
         
     });
 

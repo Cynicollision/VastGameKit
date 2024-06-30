@@ -2,9 +2,9 @@ import { SpriteTransformation } from './../../engine/core';
 import { Game } from './../../engine/game';
 
 export function buildCoinActor(game: Game) {
-    const actCoin = game.construct.defineActor('actCoin', { 
+    const actCoin = game.construction.defineActor('actCoin', { 
         solid: false,
-        sprite: game.construct.getSprite('sprCoin'),
+        sprite: game.construction.getSprite('sprCoin'),
     });
 
     actCoin.setCircleBoundaryFromSprite();

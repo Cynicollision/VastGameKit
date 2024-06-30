@@ -1,7 +1,7 @@
-import { SceneTransitionType } from './core';
-import { GameCanvas } from './device/canvas';
-import { SceneFadeTransition } from './ext/transitions/sceneFadeTransition';
-import { SceneState } from './scene/sceneState';
+import { SceneTransitionType } from './../core';
+import { GameCanvas } from './../device/canvas';
+import { SceneFadeTransition } from './../ext/transitions/sceneFadeTransition';
+import { SceneState } from './sceneState';
 
 export type SceneTransitionOptions = {
     color?: string;

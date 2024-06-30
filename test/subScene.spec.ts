@@ -1,5 +1,5 @@
 import { Game } from './../engine/game';
-import { SubScene } from './../engine/scene/subScene';
+import { SubScene } from './../engine/state/subScene';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
 

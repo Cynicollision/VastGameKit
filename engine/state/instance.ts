@@ -1,10 +1,10 @@
-import { ActorBehaviorName, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
-import { GameCanvas } from './device/canvas';
-import { ActorMotionBehavior } from './ext/behaviors/motionBehavior';
-import { ActorDefinition, ActorBehavior, Actor } from './actor';
+import { ActorBehaviorName, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameCanvas } from './../device/canvas';
+import { ActorMotionBehavior } from './../ext/behaviors/motionBehavior';
+import { SpriteAnimation } from './../resources/spriteAnimation';
+import { ActorDefinition, ActorBehavior, Actor } from './../structure/actor';
+import { FollowEntityOptions, PositionedEntity } from './../structure/entity';
 import { Controller } from './controller';
-import { FollowEntityOptions, PositionedEntity } from './entity';
-import { SpriteAnimation } from './spriteAnimation';
 
 export type ActorInstanceOptions = {
     depth?: number;

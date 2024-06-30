@@ -1,5 +1,5 @@
 import { GameError, ObjMap } from './../core';
-import { Sprite } from './../sprite';
+import { Sprite } from './../resources/sprite';
 
 export type GameCanvasOptions = {
     backgroundColor?: string;

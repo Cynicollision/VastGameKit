@@ -4,8 +4,8 @@ import Constants from './../constants';
 
 export function buildPlayerActor(game: Game) {
 
-    const actPlayer = game.construct.defineActor('actPlayer', { 
-        sprite: game.construct.getSprite('sprLink'),
+    const actPlayer = game.construction.defineActor('actPlayer', { 
+        sprite: game.construction.getSprite('sprLink'),
     });
 
     actPlayer.setRectBoundaryFromSprite();

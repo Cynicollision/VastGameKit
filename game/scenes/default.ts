@@ -2,10 +2,10 @@ import { Game } from './../../engine/game';
 
 export function buildDefaultScene(game: Game) {
 
-    game.defaultScene.setBackground(game.construct.defineSprite('sky', './resources/sky.png'));
+    game.defaultScene.setBackground(game.construction.defineSprite('sky', './resources/sky.png'));
 
     // TODO: move to test/demo scenes
-    const embedded = game.construct.defineScene('scnEmbedTest', { width: 250, height: 250, persistent: false });
+    const embedded = game.construction.defineScene('scnEmbedTest', { width: 250, height: 250, persistent: false });
     embedded.setBackground('#00F');
     embedded.onStart((self, sc) => {
         self.instances.create('actButton', { x: 32, y: 32 });

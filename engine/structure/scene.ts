@@ -1,11 +1,11 @@
 
-import { RuntimeID } from './core';
-import { Background, BackgroundDrawOptions } from './background';
-import { Controller, SceneController } from './controller';
+import { RuntimeID } from './../core';
+import { Background, BackgroundDrawOptions } from './../resources/background';
+import { Sprite } from './../resources/sprite';
+import { Controller, SceneController } from './../state/controller';
+import { ActorInstanceOptions } from './../state/instance';
+import { SceneState } from './../state/sceneState';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
-import { Sprite } from './sprite';
-import { SceneState } from './scene/sceneState';
-import { ActorInstanceOptions } from './actorInstance';
 
 export type SceneOptions = {
     height?: number;

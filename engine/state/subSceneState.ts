@@ -1,6 +1,6 @@
 import { ObjMap, PointerInputEvent, RuntimeID } from './../core';
 import { GameCanvas } from './../device/canvas';
-import { SceneController } from './../controller';
+import { SceneController } from './controller';
 import { SubScene, SubSceneOptions } from './subScene';
 
 export class SceneSubSceneState {

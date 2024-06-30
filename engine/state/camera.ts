@@ -1,6 +1,6 @@
-import { Geometry, MathUtil } from './core';
-import { FollowEntityOptions, PositionedEntity } from './entity';
-import { SceneState } from './scene/sceneState';
+import { Geometry, MathUtil } from './../core';
+import { FollowEntityOptions, PositionedEntity } from './../structure/entity';
+import { SceneState } from './sceneState';
 
 export type SceneCameraOptions = {
     x?: number;

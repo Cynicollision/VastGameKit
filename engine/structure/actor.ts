@@ -1,9 +1,9 @@
-import { ActorBehaviorName, Boundary, GameError, ObjMap, RuntimeID } from './core';
-import { CircleBoundary, RectBoundary } from './core/boundaries';
-import { ActorInstance, ActorInstanceOptions, Instance } from './actorInstance';
-import { Controller } from './controller';
+import { ActorBehaviorName, Boundary, GameError, ObjMap, RuntimeID } from './../core';
+import { CircleBoundary, RectBoundary } from './../core/boundaries';
+import { Sprite } from './../resources/sprite';
+import { Controller } from './../state/controller';
+import { ActorInstance, ActorInstanceOptions, Instance } from './../state/instance';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
-import { Sprite } from './sprite';
 
 export type ActorBehavior = {
     beforeStep?: EntityLifecycleCb<Instance>;

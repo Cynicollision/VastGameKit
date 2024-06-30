@@ -1,8 +1,8 @@
-import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
-import { GameCanvas } from './device/canvas';
-import { GameConstruct } from './gameConstruct';
-import { GameScene, Scene } from './scene';
-import { SceneState } from './scene/sceneState';
+import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameCanvas } from './../device/canvas';
+import { GameConstruction } from './../structure/construction';
+import { GameScene, Scene } from './../structure/scene';
+import { SceneState } from './sceneState';
 import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
 
 export type ControllerOptions = { 
@@ -11,7 +11,7 @@ export type ControllerOptions = {
 
 export interface Controller {
     readonly currentStep: number;
-    readonly gameConstruct: GameConstruct;
+    readonly gameConstruct: GameConstruction;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
@@ -27,7 +27,7 @@ export class SceneController implements Controller {
     private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
 
-    readonly gameConstruct: GameConstruct;
+    readonly gameConstruct: GameConstruction;
     readonly state: ObjMap<any> = {};
 
     private _currentStep = 0;
@@ -36,7 +36,7 @@ export class SceneController implements Controller {
     private _currentSceneState: SceneState;
     get sceneState(): SceneState { return this._currentSceneState; }
 
-    constructor(construct: GameConstruct, initialScene: Scene, _options: ControllerOptions) {
+    constructor(construct: GameConstruction, initialScene: Scene, _options: ControllerOptions) {
         this.gameConstruct = construct;
         this._currentSceneState = this.getSceneState(initialScene.name);
         this._options = _options;

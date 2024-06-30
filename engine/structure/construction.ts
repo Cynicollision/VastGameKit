@@ -1,10 +1,10 @@
-import { GameError, ObjMap } from './core';
-import { GameAudio, GameAudioOptions } from './device/audio';
+import { GameError, ObjMap } from './../core';
+import { GameAudio, GameAudioOptions } from './../device/audio';
+import { Sprite, SpriteOptions } from './../resources/sprite';
 import { ActorDefinition, Actor, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
-import { Sprite, SpriteOptions } from './sprite';
 
-export class GameConstruct {
+export class GameConstruction {
     private readonly actorMap: ObjMap<ActorDefinition> = {};
     private readonly audioMap: ObjMap<GameAudio> = {};
     private readonly sceneMap: ObjMap<GameScene> = {};

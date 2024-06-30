@@ -22,11 +22,11 @@ const vastGame = Game.init({
     }
 });
 
-vastGame.construct.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
-vastGame.construct.defineSprite('granite', './resources/greenblock.png');
-vastGame.construct.defineSprite('sprCoin', './resources/coin.png');
-vastGame.construct.defineSprite('sprGrass', './resources/grass.png');
-vastGame.construct.defineSprite('sprSky', './resources/sky.png')
+vastGame.construction.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
+vastGame.construction.defineSprite('granite', './resources/greenblock.png');
+vastGame.construction.defineSprite('sprCoin', './resources/coin.png');
+vastGame.construction.defineSprite('sprGrass', './resources/grass.png');
+vastGame.construction.defineSprite('sprSky', './resources/sky.png')
 
 vastGame.load().then(game => {
     buildCoinActor(game);

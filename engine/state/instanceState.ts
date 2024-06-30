@@ -1,8 +1,9 @@
 import { Boundary, InstanceStatus, ObjMap } from './../core';
 import { GameCanvas } from './../device/canvas';
-import { ActorDefinition } from './../actor';
-import { Instance, ActorInstanceOptions, ActorInstance } from './../actorInstance';
-import { SceneController } from './../controller';
+import { ActorDefinition } from './../structure/actor';
+
+import { SceneController } from './controller';
+import { Instance, ActorInstanceOptions, ActorInstance } from './instance';
 
 export class SceneInstanceState {
     private readonly controller: SceneController;

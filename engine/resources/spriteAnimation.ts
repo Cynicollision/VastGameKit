@@ -1,5 +1,5 @@
-import { ObjMap, SpriteTransformation } from './core';
-import { CanvasDrawImageOptions, GameCanvas } from './device/canvas';
+import { ObjMap, SpriteTransformation } from './../core';
+import { CanvasDrawImageOptions, GameCanvas } from './../device/canvas';
 import { Sprite } from './sprite';
 
 export type SpriteDrawOptions = CanvasDrawImageOptions & {

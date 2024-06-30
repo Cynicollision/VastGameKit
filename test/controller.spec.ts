@@ -1,6 +1,6 @@
 import { GameTimerStatus, SceneStatus } from './../engine/core';
+import { Scene } from './../engine/structure/scene';
 import { Game } from './../engine/game';
-import { Scene, GameScene } from './../engine/scene';
 import { TestUtil } from './testUtil';
 
 describe('SceneController', () => {
@@ -9,7 +9,7 @@ describe('SceneController', () => {
 
     beforeEach(() => {
         game = TestUtil.getTestGame();
-        scnTwo = game.construct.defineScene('scnTwo');
+        scnTwo = game.construction.defineScene('scnTwo');
     });
 
     it('changes the current SceneState and passes data to the next', () => {

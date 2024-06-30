@@ -1,6 +1,5 @@
 import { CanvasDrawImageOptions, CanvasDrawTextOptions, CanvasFillOptions, GameCanvas, GameCanvasOptions } from './../../engine/device/canvas';
-import { Sprite } from './../../engine/sprite';
-
+import { Sprite } from './../../engine/resources/sprite';
 
 type DrawnImage = {
     src: CanvasImageSource | GameCanvas;

@@ -1,6 +1,6 @@
 import { Boundary, PositionedBoundary } from './../boundary';
 import { Geometry } from './../geometry';
-import { Sprite } from './../../sprite';
+import { Sprite } from './../../resources/sprite';
 import { PositionedCircleBoundary } from './circleBoundary';
 
 export class RectBoundary implements Boundary {

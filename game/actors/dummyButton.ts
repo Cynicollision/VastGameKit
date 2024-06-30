@@ -2,8 +2,8 @@ import { Game } from './../../engine/game';
 
 export function buildDummyButton(game: Game) {
 
-    const button = game.construct.defineActor('actButton');
-    button.sprite = game.construct.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
+    const button = game.construction.defineActor('actButton');
+    button.sprite = game.construction.defineSprite('sprButton', './resources/pinkblue.png', { height: 32, width: 32 });
 
     button.onCreate((self, sc) => {
         button.setRectBoundaryFromSprite();

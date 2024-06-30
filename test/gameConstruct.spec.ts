@@ -1,11 +1,11 @@
-import { GameConstruct } from './../engine/gameConstruct';
+import { GameConstruction } from './../engine/structure/construction';
 import { TestImage1 } from './mocks/testImages';
 
 describe('GameConstruct', () => {
-    let testConstruct: GameConstruct;
+    let testConstruct: GameConstruction;
 
     beforeEach(() => {
-        testConstruct = new GameConstruct();
+        testConstruct = new GameConstruction();
     })
 
     it('defines and gets Actors', () => {

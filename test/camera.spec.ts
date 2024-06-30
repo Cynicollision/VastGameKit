@@ -1,7 +1,7 @@
-import { ActorDefinition } from './../engine/actor';
-import { ActorInstance } from './../engine/actorInstance';
+import { ActorDefinition } from './../engine/structure/actor';
+import { ActorInstance } from './../engine/state/instance';
+import { SceneCamera } from './../engine/state/camera';
 import { Game } from './../engine/game';
-import { SceneCamera } from './../engine/camera';
 import { TestUtil } from './testUtil';
 
 describe('SceneCamera', () => {
@@ -13,7 +13,7 @@ describe('SceneCamera', () => {
     beforeEach(() => {
         testGame = TestUtil.getTestGame({ canvasElementId: 'test', defaultSceneOptions: { height: 1000, width: 2000 } });
         testCamera = <SceneCamera>testGame.controller.sceneState.defaultCamera;
-        testActor = <ActorDefinition>testGame.construct.defineActor('testActor');
+        testActor = <ActorDefinition>testGame.construction.defineActor('testActor');
         testActor.setRectBoundary(200, 100);
 
         testInstance = <ActorInstance>testGame.controller.sceneState.instances.create('testActor');

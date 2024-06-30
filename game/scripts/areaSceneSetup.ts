@@ -1,6 +1,6 @@
 import { Game } from './../../engine/game';
-import { Scene } from './../../engine/scene';
-import { SceneState } from './../../engine/scene/sceneState';
+import { Scene } from './../../engine/structure/scene';
+import { SceneState } from './../../engine/state/sceneState';
 import Constants from './../constants';
 
 export function initArea(game: Game, areaState: SceneState, data: any): void {

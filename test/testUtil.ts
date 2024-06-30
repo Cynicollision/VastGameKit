@@ -1,6 +1,6 @@
 import { GameInputHandler } from './../engine/device/input';
+import { Sprite, SpriteOptions } from './../engine/resources/sprite';
 import { Game, GameOptions } from './../engine/game';
-import { Sprite, SpriteOptions } from './../engine/sprite';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestImage1, TestImage2 } from './mocks/testImages';
 

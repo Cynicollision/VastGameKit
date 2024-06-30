@@ -1,6 +1,6 @@
-import { GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent } from './core';
-import { GameCanvas } from './device/canvas';
-import { Controller } from './controller';
+import { GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameCanvas } from './../device/canvas';
+import { Controller } from './../state/controller';
 
 export type EntityLifecycleCb<T> = {
     (self: T, controller: Controller, data?: any): void;

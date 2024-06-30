@@ -1,7 +1,7 @@
 import { InstanceStatus } from './../engine/core';
 import { RectBoundary } from './../engine/core/boundaries';
+import { SceneInstanceState } from './../engine/state/instanceState';
 import { Game } from './../engine/game';
-import { SceneInstanceState } from './../engine/scene/sceneInstanceState';
 import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
@@ -17,10 +17,10 @@ describe('manages ActorInstances', () => {
         testGame = TestUtil.getTestGame();
         testInstanceState = new SceneInstanceState(testGame.controller);
 
-        const testActor = testGame.construct.defineActor('testActor', { sprite: testSprite1 });
+        const testActor = testGame.construction.defineActor('testActor', { sprite: testSprite1 });
         testActor.setRectBoundary(20, 20);
 
-        const testActor2 = testGame.construct.defineActor('testActor2', { sprite: testSprite2 });
+        const testActor2 = testGame.construction.defineActor('testActor2', { sprite: testSprite2 });
         testActor2.setRectBoundary(20, 20);
     });
 
@@ -134,7 +134,7 @@ describe('manages ActorInstances', () => {
             actorOnStepCalled = false;
             actorOnDestroyCalled = false;
 
-            const testActor = testGame.construct.getActor('testActor');
+            const testActor = testGame.construction.getActor('testActor');
             testActor.setRectBoundary(20, 20);
             testActor.onCreate((self, state) => {
                 actorOnCreatedCalled = true;

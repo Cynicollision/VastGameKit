@@ -1,12 +1,12 @@
 import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
 import { GameCanvas } from './../device/canvas';
-import { ActorInstance } from './../actorInstance';
-import { Camera, SceneCamera, SceneCameraOptions } from './../camera';
-import { Controller, SceneController } from './../controller';
-import { GameScene, Scene } from './../scene';
+import { GameScene, Scene } from './../structure/scene';
+import { ActorInstance } from './instance';
+import { Camera, SceneCamera, SceneCameraOptions } from './camera';
+import { Controller, SceneController } from './controller';
 import { SubScene, SubSceneOptions } from './subScene';
-import { SceneSubSceneState } from './sceneSubSceneState';
-import { SceneInstanceState } from './sceneInstanceState';
+import { SceneSubSceneState } from './subSceneState';
+import { SceneInstanceState } from './instanceState';
 
 export class SceneState {
     static readonly DefaultCameraName = 'default';

@@ -2,8 +2,8 @@ import { Game } from './../../../engine/game';
 import Constants from './../../constants';
 
 export function buildHUD(game: Game) {
-    const hud = game.construct.defineScene('scnHUD', { width: 320, height: Constants.HUDHeight, persistent: true });
-    hud.setBackground(game.construct.getSprite('sprSky'));
+    const hud = game.construction.defineScene('scnHUD', { width: 320, height: Constants.HUDHeight, persistent: true });
+    hud.setBackground(game.construction.getSprite('sprSky'));
 
     hud.onStart((self, controller) => {
         console.log('hud.onStart');
