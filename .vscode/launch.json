@@ -7,25 +7,12 @@
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Launch Chrome",
-            "file": "${workspaceFolder}\\game\\index.html"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Webpack Watch",
-            "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js",
-            "args": [
-                "--watch"
-             ]
+            "name": "Debug Chrome",
+            "preLaunchTask": "webpack: dev server",
+            "sourceMaps": true,
+            "trace": true,
+            "webRoot": "${workspaceFolder}",
+            "url": "http://localhost:9000"
         }
-    ],
-    "compounds": [
-        {
-          "name": "Debug Game",
-          "configurations": ["Webpack Watch", "Launch Chrome"],
-          "preLaunchTask": "npm: build",
-          "stopAll": true
-        }
-      ]
+    ]
 }

@@ -8,6 +8,31 @@
             "problemMatcher": [],
             "label": "npm: build",
             "detail": "webpack"
-        }
+        },
+        {
+            "type": "npm",
+            "label": "webpack: dev server",
+            "script": "debug",
+            "promptOnClose": true,
+            "isBackground": true,
+            "problemMatcher": {
+              "owner": "webpack",
+              "severity": "error",
+              "fileLocation": "absolute",
+              "pattern": [
+                {
+                    "regexp": "\\b\\B",
+                    "file": 1,
+                    "location": 2,
+                    "message": 3
+                }
+            ],
+              "background": {
+                "activeOnStart": true,
+                "beginsPattern": "^.*Executing task.*",
+                "endsPattern": "^.*Project is running.*"
+              }
+            }
+          }
     ]
 }

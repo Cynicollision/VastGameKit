@@ -2,6 +2,13 @@ const env = (process.env.NODE_ENV || 'development');
 const path = require('path');
 
 module.exports = {
+    devServer: {
+        static: {
+            directory: path.join(__dirname, 'game'),
+        },
+        compress: false,
+        port: 9000,
+    },
     devtool: env === 'development' ? 'inline-source-map' : false,
     entry: './game/main.ts',
     mode: 'development',
