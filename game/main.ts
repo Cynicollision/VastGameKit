@@ -22,6 +22,7 @@ const vastGame = Game.init({
     }
 });
 
+vastGame.construction.defineSound('sndPlop', './resources/sounds/plop.wav');
 vastGame.construction.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
 vastGame.construction.defineSprite('granite', './resources/greenblock.png');
 vastGame.construction.defineSprite('sprCoin', './resources/coin.png');

@@ -59,7 +59,7 @@ export function buildDefaultScene(game: Game) {
         self.instances.createFromMap(16, map, key);
     });
 
-    game.defaultScene.onResume((self, sc) => {
+    game.defaultScene.onResume((self, controller) => {
         console.log('defaultRoom.onResume');
     });
 
@@ -72,15 +72,19 @@ export function buildDefaultScene(game: Game) {
         controller.goToScene(ev.data.sceneName, { playerX: 32, playerY: 32 });
     });
 
-    game.defaultScene.onKeyboardInput('y', (self, event, sc) => {
-        sc.publishEvent('startAll', { speed: 250 });
+    game.defaultScene.onPointerInput('mousedown', (self, event, controller) => {
+        controller.audio.play('sndPlop');
     });
 
-    game.defaultScene.onKeyboardInput('u', (self, event, sc) => {
-        sc.publishEvent('startAll', { speed: 500 });
+    game.defaultScene.onKeyboardInput('y', (self, event, controller) => {
+        controller.publishEvent('startAll', { speed: 250 });
     });
 
-    game.defaultScene.onKeyboardInput('i', (self, event, sc) => {
-        sc.publishEvent('endAll');
+    game.defaultScene.onKeyboardInput('u', (self, event, controller) => {
+        controller.publishEvent('startAll', { speed: 500 });
+    });
+
+    game.defaultScene.onKeyboardInput('i', (self, event, controller) => {
+        controller.publishEvent('endAll');
     });
 }

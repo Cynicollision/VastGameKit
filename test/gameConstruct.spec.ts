@@ -18,9 +18,9 @@ describe('GameConstruct', () => {
     });
 
     it('defines and gets Audio', () => {
-        testConstruct.defineAudio('testAudio', null);
+        testConstruct.defineSound('testAudio', null);
 
-        const audio = testConstruct.getAudio('testAudio');
+        const audio = testConstruct.getSound('testAudio');
 
         expect(audio).toBeDefined();
         expect(audio.name).toBe('testAudio');

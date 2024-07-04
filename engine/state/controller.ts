@@ -1,4 +1,5 @@
 import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
@@ -11,7 +12,8 @@ export type ControllerOptions = {
 
 export interface Controller {
     readonly currentStep: number;
-    readonly gameConstruct: GameConstruction;
+    readonly audio: GameAudio;
+    readonly gameConstruction: GameConstruction;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
@@ -27,7 +29,8 @@ export class SceneController implements Controller {
     private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
 
-    readonly gameConstruct: GameConstruction;
+    readonly audio: GameAudio;
+    readonly gameConstruction: GameConstruction;
     readonly state: ObjMap<any> = {};
 
     private _currentStep = 0;
@@ -36,9 +39,12 @@ export class SceneController implements Controller {
     private _currentSceneState: SceneState;
     get sceneState(): SceneState { return this._currentSceneState; }
 
-    constructor(construct: GameConstruction, initialScene: Scene, _options: ControllerOptions) {
-        this.gameConstruct = construct;
+    constructor(construction: GameConstruction, initialScene: Scene, _options: ControllerOptions) {
+        this.audio = new GameAudio(construction);
+        this.gameConstruction = construction;
         this._currentSceneState = this.getSceneState(initialScene.name);
+
+        // TODO process options and store relevant parts
         this._options = _options;
     }
 
@@ -64,7 +70,7 @@ export class SceneController implements Controller {
     }
 
     getSceneState(sceneName: string): SceneState {
-        const scene = <GameScene>this.gameConstruct.getScene(sceneName);
+        const scene = <GameScene>this.gameConstruction.getScene(sceneName);
 
         if (scene.persistent) {
             if (!this._persistentSceneStateMap[scene.name]) {

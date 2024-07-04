@@ -1,13 +1,13 @@
 import { GameError, ObjMap } from './../core';
-import { GameAudio, GameAudioOptions } from './../device/audio';
+import { Sound, SoundOptions } from './../resources/sound';
 import { Sprite, SpriteOptions } from './../resources/sprite';
 import { ActorDefinition, Actor, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
 
 export class GameConstruction {
     private readonly actorMap: ObjMap<ActorDefinition> = {};
-    private readonly audioMap: ObjMap<GameAudio> = {};
     private readonly sceneMap: ObjMap<GameScene> = {};
+    private readonly soundMap: ObjMap<Sound> = {};
     private readonly spriteMap: ObjMap<Sprite> = {};
 
     defineActor(actorName: string, options: ActorOptions = {}): Actor {
@@ -21,17 +21,6 @@ export class GameConstruction {
         return actor;
     }
 
-    defineAudio(audioName: string, source: string, options?: GameAudioOptions): GameAudio {
-        if (this.audioMap[audioName]) {
-            throw new GameError(`Audio defined with existing Audio name: ${audioName}.`);
-        }
-
-        const audio = GameAudio.fromSource(audioName, source, options);
-        this.audioMap[audioName] = audio;
-
-        return audio;
-    }
-
     defineScene(sceneName: string, options: SceneOptions = {}): Scene {
         if (this.sceneMap[sceneName]) {
             throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
@@ -41,6 +30,17 @@ export class GameConstruction {
         this.sceneMap[sceneName] = scene;
 
         return scene;
+    }
+
+    defineSound(audioName: string, source: string, options?: SoundOptions): Sound {
+        if (this.soundMap[audioName]) {
+            throw new GameError(`Sound defined with existing Audio name: ${audioName}.`);
+        }
+
+        const audio = Sound.fromSource(audioName, source, options);
+        this.soundMap[audioName] = audio;
+
+        return audio;
     }
 
     defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
@@ -62,20 +62,20 @@ export class GameConstruction {
         return this.actorMap[actorName];
     }
 
-    getAudio(audioName: string): GameAudio {
-        if (!this.audioMap[audioName]) {
-            throw new GameError(`Audio retrieved by name that does not exist: ${audioName}.`);
-        }
-
-        return this.audioMap[audioName];
-    }
-
     getScene(sceneName: string): Scene {
         if (!this.sceneMap[sceneName]) {
             throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
         }
 
         return this.sceneMap[sceneName];
+    }
+
+    getSound(soundName: string): Sound {
+        if (!this.soundMap[soundName]) {
+            throw new GameError(`Sound retrieved by name that does not exist: ${soundName}.`);
+        }
+
+        return this.soundMap[soundName];
     }
 
     getSprite(spriteName: string): Sprite {
@@ -88,12 +88,16 @@ export class GameConstruction {
 
     load(): Promise <void>{
         const promises: Promise<void | string>[] = [];
+        //const audioContext = new window.AudioContext();
 
-        // TODO: add audio loading.
+        for (const soundName in this.soundMap) {
+            const sound = this.soundMap[soundName];
+            promises.push(sound.loadAudio());
+        }
         // TODO: error handling
 
-        for (const s in this.spriteMap) {
-            const sprite = this.spriteMap[s];
+        for (const spriteName in this.spriteMap) {
+            const sprite = this.spriteMap[spriteName];
             promises.push(sprite.loadImage());
         }
 
