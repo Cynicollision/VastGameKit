@@ -15,6 +15,9 @@ import { buildDummyButton } from './actors/dummyButton';
 const vastGame = Game.init({
     canvasElementId: 'gameCanvas',
     targetFPS: 60,
+    canvasOptions: {
+        fullScreen: true
+    },
     defaultSceneOptions: {
         height: 1024, 
         width: 1532, 
@@ -25,6 +28,7 @@ const vastGame = Game.init({
 vastGame.construction.defineSound('sndPlop', './resources/sounds/plop.wav');
 vastGame.construction.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
 vastGame.construction.defineSprite('granite', './resources/greenblock.png');
+vastGame.construction.defineSprite('bgAreaA1', './resources/backgrounds/testWorld.png');
 vastGame.construction.defineSprite('sprCoin', './resources/coin.png');
 vastGame.construction.defineSprite('sprGrass', './resources/grass.png');
 vastGame.construction.defineSprite('sprSky', './resources/sky.png')
@@ -43,6 +47,10 @@ vastGame.load().then(game => {
     buildAreaA2(game);
     buildAreaB1(game);
     buildAreaB2(game);
+
+    game.controller.onSceneChange((oldSceneState, newSceneState) => {
+        console.log(`Changing from ${oldSceneState.scene.name} to ${newSceneState.scene.name}`);
+    });
 
     game.start();
 })

@@ -3,6 +3,7 @@ import { Sprite } from './../resources/sprite';
 
 export type GameCanvasOptions = {
     backgroundColor?: string;
+    imageSmoothing?: boolean;
     fullScreen?: boolean;
     height?: number;
     width?: number;
@@ -36,11 +37,14 @@ export interface GameCanvas {
     drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
     fill(color: string, width: number, height: number, options?: CanvasFillOptions): void;
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
+    setSize(width: number, height: number): void;
     subCanvas(name: string, options?: GameCanvasOptions): GameCanvas;
 }
 
 export class GameCanvasHtml2D implements GameCanvas {
-    private backgroundColor: string = '#fff';
+    private static readonly DefaultBackgroundColor: string = '#fff';
+
+    private backgroundColor: string;
     private subCanvasMap: ObjMap<GameCanvas> = {};
 
     private _canvas: HTMLCanvasElement;
@@ -54,7 +58,15 @@ export class GameCanvasHtml2D implements GameCanvas {
     get width() { return this._canvas.width; }
 
     static initForElement(canvasElement: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
-        return new GameCanvasHtml2D(canvasElement, options);
+        const canvas = new GameCanvasHtml2D(canvasElement, options);
+
+        if (options.fullScreen) {
+            window.onresize = function(this: GlobalEventHandlers, ev: UIEvent): void {
+                canvas.setSize(window.innerWidth, window.innerHeight);
+            };
+        }
+        
+        return canvas;
     }
 
     private constructor(canvasElement: HTMLCanvasElement, options: GameCanvasOptions) {
@@ -63,8 +75,16 @@ export class GameCanvasHtml2D implements GameCanvas {
         }
 
         this._canvas = canvasElement;
-        this._canvas.height = options.height || this._canvas.height;
-        this._canvas.width = options.width || this._canvas.width;
+
+        if (options.fullScreen) {
+            this.setSize(window.innerWidth, window.innerHeight);
+        }
+        else if (options.width && options.height) {
+            this.setSize(options.width, options.height);
+        }
+
+        this.backgroundColor = options.backgroundColor || GameCanvasHtml2D.DefaultBackgroundColor;
+        this.canvasContext2D.imageSmoothingEnabled = options.imageSmoothing !== undefined ? options.imageSmoothing : false;
     }
 
     clear(): void {
@@ -99,8 +119,6 @@ export class GameCanvasHtml2D implements GameCanvas {
         // set opacity
         const defaultOpacity = 1;
         let previousOpacity: number = null;
-
-        this.canvasContext2D.imageSmoothingEnabled = false;
 
         if (options.opacity !== defaultOpacity && options.opacity !== null && options.opacity !== undefined) {
             previousOpacity = this.canvasContext2D.globalAlpha;
@@ -144,6 +162,11 @@ export class GameCanvasHtml2D implements GameCanvas {
         if (previousOpacity !== null) {
             this.canvasContext2D.globalAlpha = previousOpacity;
         }
+    }
+
+    setSize(width: number, height: number): void {
+        this._canvas.height = height;
+        this._canvas.width = width;
     }
 
     subCanvas(name: string, options: GameCanvasOptions = {}): GameCanvas {

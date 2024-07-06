@@ -17,6 +17,10 @@ export interface Controller {
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
+    onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void;
+    // TODO:
+    //onStateLoad(callback: (saveState: GameSaveState) => void): void;
+    //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     publishEvent(eventName: string, data?: any): void;
     startTimer(options: GameTimerOptions): GameTimer;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, data?: any): Promise<void>;
@@ -28,6 +32,8 @@ export class SceneController implements Controller {
     private _persistentSceneStateMap: ObjMap<SceneState> = {};
     private _timers: GameTimer[] = [];
     private _transition: SceneTransition;
+
+    private onSceneChangeCallback: (oldScene: SceneState, newScene: SceneState) => void;
 
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
@@ -85,7 +91,13 @@ export class SceneController implements Controller {
 
     goToScene(sceneName: string, data?: any): SceneState {
         this._currentSceneState.suspend(this);
+        const oldSceneState = this._currentSceneState;
         this._currentSceneState = this.getSceneState(sceneName);
+
+        if (this.onSceneChangeCallback) {
+            this.onSceneChangeCallback(oldSceneState, this._currentSceneState);
+        }
+
         this._currentSceneState.startOrResume(this, data);
 
         return this._currentSceneState;
@@ -102,6 +114,10 @@ export class SceneController implements Controller {
 
     onPointerEvent(event: PointerInputEvent): void {
         this._currentSceneState.handlePointerEvent(event, this);
+    }
+
+    onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void {
+        this.onSceneChangeCallback = callback;
     }
 
     startTimer(options: GameTimerOptions): GameTimer {
@@ -126,7 +142,13 @@ export class SceneController implements Controller {
             this._currentSceneState.suspend(this);
             this._transition = SceneTransitionFactory.new(options);
             this._transition.start(() => {
+                const oldSceneState = this._currentSceneState;  
                 this._currentSceneState = this.getSceneState(sceneName);
+
+                if (this.onSceneChangeCallback) {
+                    this.onSceneChangeCallback(oldSceneState, this._currentSceneState);
+                }
+
                 this._currentSceneState.startOrResume(this, data);
             }, () => {
                 this._transition = null;

@@ -22,8 +22,8 @@ export function buildDefaultScene(game: Game) {
         const player = self.instances.create('actPlayer', { x: 32, y: 128 });
 
         const scale = 4;
-        self.defaultCamera.height = (960 - 120) / scale;
-        self.defaultCamera.width = 1280 / scale;
+        self.defaultCamera.height = (game.canvas.height - 120) / scale;
+        self.defaultCamera.width = game.canvas.width / scale;
         self.defaultCamera.portWidth = self.defaultCamera.width * scale;
         self.defaultCamera.portHeight = self.defaultCamera.height * scale;
         self.defaultCamera.portY = 120;

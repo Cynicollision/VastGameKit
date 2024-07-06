@@ -2,7 +2,7 @@ import { Game } from './../../../engine/game';
 import Constants from './../../constants';
 
 export function buildHUD(game: Game) {
-    const hud = game.construction.defineScene('scnHUD', { width: 320, height: Constants.HUDHeight, persistent: true });
+    const hud = game.construction.defineScene('scnHUD', { width: game.canvas.width / 4, height: Constants.HUDHeight, persistent: true });
     hud.setBackground(game.construction.getSprite('sprSky'));
 
     hud.onStart((self, controller) => {
@@ -10,9 +10,9 @@ export function buildHUD(game: Game) {
 
         controller.state.hud = self;
 
-        self.defaultCamera.width = 320;
+        self.defaultCamera.width = game.canvas.width / 4;
         self.defaultCamera.height = 48;
-        self.defaultCamera.portWidth = 1280;
+        self.defaultCamera.portWidth = game.canvas.width;
         self.defaultCamera.portHeight = Constants.HUDHeight;
 
         self.instances.create('actButton', { x: 8, y: 8 });

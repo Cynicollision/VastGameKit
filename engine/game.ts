@@ -1,13 +1,14 @@
 import { GameError } from './core';
-import { GameCanvas, GameCanvasHtml2D } from './device/canvas';
+import { GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './device/canvas';
 import { GameInputHandler } from './device/input';
-import { SceneController } from './state/controller';
-import { GameScene, Scene, SceneOptions } from './structure/scene';
 import { GameConstruction } from './structure/construction';
+import { GameScene, Scene, SceneOptions } from './structure/scene';
+import { SceneController } from './state/controller';
 
 export type GameOptions = {
     canvasElementId: string;
     targetFPS?: number;
+    canvasOptions?: GameCanvasOptions;
     defaultSceneOptions?: SceneOptions;
 };
 
@@ -33,7 +34,7 @@ export class Game {
     static init(options: GameOptions): Game {
         try {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
-            const canvas = GameCanvasHtml2D.initForElement(canvasElement);
+            const canvas = GameCanvasHtml2D.initForElement(canvasElement, options.canvasOptions);
             const inputHandler = GameInputHandler.initForElement(document.body);
 
             return new Game(canvas, inputHandler, options);

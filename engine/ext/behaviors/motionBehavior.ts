@@ -1,7 +1,7 @@
 import { Geometry } from './../../core';
+import { ActorBehavior } from './../../structure/actor';
 import { Controller } from './../../state/controller';
 import { ActorInstance } from './../../state/instance';
-import { ActorBehavior } from './../../structure/actor';
 
 export class ActorMotionBehavior implements ActorBehavior {
     direction: number = 0;
@@ -13,9 +13,13 @@ export class ActorMotionBehavior implements ActorBehavior {
         this.previousX = self.x;
         this.previousY = self.y;
 
+        const round = true; // TODO: param or game config
+
         if (this.speed !== 0) {
-            let newX = Math.round(Geometry.getLengthDirectionX(this.speed * 10, this.direction) / 10);
-            let newY = Math.round(Geometry.getLengthDirectionY(this.speed * 10, this.direction) / 10);
+            let newX = Geometry.getLengthDirectionX(this.speed, this.direction);
+            let newY = Geometry.getLengthDirectionY(this.speed, this.direction);
+            newX = round ? Math.round(newX) : newX;
+            newY = round ? Math.round(newY) : newY;
 
             if (!self.actor.boundary) {
                 self.x += newX;

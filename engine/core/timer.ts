@@ -1,6 +1,5 @@
 import { GameTimerStatus } from './enum';
 
-
 type GameTimerElapsedCallback = {
     (self: GameTimer): void;
 };
