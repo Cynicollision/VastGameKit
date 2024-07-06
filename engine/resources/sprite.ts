@@ -1,6 +1,7 @@
 import { SpriteAnimation } from './spriteAnimation';
 
 export type SpriteOptions = {
+    source: string;
     height?: number;
     width?: number;
     frameBorder?: number;
@@ -9,32 +10,36 @@ export type SpriteOptions = {
 export class Sprite {
     readonly name: string;
     readonly image: HTMLImageElement;
-    readonly options: SpriteOptions;
+    readonly frameBorder: number;
 
     private _loaded: boolean = false;
     get loaded() { return this._loaded; }
 
+    private _height: number = 0;
     get height(): number {
-        return this.options.height || this.image.height;
+        return this._height || this.image.height;
     }
     
+    private _width: number = 0;
     get width(): number {
-        return this.options.width || this.image.width;
+        return this._width || this.image.width;
     }
 
-    static fromSource(name: string, source: string, options: SpriteOptions = {}): Sprite {
-        return new Sprite(name, source, options);
+    static new(name: string, options: SpriteOptions): Sprite {
+        return new Sprite(name, options);
     }
 
-    private constructor(name: string, source: string, options: SpriteOptions) {
+    private constructor(name: string, options: SpriteOptions) {
         this.name = name;
-        this.options = options || {};
         this.image = new Image();
-        this.image.src = source;
+        this.image.src = options.source;
+
+        this.frameBorder = options.frameBorder || 0;
+        this._height = options.height;
+        this._width = options.width;
     }
 
     getFrameImageSourceCoords(frame: number): [number, number] {
-        const frameBorder = this.options.frameBorder || 0;
         let frameRow = 0;
 
         if (this.image.width) {
@@ -45,8 +50,8 @@ export class Sprite {
             }
         }
 
-        const frameXOffset = frame * frameBorder;
-        const frameYOffset = frameRow * frameBorder;
+        const frameXOffset = frame * this.frameBorder;
+        const frameYOffset = frameRow * this.frameBorder;
         const srcX = frame * this.width + frameXOffset;
         const srcY = frameRow * this.height + frameYOffset;
 

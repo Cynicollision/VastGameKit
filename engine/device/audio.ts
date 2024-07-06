@@ -1,5 +1,10 @@
-import { SoundOptions } from './../resources/sound';
 import { GameConstruction } from './../structure/construction';
+
+export type AudioOptions = {
+    chain?: AudioNode[];
+    pan?: number;
+    volume?: number;
+};
 
 export class GameAudio {
     private readonly construction: GameConstruction;
@@ -9,8 +14,8 @@ export class GameAudio {
         this.construction = construction;
     }
 
-    play(soundName: string, options: SoundOptions = {}): void {
-        const sound = this.construction.getSound(soundName);
+    play(soundName: string, options: AudioOptions = {}): void {
+        const sound = this.construction.sounds.get(soundName);
         const audio = new Audio(sound.source);
 
         if (!this.audioContext) {

@@ -53,7 +53,7 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
     private _boundary: Boundary;
     get boundary() { return this._boundary; }
 
-    static new(name: string, options: ActorOptions = {}): Actor {
+    static new(name: string, options: ActorOptions = {}): ActorDefinition {
         return new ActorDefinition(name, options);
     }
 

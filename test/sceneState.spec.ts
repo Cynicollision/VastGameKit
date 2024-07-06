@@ -19,14 +19,14 @@ describe('SceneState', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testGame.construction.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight, persistent: false });
+        testGame.construction.scenes.add(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight, persistent: false });
+
+        testGame.construction.actors.add(TestActorName);
+        testGame.construction.scenes.add(TestEmbedSubSceneName, { height: 100, width: 100 });
+
         testSceneState = testGame.controller.getSceneState(TestSceneName);
-
-        testGame.construction.defineActor(TestActorName);
-        testGame.construction.defineScene(TestEmbedSubSceneName, { height: 100, width: 100 });
-
         testInstance = testSceneState.instances.create(TestActorName);
-        testGame.construction.getActor(TestActorName).setRectBoundary(10, 10);
+        testGame.construction.actors.get(TestActorName).setRectBoundary(10, 10);
 
         testEmbeddedSubScene = testSceneState.embedSubScene(TestEmbedSubSceneName, { x: 50, y: 50 });
     });
@@ -69,7 +69,7 @@ describe('SceneState', () => {
 
     it('starts embedded SceneStates upon creating them', () => {
         let embedOnStartCalled = false;
-        testGame.construction.getScene(TestEmbedSubSceneName).onStart((self, event, controller) => {
+        testGame.construction.scenes.get(TestEmbedSubSceneName).onStart((self, event, controller) => {
             embedOnStartCalled = true;
         });
 
@@ -79,12 +79,12 @@ describe('SceneState', () => {
 
     it('propgates KeyboardEvents to SubScenes and Instances', () => {
         let actorEventHandlerCalled = false;
-        testGame.construction.getActor(TestActorName).onKeyboardInput('testKey', (self, event, controller) => {
+        testGame.construction.actors.get(TestActorName).onKeyboardInput('testKey', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.construction.getScene(TestEmbedSubSceneName).onKeyboardInput('testKey', (self, event, controller) => {
+        testGame.construction.scenes.get(TestEmbedSubSceneName).onKeyboardInput('testKey', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -101,12 +101,12 @@ describe('SceneState', () => {
     it('propgates GameEvents to SubScenes and Instances', () => {
 
         let actorEventHandlerCalled = false;
-        testGame.construction.getActor(TestActorName).onGameEvent('testEvent', (self, event, controller) => {
+        testGame.construction.actors.get(TestActorName).onGameEvent('testEvent', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let sceneEventHandlerCalled = false;
-        testGame.construction.getScene(TestEmbedSubSceneName).onGameEvent('testEvent', (self, event, controller) => {
+        testGame.construction.scenes.get(TestEmbedSubSceneName).onGameEvent('testEvent', (self, event, controller) => {
             sceneEventHandlerCalled = true;
         });
 
@@ -123,12 +123,12 @@ describe('SceneState', () => {
 
     it('propgates PointerEvents to embedded SubScenes and Instances', () => {
         let actorEventHandlerCalled = false;
-        testGame.construction.getActor(TestActorName).onPointerInput('testPointer', (self, event, controller) => {
+        testGame.construction.actors.get(TestActorName).onPointerInput('testPointer', (self, event, controller) => {
             actorEventHandlerCalled = true;
         });
 
         let embeddedSceneEventHandlerCalled = false;
-        testGame.construction.getScene(TestEmbedSubSceneName).onPointerInput('testPointer', (self, event, controller) => {
+        testGame.construction.scenes.get(TestEmbedSubSceneName).onPointerInput('testPointer', (self, event, controller) => {
             embeddedSceneEventHandlerCalled = true;
         });
 

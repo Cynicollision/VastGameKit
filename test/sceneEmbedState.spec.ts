@@ -13,9 +13,9 @@ describe('SceneEmbedState', () => {
         testGame.controller.sceneState.startOrResume(testGame.controller);
         testEmbedState = new SceneSubSceneState(testGame.controller);
 
-        testGame.construction.defineScene('scnSub1', { width: 300, height: 200 });
-        testGame.construction.defineScene('scnSub2', { width: 300, height: 200 });
-        testGame.construction.defineScene('scnSub3', { width: 300, height: 200 });
+        testGame.construction.scenes.add('scnSub1', { width: 300, height: 200 });
+        testGame.construction.scenes.add('scnSub2', { width: 300, height: 200 });
+        testGame.construction.scenes.add('scnSub3', { width: 300, height: 200 });
     });
 
     it('creates SubScenes', () => {
@@ -46,9 +46,9 @@ describe('SceneEmbedState', () => {
 
     it('draws SubScenes by depth', () => {
         const drawOrder = [];
-        testGame.construction.getScene('scnSub1').onDraw(self => drawOrder.push(self.scene.name));
-        testGame.construction.getScene('scnSub2').onDraw(self => drawOrder.push(self.scene.name));
-        testGame.construction.getScene('scnSub3').onDraw(self => drawOrder.push(self.scene.name));
+        testGame.construction.scenes.get('scnSub1').onDraw(self => drawOrder.push(self.scene.name));
+        testGame.construction.scenes.get('scnSub2').onDraw(self => drawOrder.push(self.scene.name));
+        testGame.construction.scenes.get('scnSub3').onDraw(self => drawOrder.push(self.scene.name));
 
         testEmbedState.create('scnSub2', { depth: 10 });
         testEmbedState.create('scnSub1', { depth: -20 });
@@ -71,7 +71,7 @@ describe('SceneEmbedState', () => {
         testEmbedState.create('scnSub1', { x: 10, y: 20 });
 
         testEmbedState.forEach(embed => embed.sceneState.state.foo = 'bar');
-        testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construction.getScene('scnSub1')));
+        testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construction.scenes.get('scnSub1')));
         testEmbedState.forEach(embed => expect(embed.sceneState.state.foo).toBe('bar'));
     });
 });

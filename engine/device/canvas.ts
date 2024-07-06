@@ -69,6 +69,10 @@ export class GameCanvasHtml2D implements GameCanvas {
         return canvas;
     }
 
+    static initNewCanvas(options: GameCanvasOptions = {}): GameCanvas {
+        return this.initForElement(document.createElement('canvas'), options);
+    }
+
     private constructor(canvasElement: HTMLCanvasElement, options: GameCanvasOptions) {
         if (!canvasElement) {
             throw new GameError(`Attempted to attach to invalid canvas element.`);
@@ -174,7 +178,7 @@ export class GameCanvasHtml2D implements GameCanvas {
             return this.subCanvasMap[name];
         }
         
-        const subCanvas = new GameCanvasHtml2D(document.createElement('canvas'), options);
+        const subCanvas = GameCanvasHtml2D.initNewCanvas(options);
         this.subCanvasMap[name] = subCanvas;
 
         return subCanvas;

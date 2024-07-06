@@ -9,36 +9,36 @@ describe('GameConstruct', () => {
     })
 
     it('defines and gets Actors', () => {
-        testConstruct.defineActor('testActor');
+        testConstruct.actors.add('testActor');
 
-        const actor = testConstruct.getActor('testActor');
+        const actor = testConstruct.actors.get('testActor');
 
         expect(actor).toBeDefined();
         expect(actor.name).toBe('testActor');
     });
 
     it('defines and gets Audio', () => {
-        testConstruct.defineSound('testAudio', null);
+        testConstruct.sounds.add('testAudio', { source: null });
 
-        const audio = testConstruct.getSound('testAudio');
+        const audio = testConstruct.sounds.get('testAudio');
 
         expect(audio).toBeDefined();
         expect(audio.name).toBe('testAudio');
     });
 
     it('defines and gets Scenes', () => {
-        testConstruct.defineScene('testScene');
+        testConstruct.scenes.add('testScene');
 
-        const scene = testConstruct.getScene('testScene');
+        const scene = testConstruct.scenes.get('testScene');
 
         expect(scene).toBeDefined();
         expect(scene.name).toBe('testScene');
     });
 
     it('defines and gets Sprites', () => {
-        testConstruct.defineSprite('testSprite', TestImage1.Source);
+        testConstruct.sprites.add('testSprite', { source: TestImage1.Source });
 
-        const sprite = testConstruct.getSprite('testSprite');
+        const sprite = testConstruct.sprites.get('testSprite');
 
         expect(sprite).toBeDefined();
         expect(sprite.name).toBe('testSprite');

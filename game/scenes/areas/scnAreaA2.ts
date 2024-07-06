@@ -2,8 +2,8 @@ import { Game } from './../../../engine/game';
 import { initArea, setupAreaCommon } from './../../scripts/areaSceneSetup';
 
 export function buildAreaA2(game: Game) {
-    const area = game.construction.defineScene('scnAreaA2', { width: 640, height: 480, persistent: true });
-    area.setBackground(game.construction.getSprite('sprGrass'));
+    const area = game.construction.scenes.add('scnAreaA2', { width: 640, height: 480, persistent: true });
+    area.background.setFromSprite(game.construction.sprites.get('sprGrass'));
     setupAreaCommon(game, area);
 
     area.onStart((self, controller, data) => {

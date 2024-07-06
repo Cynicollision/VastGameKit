@@ -1,23 +1,24 @@
+import { AudioOptions } from './../device/audio';
+
 export type SoundOptions = {
     // TODO include "common" effects at top level, allow custom nodes to be used as well.
-    chain?: AudioNode[],
-    pan?: number;
-    volume?: number;
+    source: string;
+    audioOptions?: AudioOptions,
 };
 
 export class Sound { 
     readonly name: string;
     readonly source: string;
 
-    static fromSource(name: string, source: string, options: SoundOptions = {}): Sound {
-        return new Sound(name, source, options);
+    static new(name: string, options: SoundOptions): Sound {
+        return new Sound(name, options);
     }
 
-    constructor(name: string, source: string, options: SoundOptions = {}) {
+    private constructor(name: string, options: SoundOptions) {
         this.name = name;
-        this.source = source;
+        this.source = options.source;
 
-        // TODO process options
+        // TODO process rest of options
     }
 
     loadAudio(): Promise<void | string> {

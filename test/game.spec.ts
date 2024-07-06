@@ -18,10 +18,10 @@ describe('Game', () => {
     });
 
     it('loads Sprites successfully', done => {
-        testGame.construction.defineSprite('testSprite', TestImage1.Source);
+        testGame.construction.sprites.add('testSprite', { source: TestImage1.Source });
 
         testGame.load().then(() => {
-            const sprite = testGame.construction.getSprite('testSprite');
+            const sprite = testGame.construction.sprites.get('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(TestImage1.Height);
             expect(sprite.image.width).toBe(TestImage1.Width);
@@ -30,10 +30,10 @@ describe('Game', () => {
     });
 
     it('loads Sprites and handles errors', done => {
-        testGame.construction.defineSprite('testSprite', 'bogusImageSource');
+        testGame.construction.sprites.add('testSprite', { source: 'bogusImageSource' });
 
         testGame.load().catch(() => {
-            const sprite = testGame.construction.getSprite('testSprite');
+            const sprite = testGame.construction.sprites.get('testSprite');
             expect(sprite.image).toBeDefined();
             expect(sprite.image.height).toBe(0);
             expect(sprite.image.width).toBe(0);

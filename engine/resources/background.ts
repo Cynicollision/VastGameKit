@@ -1,9 +1,11 @@
-import { CanvasDrawImageOptions, CanvasFillOptions, GameCanvas } from './../device/canvas';
+import { CanvasDrawImageOptions, CanvasFillOptions, GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './../device/canvas';
 import { Sprite } from './sprite';
+import { TileMap } from './tilemap';
 
 export type BackgroundOptions = {
-    height?: number;
-    width?: number;
+    color: string,
+    height: number;
+    width: number;
     x?: number;
     y?: number;
 };
@@ -13,45 +15,57 @@ export type BackgroundDrawOptions = CanvasDrawImageOptions | CanvasFillOptions;
 export class Background {
     private static readonly DefaultColor = '#CCC';
 
-    private readonly _drawOptions: BackgroundDrawOptions;
-    readonly color: string;
-    readonly sprite: Sprite;
-    readonly height: number = 0;
-    readonly width: number = 0;
-    readonly x: number = 0;
-    readonly y: number = 0;
+    private readonly height: number = 0;
+    private readonly width: number = 0;
+    private readonly x: number = 0;
+    private readonly y: number = 0;
 
-    private constructor(color: string, sprite: Sprite, options: BackgroundOptions = {}, drawOptions: BackgroundDrawOptions = {}) {
-        this.color = color;
-        this.sprite = sprite;
-        
-        this.height = options.height || 0;
-        this.width = options.width || 0;
+    private readonly backgroundCanvas: GameCanvas;
+
+    private constructor(options: BackgroundOptions) {
+        this.height = options.height;
+        this.width = options.width;
         this.x = options.x || 0;
         this.y = options.y || 0;
 
-        this._drawOptions = drawOptions;
+        const canvasOptions: GameCanvasOptions = {
+            backgroundColor: options.color,
+            height: this.height,
+            width: this.width
+        };
+
+        this.backgroundCanvas = GameCanvasHtml2D.initNewCanvas(canvasOptions);
     }
 
-    static fromColor( color: string, options: BackgroundOptions = {}, drawOptions: CanvasFillOptions = {}): Background {
-        return new Background(color, null, options, drawOptions);
+    static createDefaultBackground(width: number, height: number): Background {
+        return new Background({ color: Background.DefaultColor, width: width, height: height });
     }
 
-    static fromSprite(sprite: Sprite, options: BackgroundOptions = {}, drawOptions: CanvasDrawImageOptions = {}): Background {
+    setFromColor(color: string, drawOptions: CanvasFillOptions = {}): void {
+        this.backgroundCanvas.fillArea(color, this.x, this.y, this.width, this.height, drawOptions);
+    }
+
+    setFromSprite(sprite: Sprite, drawOptions: CanvasDrawImageOptions = {}): void {
         drawOptions.repeatX = drawOptions.repeatX !== undefined ? drawOptions.repeatX : true;
         drawOptions.repeatY = drawOptions.repeatY !== undefined ? drawOptions.repeatY : true;
-        drawOptions.repeatHeight = drawOptions.repeatHeight || options.height;
-        drawOptions.repeatWidth = drawOptions.repeatWidth || options.width;
+        drawOptions.repeatHeight = drawOptions.repeatHeight || this.height;
+        drawOptions.repeatWidth = drawOptions.repeatWidth || this.width;
         
-        return new Background(Background.DefaultColor, sprite, options, drawOptions);
+        this.backgroundCanvas.drawSprite(sprite, this.x, this.y, drawOptions);
+    }
+
+    // TODO
+    setFromTileComposition(composition: TileMap, width: number, height: number, drawOptions: CanvasDrawImageOptions = {}): void {
+        let animationFrame = 0; // TODO loop through composition.layers, frames
+        const [srcX, srcY] = composition.sprite.getFrameImageSourceCoords(animationFrame);
+
+        // TODO x, y = current i/j * tile size ?
+        //this.backgroundCanvas.drawImage...
     }
 
     draw(canvas: GameCanvas): void {
-        if (this.sprite) {
-            canvas.drawSprite(this.sprite, this.x, this.y, this._drawOptions);
-        }
-        else if (this.color) {
-            canvas.fillArea(this.color, this.x, this.y, this.width, this.height, this._drawOptions);
+        if (this.width > 0 && this.height > 0) {
+            canvas.drawCanvas(this.backgroundCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
         }
     }
 }

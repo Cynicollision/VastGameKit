@@ -1,0 +1,21 @@
+{
+    "name": "VGK Demo",
+    "resources": {
+        "icon": null,
+        "backgroundsRoot": "./resources/backgrounds",
+        "backgrounds": [
+            {
+                "name": "bgAreaA1",
+                "sprite": "sprTsArea",
+                "tileMapSrc": ""
+            }
+        ],
+        "spritesRoot": "./resources/sprites",
+        "sprites": [
+            {
+                "name": "sprGuy",
+                "src": "./resources/guy_sheet.png"
+            }
+        ]
+    }
+}

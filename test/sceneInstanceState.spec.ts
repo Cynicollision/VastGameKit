@@ -17,10 +17,10 @@ describe('manages ActorInstances', () => {
         testGame = TestUtil.getTestGame();
         testInstanceState = new SceneInstanceState(testGame.controller);
 
-        const testActor = testGame.construction.defineActor('testActor', { sprite: testSprite1 });
+        const testActor = testGame.construction.actors.add('testActor', { sprite: testSprite1 });
         testActor.setRectBoundary(20, 20);
 
-        const testActor2 = testGame.construction.defineActor('testActor2', { sprite: testSprite2 });
+        const testActor2 = testGame.construction.actors.add('testActor2', { sprite: testSprite2 });
         testActor2.setRectBoundary(20, 20);
     });
 
@@ -134,7 +134,7 @@ describe('manages ActorInstances', () => {
             actorOnStepCalled = false;
             actorOnDestroyCalled = false;
 
-            const testActor = testGame.construction.getActor('testActor');
+            const testActor = testGame.construction.actors.get('testActor');
             testActor.setRectBoundary(20, 20);
             testActor.onCreate((self, state) => {
                 actorOnCreatedCalled = true;

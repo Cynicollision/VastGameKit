@@ -15,9 +15,7 @@ export type SceneOptions = {
 
 export type SceneActorPlacement = {
     actorName: string;
-    x: number;
-    y: number;
-    options?: ActorInstanceOptions;
+    options: ActorInstanceOptions;
 };
 
 export interface Scene extends LifecycleEntityBase<Scene, SceneState> {
@@ -25,27 +23,29 @@ export interface Scene extends LifecycleEntityBase<Scene, SceneState> {
     readonly height: number;
     readonly persistent: boolean;
     readonly width: number;
-    background: Background;
-    // TODO: 'placeActor' or similar
+    readonly background: Background;
     onResume(callback: EntityLifecycleCb<SceneState>): void;
     onStart(callback: EntityLifecycleCb<SceneState>): void;
     onSuspend(callback: EntityLifecycleCb<SceneState>): void;
-    setBackground(colorOrSprite: string | Sprite, options?: BackgroundDrawOptions): void;
+    placeActor(actorName: string, options?: ActorInstanceOptions): void;
+    // TODO methods for initializing camera, embeds
 }
 
 export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements Scene {
     static readonly DefaultSceneHeight = 480;
     static readonly DefaultSceneWidth = 640;
 
+    private readonly actorPlacements: SceneActorPlacement[] = [];
+
     private onResumeCallback: EntityLifecycleCb<SceneState>;
     private onStartCallback: EntityLifecycleCb<SceneState>;
     private onSuspendCallback: EntityLifecycleCb<SceneState>;
 
+    readonly background: Background;
     readonly height: number;
     readonly name: string;
     readonly persistent: boolean;
     readonly width: number;
-    background: Background;
 
     static new(name: string, options: SceneOptions = {}): Scene {
         return new GameScene(name, options);
@@ -58,6 +58,8 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         this.persistent = options !== undefined ? options.persistent : false;
         this.height = options.height || GameScene.DefaultSceneHeight;
         this.width = options.width || GameScene.DefaultSceneWidth;
+
+        this.background = Background.createDefaultBackground(this.width, this.height);
     }
 
     callOnResume(self: SceneState, controller: Controller, data?: any): void {
@@ -80,7 +82,9 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
 
     newState(controller: SceneController): SceneState {
         const sceneState = new SceneState(RuntimeID.next(), controller, this);
-        // TODO: process ActorPlacements, SubScenePlacements, camera "constructs"(?), "pass" to sceneState
+        // TODO: process SubScenePlacements, camera "constructs"(?) to initialize sceneState
+        this.actorPlacements.forEach(placement => sceneState.instances.create(placement.actorName, placement.options));
+        
         return sceneState;
     }
 
@@ -96,14 +100,8 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         this.onSuspendCallback = callback;
     }
 
-    setBackground(colorOrSprite: string | Sprite, drawOptions: BackgroundDrawOptions = {}): Scene {
-        if (typeof colorOrSprite === 'string') {
-            this.background = Background.fromColor(colorOrSprite, { height: this.height, width: this.width }, drawOptions);
-        }
-        else {
-            this.background = Background.fromSprite(colorOrSprite, { height: this.height, width: this.width }, drawOptions);
-        }
-
-        return this;
+    // TODO needs testing
+    placeActor(actorName: string, options: ActorInstanceOptions = {}): void {
+        this.actorPlacements.push({ actorName: actorName, options: options});
     }
 }

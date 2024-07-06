@@ -1,8 +1,8 @@
 import { Game } from './../../engine/game';
 
 export function buildWallActor(game: Game) {
-    game.construction.defineActor('actWall', { 
+    game.construction.actors.add('actWall', { 
         solid: true,
-        sprite: game.construction.getSprite('granite'),
+        sprite: game.construction.sprites.get('granite'),
     }).setRectBoundaryFromSprite();
 }

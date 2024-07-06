@@ -54,7 +54,7 @@ export class Game {
 
         this.construction = new GameConstruction();
 
-        this._defaultScene = <GameScene>this.construction.defineScene(Game.DefaultSceneName, this._options.defaultSceneOptions);
+        this._defaultScene = <GameScene>this.construction.scenes.add(Game.DefaultSceneName, this._options.defaultSceneOptions);
         this.controller = new SceneController(this.construction, this._defaultScene, { pulseLength: this.options.targetFPS });
     }
 

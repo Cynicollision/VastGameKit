@@ -1,8 +1,8 @@
 import { Game } from './../../../engine/game';
 
 export function buildModal(game: Game): void {
-    const modal = game.construction.defineScene('scnModal', { width: 240, height: 160 });
-    modal.setBackground('#CC0');
+    const modal = game.construction.scenes.add('scnModal', { width: 240, height: 160 });
+    modal.background.setFromColor('#CC0');
 
     modal.onStart((self, controller, data) => {
         console.log('modal onStart');

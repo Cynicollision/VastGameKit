@@ -25,14 +25,16 @@ const vastGame = Game.init({
     }
 });
 
-vastGame.construction.defineSound('sndPlop', './resources/sounds/plop.wav');
-vastGame.construction.defineSprite('sprLink', './resources/guy_sheet.png', { height: 16, width: 16 });
-vastGame.construction.defineSprite('granite', './resources/greenblock.png');
-vastGame.construction.defineSprite('bgAreaA1', './resources/backgrounds/testWorld.png');
-vastGame.construction.defineSprite('sprCoin', './resources/coin.png');
-vastGame.construction.defineSprite('sprGrass', './resources/grass.png');
-vastGame.construction.defineSprite('sprSky', './resources/sky.png')
+vastGame.construction.sounds.add('sndPlop', { source: './resources/sounds/plop.wav' });
+vastGame.construction.sprites.add('sprButton', { source: './resources/pinkblue.png', height: 32, width: 32 })
+vastGame.construction.sprites.add('sprLink', { source: './resources/guy_sheet.png', height: 16, width: 16 });
+vastGame.construction.sprites.add('granite', { source: './resources/greenblock.png' });
+vastGame.construction.sprites.add('bgAreaA1', { source: './resources/backgrounds/testWorld.png' });
+vastGame.construction.sprites.add('sprCoin', { source: './resources/coin.png' });
+vastGame.construction.sprites.add('sprGrass', { source: './resources/grass.png' });
+vastGame.construction.sprites.add('sprSky', { source: './resources/sky.png' })
 
+// TODO maybe just don't pass game back from the promise
 vastGame.load().then(game => {
     buildCoinActor(game);
     buildDummyButton(game);

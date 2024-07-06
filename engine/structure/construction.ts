@@ -1,105 +1,65 @@
 import { GameError, ObjMap } from './../core';
 import { Sound, SoundOptions } from './../resources/sound';
 import { Sprite, SpriteOptions } from './../resources/sprite';
-import { ActorDefinition, Actor, ActorOptions } from './actor';
+import { ActorDefinition, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
 
+class GameConstructionRegistry<T, U> {
+    private readonly resourceMap: ObjMap<T> = {};
+    private readonly typeName: string;
+
+    private readonly factory: (name: string, options?: U) => T;
+
+    constructor(typeName: string, factory: (name: string, options?: U) => T) {
+        this.typeName = typeName;
+        this.factory = factory;
+    }
+
+    get resources(): T[] {
+        const resources = [];
+        for (const name in this.resourceMap) {
+            resources.push( this.resourceMap[name]);
+        }
+        return resources;
+    }
+
+    add(name: string, options?: U): T {
+        if (this.resourceMap[name]) {
+            throw new GameError(`${this.typeName} defined with name that already exists: ${name}.`);
+        }
+        const resource = this.factory(name, options);
+        this.resourceMap[name] = resource;
+
+        return resource;
+    }
+
+    get(name: string): T {
+        if (!this.resourceMap[name]) {
+            throw new GameError(`${this.typeName} retrieved by name that does not exist: ${name}.`);
+        }
+
+        return this.resourceMap[name];
+    }
+}
+
 export class GameConstruction {
-    private readonly actorMap: ObjMap<ActorDefinition> = {};
-    private readonly sceneMap: ObjMap<GameScene> = {};
-    private readonly soundMap: ObjMap<Sound> = {};
-    private readonly spriteMap: ObjMap<Sprite> = {};
+    readonly actors: GameConstructionRegistry<ActorDefinition, ActorOptions>;
+    readonly scenes: GameConstructionRegistry<Scene, SceneOptions>;
+    readonly sounds: GameConstructionRegistry<Sound, SoundOptions>;
+    readonly sprites: GameConstructionRegistry<Sprite, SpriteOptions>;
 
-    defineActor(actorName: string, options: ActorOptions = {}): Actor {
-        if (this.actorMap[actorName]) {
-            throw new GameError(`Actor defined with existing Actor name: ${actorName}.`);
-        }
-        
-        const actor = ActorDefinition.new(actorName, options);
-        this.actorMap[actorName] = <ActorDefinition>actor;
-
-        return actor;
-    }
-
-    defineScene(sceneName: string, options: SceneOptions = {}): Scene {
-        if (this.sceneMap[sceneName]) {
-            throw new GameError(`Scene defined with existing Scene name: ${sceneName}.`);
-        }
-
-        const scene = <GameScene>GameScene.new(sceneName, options);
-        this.sceneMap[sceneName] = scene;
-
-        return scene;
-    }
-
-    defineSound(audioName: string, source: string, options?: SoundOptions): Sound {
-        if (this.soundMap[audioName]) {
-            throw new GameError(`Sound defined with existing Audio name: ${audioName}.`);
-        }
-
-        const audio = Sound.fromSource(audioName, source, options);
-        this.soundMap[audioName] = audio;
-
-        return audio;
-    }
-
-    defineSprite(spriteName: string, imageSource: string, options: SpriteOptions = {}): Sprite {
-        if (this.spriteMap[spriteName]) {
-            throw new GameError(`Sprite defined with existing Sprite name: ${spriteName}.`);
-        }
-
-        const newSprite = Sprite.fromSource(spriteName, imageSource, options);
-        this.spriteMap[spriteName] = newSprite;
-
-        return newSprite;
-    }
-
-    getActor(actorName: string): Actor {
-        if (!this.actorMap[actorName]) {
-            throw new GameError(`Actor retrieved by name that does not exist: ${actorName}.`);
-        }
-
-        return this.actorMap[actorName];
-    }
-
-    getScene(sceneName: string): Scene {
-        if (!this.sceneMap[sceneName]) {
-            throw new GameError(`Scene retrieved by name that does not exist: ${sceneName}.`);
-        }
-
-        return this.sceneMap[sceneName];
-    }
-
-    getSound(soundName: string): Sound {
-        if (!this.soundMap[soundName]) {
-            throw new GameError(`Sound retrieved by name that does not exist: ${soundName}.`);
-        }
-
-        return this.soundMap[soundName];
-    }
-
-    getSprite(spriteName: string): Sprite {
-        if (!this.spriteMap[spriteName]) {
-            throw new GameError(`Sprite retrieved by name that does not exist: ${spriteName}.`);
-        }
-
-        return this.spriteMap[spriteName];
+    constructor() {
+        this.actors = new GameConstructionRegistry<ActorDefinition, ActorOptions>('Actor', (name, options) => ActorDefinition.new(name, options));
+        this.scenes = new GameConstructionRegistry<Scene, SceneOptions>('Scene', (name, options) => GameScene.new(name, options));
+        this.sounds = new GameConstructionRegistry<Sound, SoundOptions>('Sound', (name, options) => Sound.new(name, options));
+        this.sprites = new GameConstructionRegistry<Sprite, SpriteOptions>('Sprite', (name, options) => Sprite.new(name, options));
     }
 
     load(): Promise <void>{
         const promises: Promise<void | string>[] = [];
-        //const audioContext = new window.AudioContext();
 
-        for (const soundName in this.soundMap) {
-            const sound = this.soundMap[soundName];
-            promises.push(sound.loadAudio());
-        }
-        // TODO: error handling
-
-        for (const spriteName in this.spriteMap) {
-            const sprite = this.spriteMap[spriteName];
-            promises.push(sprite.loadImage());
-        }
+        this.sounds.resources.forEach(sound => promises.push(sound.loadAudio()));
+        this.sprites.resources.forEach(sprite => promises.push(sprite.loadImage()));
 
         return Promise.all(promises).then(() => Promise.resolve());
     }

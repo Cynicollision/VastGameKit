@@ -76,7 +76,7 @@ export class SceneController implements Controller {
     }
 
     getSceneState(sceneName: string): SceneState {
-        const scene = <GameScene>this.gameConstruction.getScene(sceneName);
+        const scene = <GameScene>this.gameConstruction.scenes.get(sceneName);
 
         if (scene.persistent) {
             if (!this._persistentSceneStateMap[scene.name]) {

@@ -14,7 +14,7 @@ describe('Scene', () => {
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
-        testScene = <GameScene>testGame.construction.defineScene(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
+        testScene = <GameScene>testGame.construction.scenes.add(TestSceneName, { width: TestSceneWidth, height: TestSceneHeight });
     });
 
     describe('lifecycle callbacks', () => {

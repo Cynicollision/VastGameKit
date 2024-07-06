@@ -16,10 +16,12 @@ export class TestUtil {
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {
-        return Sprite.fromSource('testSprite', TestImage1.Source, options);
+        options = options || { source: TestImage1.Source };
+        return Sprite.new('testSprite', options);
     }
 
     static getTestSprite2(options?: SpriteOptions): Sprite {
-        return Sprite.fromSource('testSprite2', TestImage2.Source, options);
+        options = options || { source: TestImage2.Source };
+        return Sprite.new('testSprite2', options);
     }
 }
