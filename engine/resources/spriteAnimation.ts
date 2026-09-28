@@ -16,7 +16,7 @@ export type SpriteAnimationOptions = {
 // Advances through a Sprite's frames as the game steps. Stepping is driven by its Instance,
 // so an animation pauses whenever its Instance or Scene isn't stepping.
 export class SpriteAnimation {
-    private readonly sprite: Sprite;
+    readonly sprite: Sprite;
     private transformations: ObjMap<number> = {};
 
     private startFrame = 0;

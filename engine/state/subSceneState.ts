@@ -1,6 +1,7 @@
-import { ObjMap, PointerInputEvent, RuntimeID } from './../core';
+import { Geometry, ObjMap, PointerInputEvent, RuntimeID } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { SceneController } from './controller';
+import { SceneView } from './instanceState';
 import { SubScene, SubSceneOptions } from './subScene';
 
 export class SceneSubSceneState {
@@ -39,8 +40,13 @@ export class SceneSubSceneState {
         return subScene;
     }
 
-    draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: SceneController): void {
-        this.getByDepthDesc().forEach(subScene => subScene.draw(mainCanvas, targetCanvas, controller));
+    // Draws SubScenes by depth. Given a view, only SubScenes within it are drawn.
+    draw(canvas: GameCanvas, controller: SceneController, view?: SceneView): void {
+        for (const subScene of this.getByDepthDesc()) {
+            if (!view || Geometry.rectangleIntersectsRectangle(subScene.x, subScene.y, subScene.width, subScene.height, view.x, view.y, view.width, view.height)) {
+                subScene.draw(canvas, controller);
+            }
+        }
     }
 
     forEach(callback: (self: SubScene) => void): void {

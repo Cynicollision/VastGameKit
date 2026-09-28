@@ -42,6 +42,10 @@ export abstract class LifecycleEntityBase<T, U = T> {
     protected onStepCallback?: EntityLifecycleCb<U>;
     protected onDrawCallback?: EntityLifecycleDrawCb<U>;
 
+    get hasDrawCallback(): boolean {
+        return this.onDrawCallback !== undefined;
+    }
+
     callDraw(self: U, canvas: GameCanvas, controller: Controller): void {
         if (this.onDrawCallback) {
             this.onDrawCallback(self, canvas, controller);

@@ -73,8 +73,16 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         }
     }
 
+    get hasCollisionHandlers(): boolean {
+        return this.collisionActorNames.length > 0;
+    }
+
     getCollisionActorNames(): readonly string[] {
         return this.collisionActorNames;
+    }
+
+    hasCollisionHandler(actorName: string): boolean {
+        return this.collisionHandlerRegistry[actorName] !== undefined;
     }
 
     onCreate(callback: EntityLifecycleCb<Instance>): void {

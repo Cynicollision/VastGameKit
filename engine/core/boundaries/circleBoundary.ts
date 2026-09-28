@@ -1,11 +1,11 @@
 import { Boundary, PositionedBoundary } from './../boundary';
 import { Geometry } from './../geometry';
 import { Sprite } from './../../resources/sprite';
-import { PositionedRectBoundary } from './rectangleBoundary';
+import { PositionedRectBoundary, RectBoundary } from './rectangleBoundary';
 
 export class CircleBoundary implements Boundary {
-    private _originX: number;
-    private _originY: number;
+    readonly originX: number;
+    readonly originY: number;
 
     private _radius: number;
     get radius() { return this._radius; }
@@ -18,13 +18,31 @@ export class CircleBoundary implements Boundary {
     }
 
     constructor(radius: number, originX: number = 0, originY: number = 0) {
-        this._originX = originX;
-        this._originY = originY;
+        this.originX = originX;
+        this.originY = originY;
         this._radius = radius;
     }
 
     atPosition(x: number, y: number): PositionedCircleBoundary {
-        return new PositionedCircleBoundary(this, x + this._originX + this.radius, y + this._originY + this.radius);
+        return new PositionedCircleBoundary(this, x + this.originX + this.radius, y + this.originY + this.radius);
+    }
+
+    collidesAt(x: number, y: number, other: Boundary, otherX: number, otherY: number): boolean {
+        const centerX = x + this.originX + this._radius;
+        const centerY = y + this.originY + this._radius;
+
+        if (other instanceof CircleBoundary) {
+            return Geometry.circleIntersectsCircle(centerX, centerY, this._radius, otherX + other.originX + other.radius, otherY + other.originY + other.radius, other.radius);
+        }
+        else if (other instanceof RectBoundary) {
+            return Geometry.rectangleIntersectsCircle(otherX + other.originX, otherY + other.originY, other.width, other.height, centerX, centerY, this._radius);
+        }
+
+        return false;
+    }
+
+    containsPositionAt(x: number, y: number, positionX: number, positionY: number): boolean {
+        return Geometry.circleContainsPosition(x + this.originX + this._radius, y + this.originY + this._radius, this._radius, positionX, positionY);
     }
 }
 
@@ -49,7 +67,7 @@ export class PositionedCircleBoundary implements PositionedBoundary {
 
         return false;
     }
-    
+
     containsPosition(x: number, y: number): boolean {
         return Geometry.circleContainsPosition(this.x, this.y, this.boundary.radius, x, y);
     }

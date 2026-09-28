@@ -32,14 +32,30 @@ describe('GameCanvasHtml2D', () => {
         expect(canvas.canvas.getContext('2d')!.imageSmoothingEnabled).toBeFalse();
     });
 
-    it('resizes an existing sub canvas when requested at a different size', () => {
-        const canvas = GameCanvasHtml2D.initNewCanvas({ width: 10, height: 10 });
-        const sub = canvas.subCanvas('test', { width: 100, height: 50 });
+    it('draws a view stretched onto its port', () => {
+        const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 20, height: 20 });
 
-        const sameSub = canvas.subCanvas('test', { width: 60, height: 40 });
+        // the 5x5 view at (5, 5) fills the 10x10 port at (10, 10).
+        canvas.pushView(10, 10, 10, 10, 5, 5, 5, 5);
+        canvas.fillArea('#f00', 5, 5, 1, 1);
+        canvas.popView();
 
-        expect(sameSub).toBe(sub);
-        expect(sub.width).toBe(60);
-        expect(sub.height).toBe(40);
+        expect(getPixel(canvas, 10, 10)).toEqual([255, 0, 0, 255]);
+        expect(getPixel(canvas, 11, 11)).toEqual([255, 0, 0, 255]);
+        expect(getPixel(canvas, 12, 12)).toEqual([0, 0, 0, 0]);
+    });
+
+    it('clips drawing to the port of a view until the view is popped', () => {
+        const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 20, height: 20 });
+
+        canvas.pushView(0, 0, 10, 10);
+        canvas.fillArea('#f00', 0, 0, 20, 20);
+        canvas.popView();
+
+        expect(getPixel(canvas, 5, 5)).toEqual([255, 0, 0, 255]);
+        expect(getPixel(canvas, 15, 15)).toEqual([0, 0, 0, 0]);
+
+        canvas.fillArea('#f00', 0, 0, 20, 20);
+        expect(getPixel(canvas, 15, 15)).toEqual([255, 0, 0, 255]);
     });
 });

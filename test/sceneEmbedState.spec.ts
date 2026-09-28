@@ -57,7 +57,7 @@ describe('SceneEmbedState', () => {
         const mockCanvas = <MockGameCanvas>testGame.canvas;
         expect(mockCanvas.drawnImages.length).toBe(0);
 
-        testEmbedState.draw(mockCanvas, mockCanvas, testGame.controller);
+        testEmbedState.draw(mockCanvas, testGame.controller);
 
         expect(mockCanvas.drawnImages.length).toBe(3);
         expect(drawOrder.length).toBe(3);

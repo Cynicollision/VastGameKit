@@ -57,9 +57,32 @@ export class ActorInstance implements Instance {
     private _status: InstanceStatus;
     get status() { return this._status; }
 
-    depth: number = 0;
-    x: number = 0;
-    y: number = 0;
+    private _depth: number;
+    get depth(): number { return this._depth; }
+    set depth(value: number) {
+        if (value !== this._depth) {
+            this._depth = value;
+            this.instances.onDepthChanged();
+        }
+    }
+
+    private _x: number;
+    get x(): number { return this._x; }
+    set x(value: number) {
+        if (value !== this._x) {
+            this._x = value;
+            this.instances.onMoved(this);
+        }
+    }
+
+    private _y: number;
+    get y(): number { return this._y; }
+    set y(value: number) {
+        if (value !== this._y) {
+            this._y = value;
+            this.instances.onMoved(this);
+        }
+    }
 
     get height(): number {
         return this.actor.boundary ? this.actor.boundary.height : 0;
@@ -75,9 +98,9 @@ export class ActorInstance implements Instance {
         this.instances = instances;
         this._status = InstanceStatus.New;
 
-        this.depth = options.depth !== undefined ? options.depth : 0;
-        this.x = options.x !== undefined ? options.x : 0;
-        this.y = options.y !== undefined ? options.y : 0;
+        this._depth = options.depth !== undefined ? options.depth : 0;
+        this._x = options.x !== undefined ? options.x : 0;
+        this._y = options.y !== undefined ? options.y : 0;
 
         if (actor.sprite) {
             this._animation = actor.sprite.newAnimation();
@@ -104,15 +127,18 @@ export class ActorInstance implements Instance {
     }
 
     private checkCollisions(controller: Controller): void {
-        for (const actorName of this.actor.getCollisionActorNames()) {
-            for (const other of this.instances.getAll(actorName)) {
-                if (this._status !== InstanceStatus.Active) {
-                    return;
-                }
+        if (!this.actor.hasCollisionHandlers) {
+            return;
+        }
 
-                if (other !== this && other.status === InstanceStatus.Active && this.collidesWith(other)) {
-                    this.actor.callCollision(this, other, controller);
-                }
+        for (const other of this.instances.getCollisionCandidates(this)) {
+            if (this._status !== InstanceStatus.Active) {
+                return;
+            }
+
+            // handlers may move or destroy Instances, so check each candidate as it's reached.
+            if (other.status === InstanceStatus.Active && this.actor.hasCollisionHandler(other.actor.name) && this.collidesWith(other)) {
+                this.actor.callCollision(this, other, controller);
             }
         }
     }
@@ -135,7 +161,7 @@ export class ActorInstance implements Instance {
             return;
         }
 
-        const isFreeAt = (x: number, y: number): boolean => this.instances.getWithinBoundaryAtPosition(boundary, x, y, true, this).length === 0;
+        const isFreeAt = (x: number, y: number): boolean => this.instances.isAreaFree(boundary, x, y, true, this);
 
         // Resolve each axis separately, moving as close to any solid Boundary as possible.
         this.x += ActorInstance.getAllowedDistance(moveX, distance => isFreeAt(this.x + distance, this.y));
@@ -161,7 +187,7 @@ export class ActorInstance implements Instance {
 
     collidesWith(other: Instance): boolean {
         if (this.actor.boundary && other.actor.boundary) {
-            return this.actor.boundary.atPosition(this.x, this.y).collidesWith(other.actor.boundary.atPosition(other.x, other.y));
+            return this.actor.boundary.collidesAt(this._x, this._y, other.actor.boundary, other.x, other.y);
         }
 
         return false;
@@ -204,10 +230,24 @@ export class ActorInstance implements Instance {
 
     handlePointerEvent(self: Instance, event: PointerInputEvent, controller: Controller): void {
         if (!event.isCancelled) {
-            if (self.actor.boundary && self.actor.boundary.atPosition(self.x, self.y).containsPosition(event.x, event.y)) {
+            if (self.actor.boundary && self.actor.boundary.containsPositionAt(self.x, self.y, event.x, event.y)) {
                 this.actor.callPointerEvent(self, event, controller);
             }
         }
+    }
+
+    // Whether this Instance may draw anything within the view. Instances whose Actor has an onDraw callback always may.
+    isVisibleIn(viewX: number, viewY: number, viewWidth: number, viewHeight: number): boolean {
+        if (this.actor.hasDrawCallback) {
+            return true;
+        }
+
+        if (!this._animation) {
+            return false;
+        }
+
+        const sprite = this._animation.sprite;
+        return Geometry.rectangleIntersectsRectangle(this._x, this._y, sprite.width, sprite.height, viewX, viewY, viewWidth, viewHeight);
     }
 
     inactivate(): void {

@@ -1,4 +1,4 @@
-import { GameError, ObjMap } from './../core';
+import { GameError } from './../core';
 import { Sprite } from './../resources/sprite';
 
 export type GameCanvasOptions = {
@@ -37,8 +37,11 @@ export interface GameCanvas {
     drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
     fill(color: string, width: number, height: number, options?: CanvasFillOptions): void;
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
+    // Until the matching popView, draws within the port rectangle only, with the view rectangle stretched to fill it.
+    // The view defaults to the port's size at the origin. Views nest, each relative to the one before.
+    popView(): void;
+    pushView(portX: number, portY: number, portWidth: number, portHeight: number, viewX?: number, viewY?: number, viewWidth?: number, viewHeight?: number): void;
     setSize(width: number, height: number): void;
-    subCanvas(name: string, options?: GameCanvasOptions): GameCanvas;
 }
 
 export class GameCanvasHtml2D implements GameCanvas {
@@ -47,7 +50,6 @@ export class GameCanvasHtml2D implements GameCanvas {
     // Offscreen canvases have no background color and clear to transparent.
     private readonly backgroundColor?: string;
     private readonly imageSmoothing: boolean;
-    private subCanvasMap: ObjMap<GameCanvas> = {};
 
     private _canvas: HTMLCanvasElement;
     get canvas() { return this._canvas; }
@@ -177,25 +179,29 @@ export class GameCanvasHtml2D implements GameCanvas {
         }
     }
 
+    popView(): void {
+        this.canvasContext2D.restore();
+    }
+
+    pushView(portX: number, portY: number, portWidth: number, portHeight: number, viewX: number = 0, viewY: number = 0, viewWidth: number = portWidth, viewHeight: number = portHeight): void {
+        const context = this.canvasContext2D;
+        const scaleX = portWidth / viewWidth;
+        const scaleY = portHeight / viewHeight;
+
+        context.save();
+        context.beginPath();
+        context.rect(portX, portY, portWidth, portHeight);
+        context.clip();
+
+        // snap the scrolled offset to whole pixels so tiles don't shimmer or show seams as the view moves.
+        context.translate(portX - Math.round(viewX * scaleX), portY - Math.round(viewY * scaleY));
+        context.scale(scaleX, scaleY);
+    }
+
     setSize(width: number, height: number): void {
         this._canvas.height = height;
         this._canvas.width = width;
         // resizing a canvas resets its context state.
         this.canvasContext2D.imageSmoothingEnabled = this.imageSmoothing;
-    }
-
-    subCanvas(name: string, options: GameCanvasOptions = {}): GameCanvas {
-        const existing = this.subCanvasMap[name];
-        if (existing) {
-            if (options.width && options.height && (existing.width !== options.width || existing.height !== options.height)) {
-                existing.setSize(options.width, options.height);
-            }
-            return existing;
-        }
-        
-        const subCanvas = GameCanvasHtml2D.initNewCanvas(options);
-        this.subCanvasMap[name] = subCanvas;
-
-        return subCanvas;
     }
 }

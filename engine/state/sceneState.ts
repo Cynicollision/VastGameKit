@@ -40,10 +40,6 @@ export class SceneState {
         this._defaultCamera = <SceneCamera>this.addCamera(SceneState.DefaultCameraName);
     }
 
-    private getCameraCanvasKey(camera: SceneCamera): string {
-        return `${this.scene.name}_${this.id}_${camera.name}`;
-    }
-
     private scalePointerEventToCamera(event: PointerInputEvent, camera: SceneCamera): PointerInputEvent {
         const translatedEvent = event.translate(-camera.portX, -camera.portY);
 
@@ -67,29 +63,21 @@ export class SceneState {
         return camera;
     }
 
+    // Draws the Scene through each Camera onto the Camera's port, then the Scene's onDraw and floating SubScenes over them.
     draw(canvas: GameCanvas, controller: Controller): void {
-        const sceneCanvas = canvas.subCanvas('scene', { width: this.scene.width, height: this.scene.height });
-        sceneCanvas.clear();
-
-        if (this.scene.background) {
-            this.scene.background.draw(sceneCanvas);
-        }
-
-        this.embeddedSubScenes.draw(canvas, sceneCanvas, <SceneController>controller);
-        this.instances.draw(sceneCanvas, <SceneController>controller);
-
-        // TODO: Camera.draw(scenCanvas)
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
-            const cameraCanvasKey = this.getCameraCanvasKey(camera);
-            const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
-            cameraCanvas.clear();
-            cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
-            canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
+            canvas.pushView(camera.portX, camera.portY, camera.portWidth, camera.portHeight, camera.x, camera.y, camera.width, camera.height);
+
+            this.scene.background.draw(canvas, camera);
+            this.embeddedSubScenes.draw(canvas, <SceneController>controller, camera);
+            this.instances.draw(canvas, <SceneController>controller, camera);
+
+            canvas.popView();
         }
 
         this.scene.callDraw(this, canvas, controller);
-        this.floatingSubScenes.draw(canvas, canvas, <SceneController>controller);
+        this.floatingSubScenes.draw(canvas, <SceneController>controller);
     }
 
     embedSubScene(sceneName: string, options: SubSceneOptions = {}): SubScene {

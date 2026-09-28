@@ -54,9 +54,22 @@ export class Background {
         });
     }
 
-    draw(canvas: GameCanvas): void {
-        if (this.width > 0 && this.height > 0) {
-            canvas.drawCanvas(this.backgroundCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+    // Draws the part of the Background within the given view, or all of it.
+    draw(canvas: GameCanvas, view?: { x: number, y: number, width: number, height: number }): void {
+        let left = this.x;
+        let top = this.y;
+        let right = this.x + this.width;
+        let bottom = this.y + this.height;
+
+        if (view) {
+            left = Math.max(left, Math.floor(view.x));
+            top = Math.max(top, Math.floor(view.y));
+            right = Math.min(right, Math.ceil(view.x + view.width));
+            bottom = Math.min(bottom, Math.ceil(view.y + view.height));
+        }
+
+        if (right > left && bottom > top) {
+            canvas.drawCanvas(this.backgroundCanvas, left - this.x, top - this.y, right - left, bottom - top, left, top, right - left, bottom - top);
         }
     }
 }

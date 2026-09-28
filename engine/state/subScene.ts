@@ -1,4 +1,4 @@
-import { RectBoundary } from './../core/boundaries';
+import { Geometry } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { Controller } from './controller';
 import { SceneState } from './sceneState';
@@ -37,23 +37,17 @@ export class SubScene {
         this.y = options.y || 0;
     }
 
-    private getSubSceneCanvasKey(): string {
-        return `${this.sceneState.scene.name}_${this.id}`;
-    }
-
     containsPosition(x: number, y: number): boolean {
-        return new RectBoundary(this.width, this.height).atPosition(this.x, this.y).containsPosition(x, y);
+        return Geometry.rectangleContainsPosition(this.x, this.y, this.width, this.height, x, y);
     }
 
     destroy(): void {
         this._isDestroyed = true;
     }
 
-    draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: Controller): void {
-        const subSceneKey = this.getSubSceneCanvasKey();
-        const subSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: this.width, height: this.height });
-        subSceneCanvas.clear();
-        this.sceneState.draw(subSceneCanvas, controller);
-        targetCanvas.drawCanvas(subSceneCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
+    draw(canvas: GameCanvas, controller: Controller): void {
+        canvas.pushView(this.x, this.y, this.width, this.height);
+        this.sceneState.draw(canvas, controller);
+        canvas.popView();
     }
 }

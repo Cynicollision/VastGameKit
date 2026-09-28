@@ -122,6 +122,54 @@ describe('manages ActorInstances', () => {
         expect(mockCanvas.drawnImages[1].src).toBe(testSprite2.image);
     });
 
+    it('draws only ActorInstances within a view, unless their Actor draws for itself', () => {
+        const mockCanvas = <MockGameCanvas>testGame.canvas;
+        testGame.construction.actors.add('actSelfDrawn', { sprite: testSprite1 }).onDraw(() => null);
+        testInstanceState.create('testActor', { x: 0, y: 0 });
+        testInstanceState.create('testActor', { x: 500, y: 500 });
+        testInstanceState.create('actSelfDrawn', { x: 1000, y: 1000 });
+        testInstanceState.step(testGame.controller);
+
+        testInstanceState.draw(mockCanvas, testGame.controller, { x: 490, y: 490, width: 100, height: 100 });
+
+        // the sprite at (500, 500), and the self-drawn Actor's sprite
+        expect(mockCanvas.drawnImages.length).toBe(2);
+        expect(mockCanvas.drawnImages[0].dx).toBe(500);
+    });
+
+    it('finds ActorInstances at their new position once moved', () => {
+        const instance = testInstanceState.create('testActor', { x: 0, y: 0 });
+
+        instance.x = 300;
+        instance.y = 400;
+
+        expect(testInstanceState.getAtPosition(10, 10)).toEqual([]);
+        expect(testInstanceState.getAtPosition(310, 410)).toEqual([instance]);
+    });
+
+    it('finds ActorInstances by a Boundary set on their Actor after they were created', () => {
+        testGame.construction.actors.add('actLateBoundary');
+        const instance = testInstanceState.create('actLateBoundary', { x: 0, y: 0 });
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([]);
+
+        testGame.construction.actors.get('actLateBoundary').setRectBoundary(10, 10);
+        testInstanceState.step(testGame.controller);
+
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([instance]);
+    });
+
+    it('removes destroyed ActorInstances on the next step', () => {
+        const instance = testInstanceState.create('testActor', { x: 0, y: 0 });
+        const other = testInstanceState.create('testActor2', { x: 0, y: 0 });
+        instance.destroy();
+
+        testInstanceState.step(testGame.controller);
+
+        expect(testInstanceState.getAll()).toEqual([other]);
+        expect(testInstanceState.getAll('testActor')).toEqual([]);
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([other]);
+    });
+
     it('gets ActorInstances at a position', () => {
         const instance1 = testInstanceState.create('testActor', { x: 10, y: 10 });
         instance1.actor.solid = true;
