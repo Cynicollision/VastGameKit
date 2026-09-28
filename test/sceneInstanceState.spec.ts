@@ -2,7 +2,6 @@ import { InstanceStatus } from './../engine/core';
 import { RectBoundary } from './../engine/core/boundaries';
 import { SceneInstanceState } from './../engine/state/instanceState';
 import { Game } from './../engine/game';
-import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
 
@@ -75,6 +74,15 @@ describe('manages ActorInstances', () => {
         const found = testInstanceState.getWithinBoundaryAtPosition(new RectBoundary(20, 20), 10, 10, false, instance);
 
         expect(found).toEqual([other]);
+    });
+
+    it('ignores destroyed ActorInstances when checking positions', () => {
+        const instance = testInstanceState.create('testActor', { x: 10, y: 10 });
+        instance.destroy();
+
+        expect(testInstanceState.isPositionFree(20, 20)).toBeTrue();
+        expect(testInstanceState.getAtPosition(20, 20).length).toBe(0);
+        expect(testInstanceState.getWithinBoundaryAtPosition(new RectBoundary(20, 20), 10, 10).length).toBe(0);
     });
 
     it('gets ActorInstances of a given Actor type', () => {
@@ -176,21 +184,15 @@ describe('manages ActorInstances', () => {
             expect(instance.status).toBe(InstanceStatus.Active);
         });
 
-        it('steps active ActorInstances, calls Behaviors, and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor');
-            const mockBehavior = new MockActorInstanceBehavior();
-            instance.useBehavior(mockBehavior);
+        it('steps active ActorInstances and calls Actor callbacks', () => {
+            testInstanceState.create('testActor');
             testInstanceState.step(testGame.controller);
 
             expect(actorOnStepCalled).toBeFalse();
-            expect(mockBehavior.beforeStepCallCount).toBe(0);
-            expect(mockBehavior.afterStepCallCount).toBe(0);
 
             testInstanceState.step(testGame.controller);
 
             expect(actorOnStepCalled).toBeTrue();
-            expect(mockBehavior.beforeStepCallCount).toBe(1);
-            expect(mockBehavior.afterStepCallCount).toBe(1);
         });
 
         it('deletes destoyed ActorInstances and calls Actor callbacks', () => {

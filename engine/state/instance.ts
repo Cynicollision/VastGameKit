@@ -1,10 +1,10 @@
-import { ActorBehaviorName, GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameError, GameEvent, Geometry, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
 import { GameCanvas } from './../device/canvas';
-import { ActorMotionBehavior } from './../ext/behaviors/motionBehavior';
 import { SpriteAnimation } from './../resources/spriteAnimation';
-import { ActorDefinition, ActorBehavior, Actor } from './../structure/actor';
+import { ActorDefinition, Actor } from './../structure/actor';
 import { FollowEntityOptions, PositionedEntity } from './../structure/entity';
 import { Controller } from './controller';
+import type { SceneInstanceState } from './instanceState';
 
 export type ActorInstanceOptions = {
     depth?: number;
@@ -12,11 +12,17 @@ export type ActorInstanceOptions = {
     y?: number;
 };
 
+// Moves an Instance each step by speed, in direction degrees (see Direction). Movement stops short of solid Instances.
+export type InstanceMotion = {
+    direction: number;
+    speed: number;
+};
+
 export interface Instance extends PositionedEntity {
     readonly id: number;
     readonly animation: SpriteAnimation;
     readonly actor: Actor;
-    readonly motion: ActorMotionBehavior;
+    readonly motion: InstanceMotion;
     readonly state: ObjMap<any>;
     readonly status: InstanceStatus;
     depth: number;
@@ -27,16 +33,17 @@ export interface Instance extends PositionedEntity {
     destroy(): void;
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
     inactivate(): void;
-    useBehavior(behavior: ActorBehavior): void;
 }
 
 export class ActorInstance implements Instance {
-    private readonly behaviors: ActorBehavior[] = [];
+    // the Scene's instances this Instance belongs to, used for movement and collisions.
+    private readonly instances: SceneInstanceState;
     private _followTarget?: PositionedEntity;
     private _followOptions: Required<FollowEntityOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0 };
-    
+
     readonly id: number;
     readonly actor: ActorDefinition;
+    readonly motion: InstanceMotion = { direction: 0, speed: 0 };
     readonly state: ObjMap<any> = {};
 
     private _animation?: SpriteAnimation;
@@ -50,14 +57,6 @@ export class ActorInstance implements Instance {
     private _status: InstanceStatus;
     get status() { return this._status; }
 
-    private _motion?: ActorMotionBehavior;
-    get motion(): ActorMotionBehavior {
-        if (!this._motion) {
-            throw new GameError(`Instance of Actor ${this.actor.name} has no motion because the Actor does not use the BasicMotion behavior.`);
-        }
-        return this._motion;
-    }
-
     depth: number = 0;
     x: number = 0;
     y: number = 0;
@@ -70,9 +69,10 @@ export class ActorInstance implements Instance {
         return this.actor.boundary ? this.actor.boundary.width : 0;
     }
 
-    constructor(id: number, actor: ActorDefinition, options: ActorInstanceOptions = {}) {
+    constructor(id: number, actor: ActorDefinition, instances: SceneInstanceState, options: ActorInstanceOptions = {}) {
         this.id = id;
         this.actor = actor;
+        this.instances = instances;
         this._status = InstanceStatus.New;
 
         this.depth = options.depth !== undefined ? options.depth : 0;
@@ -82,18 +82,64 @@ export class ActorInstance implements Instance {
         if (actor.sprite) {
             this._animation = actor.sprite.newAnimation();
         }
+    }
 
-        for (const behavior of actor.behaviors) {
-            this.initBehavior(behavior);
+    // Returns the furthest distance, up to the given distance, that can be moved along one axis.
+    private static getAllowedDistance(distance: number, isFree: (distance: number) => boolean): number {
+        if (distance === 0 || isFree(distance)) {
+            return distance;
+        }
+
+        const sign = Math.sign(distance);
+        let allowed = 0;
+
+        for (let tryDistance = sign; Math.abs(tryDistance) < Math.abs(distance); tryDistance += sign) {
+            if (!isFree(tryDistance)) {
+                break;
+            }
+            allowed = tryDistance;
+        }
+
+        return allowed;
+    }
+
+    private checkCollisions(controller: Controller): void {
+        for (const actorName of this.actor.getCollisionActorNames()) {
+            for (const other of this.instances.getAll(actorName)) {
+                if (this._status !== InstanceStatus.Active) {
+                    return;
+                }
+
+                if (other !== this && other.status === InstanceStatus.Active && this.collidesWith(other)) {
+                    this.actor.callCollision(this, other, controller);
+                }
+            }
         }
     }
 
-    private initBehavior(behaviorName: ActorBehaviorName): void {
-        if (behaviorName === ActorBehaviorName.BasicMotion) {
-            const motion = new ActorMotionBehavior();
-            this._motion = motion;
-            this.useBehavior(motion);
+    private move(): void {
+        if (this.motion.speed === 0) {
+            return;
         }
+
+        const round = true; // TODO: param or game config
+        let moveX = Geometry.getLengthDirectionX(this.motion.speed, this.motion.direction);
+        let moveY = Geometry.getLengthDirectionY(this.motion.speed, this.motion.direction);
+        moveX = round ? Math.round(moveX) : moveX;
+        moveY = round ? Math.round(moveY) : moveY;
+
+        const boundary = this.actor.boundary;
+        if (!boundary) {
+            this.x += moveX;
+            this.y += moveY;
+            return;
+        }
+
+        const isFreeAt = (x: number, y: number): boolean => this.instances.getWithinBoundaryAtPosition(boundary, x, y, true, this).length === 0;
+
+        // Resolve each axis separately, moving as close to any solid Boundary as possible.
+        this.x += ActorInstance.getAllowedDistance(moveX, distance => isFreeAt(this.x + distance, this.y));
+        this.y += ActorInstance.getAllowedDistance(moveY, distance => isFreeAt(this.x, this.y + distance));
     }
 
     private updateFollowPosition(): void {
@@ -111,22 +157,6 @@ export class ActorInstance implements Instance {
 
     activate(): void {
         this._status = InstanceStatus.Active;
-    }
-
-    callAfterStepBehaviors(controller: Controller): void {
-        for (const behavior of this.behaviors) {
-            if (behavior.afterStep) {
-                behavior.afterStep(this, controller);
-            }
-        }
-    }
-
-    callBeforeStepBehaviors(controller: Controller): void {
-        for (const behavior of this.behaviors) {
-            if (behavior.beforeStep) {
-                behavior.beforeStep(this, controller);
-            }
-        }
     }
 
     collidesWith(other: Instance): boolean {
@@ -184,14 +214,25 @@ export class ActorInstance implements Instance {
         this._status = InstanceStatus.Inactive;
     }
 
+    // Each step: the Actor's onStep, then motion, following, animation, and finally collisions.
     step(controller: Controller): void {
-        if (this._status === InstanceStatus.Active) {
-            this.actor.callStep(this, controller);
-            this.updateFollowPosition();
+        if (this._status !== InstanceStatus.Active) {
+            return;
         }
-    }
 
-    useBehavior(behavior: ActorBehavior): void {
-        this.behaviors.push(behavior);
+        this.actor.callStep(this, controller);
+
+        if (this._status !== InstanceStatus.Active) {
+            return;
+        }
+
+        this.move();
+        this.updateFollowPosition();
+
+        if (this._animation) {
+            this._animation.step(controller.stepDurationMs);
+        }
+
+        this.checkCollisions(controller);
     }
 }

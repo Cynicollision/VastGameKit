@@ -1,4 +1,4 @@
-import { GameTimer, GameTimerStatus } from './../engine/core';
+import { GameTimer, GameTimerSet, GameTimerStatus } from './../engine/core';
 
 describe('GameTimer', () => {
     const timerDurationSteps = 10;
@@ -54,5 +54,48 @@ describe('GameTimer', () => {
 
         expect(timerCalledTimes).toBe(2);
         expect(timer.status).toBe(GameTimerStatus.Elapsed);
+    });
+});
+describe('GameTimerSet', () => {
+
+    it('drops timers once elapsed', () => {
+        const timers = new GameTimerSet();
+        timers.start({ durationSteps: 2 });
+
+        timers.step();
+        expect(timers.count).toBe(1);
+
+        timers.step();
+        expect(timers.count).toBe(0);
+    });
+
+    it('ticks a dropped timer again once it is reset', () => {
+        const timers = new GameTimerSet();
+        const timer = timers.start({ durationSteps: 1 });
+        let endCount = 0;
+        timer.onEnd(() => endCount++);
+
+        timers.step();
+        timer.reset();
+        timers.step();
+
+        expect(endCount).toBe(2);
+    });
+
+    it('does not tick a timer twice when it is reset as it ends', () => {
+        const timers = new GameTimerSet();
+        const timer = timers.start({ durationSteps: 2 });
+        let endCount = 0;
+        timer.onEnd(self => {
+            endCount++;
+            self.reset();
+        });
+
+        for (let i = 0; i < 4; i++) {
+            timers.step();
+        }
+
+        expect(endCount).toBe(2);
+        expect(timers.count).toBe(1);
     });
 });

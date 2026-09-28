@@ -1,7 +1,3 @@
-export enum ActorBehaviorName {
-    BasicMotion = 'BasicMotion',
-}
-
 export enum Direction {
     Right = 0,
     Down = 90,
@@ -25,10 +21,6 @@ export enum SceneStatus {
     NotStarted = 'NotStarted',
     Running = 'Running',
     Suspended = 'Suspended',
-}
-
-export enum SceneTransitionType {
-    Fade = 'Fade',
 }
 
 export enum SpriteTransformation {

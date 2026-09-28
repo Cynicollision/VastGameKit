@@ -1,4 +1,4 @@
-import { Boundary, InstanceStatus, ObjMap } from './../core';
+import { Boundary, InstanceStatus, ObjMap, RuntimeID } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { ActorDefinition } from './../structure/actor';
 
@@ -25,7 +25,7 @@ export class SceneInstanceState {
     // TODO: move x, y back to ActorInstanceOptions for consistency w/ SubScenes
     create(actorName: string, options?: ActorInstanceOptions): Instance {
         const actor = <ActorDefinition>this.controller.gameConstruction.actors.get(actorName);
-        const newInstance = actor.newInstance(options);
+        const newInstance = new ActorInstance(RuntimeID.next(), actor, this, options);
         this.instanceMap[newInstance.id] = newInstance;
 
         return newInstance;
@@ -76,6 +76,9 @@ export class SceneInstanceState {
 
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
+            if (instance.status === InstanceStatus.Destroyed) {
+                continue;
+            }
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(x, y)) {
                 if (!solid || solid && instance.actor.solid) {
                     instances.push(instance);
@@ -91,7 +94,7 @@ export class SceneInstanceState {
 
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
-            if (instance === exclude) {
+            if (instance === exclude || instance.status === InstanceStatus.Destroyed) {
                 continue;
             }
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(x, y))) {
@@ -107,7 +110,7 @@ export class SceneInstanceState {
     isPositionFree(x: number, y: number, solid: boolean = false): boolean {
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
-            if (solid && !instance.actor.solid) {
+            if (instance.status === InstanceStatus.Destroyed || (solid && !instance.actor.solid)) {
                 continue;
             }
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(x, y)) {
@@ -130,9 +133,7 @@ export class SceneInstanceState {
                 instance.actor.callCreate(instance, controller);
             }
             else if (instance.status === InstanceStatus.Active) {
-                instance.callBeforeStepBehaviors(controller);
                 instance.step(controller);
-                instance.callAfterStepBehaviors(controller);
             }
         }
     }

@@ -17,7 +17,9 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 exclude: /node_modules/,
-                loader: 'ts-loader'
+                loader: 'ts-loader',
+                // only type-check files in the bundle, so test files don't report errors in the game build.
+                options: { onlyCompileBundledFiles: true }
             },
         ],
     },

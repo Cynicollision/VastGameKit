@@ -1,6 +1,6 @@
 
 
-import { ActorBehaviorName, GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { ActorDefinition } from './../engine/structure/actor';
 import { Game } from './../engine/game';
 import { TestImage1 } from './mocks/testImages';
@@ -28,13 +28,6 @@ describe('Actor', () => {
         expect(testActor.getCollisionActorNames().indexOf('otherActor3')).toBe(-1);
     });
 
-    it('can use a built-in behavior', () => {
-        expect(testActor.behaviors.length).toBe(0);
-        testActor.useBehavior(ActorBehaviorName.BasicMotion);
-        expect(testActor.behaviors.length).toBe(1);
-        expect(testActor.behaviors.indexOf(ActorBehaviorName.BasicMotion)).toBe(0);
-    });
-
     describe('lifecycle callbacks', () => {
 
         it('defines an onCollision callback', () => {
@@ -48,7 +41,7 @@ describe('Actor', () => {
 
             expect(collisionHandlerCalled).toBeFalse();
 
-            testActor.callCollision(testActor.newInstance(), instance2, testGame.controller);
+            testActor.callCollision(testGame.controller.sceneState.instances.create('testActor'), instance2, testGame.controller);
             
             expect(collisionHandlerCalled).toBeTrue();
         });
@@ -61,7 +54,7 @@ describe('Actor', () => {
 
             expect(createCalled).toBeFalse();
             
-            testActor.callCreate(testActor.newInstance(), testGame.controller)
+            testActor.callCreate(testGame.controller.sceneState.instances.create('testActor'), testGame.controller)
 
             expect(createCalled).toBeTrue();
         });
@@ -74,7 +67,7 @@ describe('Actor', () => {
 
             expect(destroyCalled).toBeFalse();
 
-            testActor.callDestroy(testActor.newInstance(), testGame.controller);
+            testActor.callDestroy(testGame.controller.sceneState.instances.create('testActor'), testGame.controller);
 
             expect(destroyCalled).toBeTrue();
         });
@@ -87,7 +80,7 @@ describe('Actor', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testActor.callDraw(testActor.newInstance(), testGame.canvas, testGame.controller);
+            testActor.callDraw(testGame.controller.sceneState.instances.create('testActor'), testGame.canvas, testGame.controller);
 
             expect(drawCalled).toBeTrue();
         });
@@ -100,7 +93,7 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(testActor.newInstance(), GameEvent.new('testEvent'), testGame.controller);
+            testActor.callGameEvent(testGame.controller.sceneState.instances.create('testActor'), GameEvent.new('testEvent'), testGame.controller);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
@@ -115,7 +108,7 @@ describe('Actor', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testActor.callKeyboardEvent(testActor.newInstance(), new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
+            testActor.callKeyboardEvent(testGame.controller.sceneState.instances.create('testActor'), new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -131,7 +124,7 @@ describe('Actor', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testActor.callPointerEvent(testActor.newInstance(), new PointerInputEvent('pointertest', 20, 40), testGame.controller);
+            testActor.callPointerEvent(testGame.controller.sceneState.instances.create('testActor'), new PointerInputEvent('pointertest', 20, 40), testGame.controller);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -145,7 +138,7 @@ describe('Actor', () => {
 
             expect(stepCalled).toBeFalse();
 
-            testActor.callStep(testActor.newInstance(), testGame.controller);
+            testActor.callStep(testGame.controller.sceneState.instances.create('testActor'), testGame.controller);
 
             expect(stepCalled).toBeTrue();
         });

@@ -1,4 +1,4 @@
-import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
+import { GameError, GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { GameScene, Scene } from './../structure/scene';
 import { ActorInstance } from './instance';
@@ -14,6 +14,7 @@ export class SceneState {
     private readonly cameraMap: ObjMap<SceneCamera> = {};
     private readonly embeddedSubScenes: SceneSubSceneState;
     private readonly floatingSubScenes: SceneSubSceneState;
+    private readonly timers = new GameTimerSet();
     readonly instances: SceneInstanceState;
     readonly id: number;
     readonly scene: Scene;
@@ -192,6 +193,7 @@ export class SceneState {
             return;
         }
 
+        this.timers.step();
         this.scene.callStep(this, controller);
         this.instances.step(<SceneController>controller);
         this.embeddedSubScenes.step(<SceneController>controller);
@@ -200,6 +202,11 @@ export class SceneState {
             const camera = this.cameraMap[cameraName];
             camera.updateFollowPosition();
         }
+    }
+
+    // starts a GameTimer that only ticks while this Scene is running and not paused.
+    startTimer(options: GameTimerOptions): GameTimer {
+        return this.timers.start(options);
     }
 
     suspend(controller: Controller, data?: any): void {

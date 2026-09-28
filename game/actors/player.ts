@@ -9,7 +9,6 @@ export function buildPlayerActor(game: Game) {
     });
 
     actPlayer.setRectBoundaryFromSprite();
-    actPlayer.useBasicMotionBehavior();
 
     actPlayer.onCreate((self, sc) => {
         self.depth = -20;

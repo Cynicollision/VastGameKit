@@ -1,17 +1,20 @@
-import { GameEvent, GameTimer, GameTimerOptions, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
 import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
 import { SceneState } from './sceneState';
-import { SceneTransition, SceneTransitionFactory, SceneTransitionOptions } from './transition';
+import { SceneTransition, SceneTransitionOptions } from './transition';
 
-export type ControllerOptions = { 
-    pulseLength: number;
+export type ControllerOptions = {
+    targetFPS: number;
 };
 
 export interface Controller {
+    // counts steps from 0 up to targetFPS - 1, then repeats.
     readonly currentStep: number;
+    // the game time that passes each step.
+    readonly stepDurationMs: number;
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
     readonly sceneState: SceneState;
@@ -22,6 +25,7 @@ export interface Controller {
     //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     publishEvent(eventName: string, data?: any): void;
+    // starts a GameTimer that ticks every step regardless of Scene. See SceneState.startTimer for Scene-scoped timers.
     startTimer(options: GameTimerOptions): GameTimer;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, data?: any): Promise<void>;
 }
@@ -30,7 +34,7 @@ export class SceneController implements Controller {
     private _eventQueue: GameEvent[] = [];
     private _options: ControllerOptions;
     private _persistentSceneStateMap: ObjMap<SceneState> = {};
-    private _timers: GameTimer[] = [];
+    private readonly _timers = new GameTimerSet();
     private _transition?: SceneTransition;
     private _transitionPromise?: Promise<void>;
 
@@ -39,6 +43,7 @@ export class SceneController implements Controller {
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
     readonly state: ObjMap<any> = {};
+    readonly stepDurationMs: number;
 
     private _currentStep = 0;
     get currentStep() { return this._currentStep; }
@@ -49,10 +54,20 @@ export class SceneController implements Controller {
     constructor(construction: GameConstruction, initialScene: Scene, _options: ControllerOptions) {
         this.audio = new GameAudio(construction);
         this.gameConstruction = construction;
-        this._currentSceneState = this.getSceneState(initialScene.name);
-
-        // TODO process options and store relevant parts
         this._options = _options;
+        this.stepDurationMs = 1000 / _options.targetFPS;
+        this._currentSceneState = this.getSceneState(initialScene.name);
+    }
+
+    private changeScene(sceneName: string, data?: any): void {
+        const oldSceneState = this._currentSceneState;
+        this._currentSceneState = this.getSceneState(sceneName);
+
+        if (this.onSceneChangeCallback) {
+            this.onSceneChangeCallback(oldSceneState, this._currentSceneState);
+        }
+
+        this._currentSceneState.startOrResume(this, data);
     }
 
     private flushEventQueue(): GameEvent[] {
@@ -63,7 +78,7 @@ export class SceneController implements Controller {
 
     private incrementCurrentStep(): void {
         this._currentStep++;
-        if (this._currentStep === this._options.pulseLength) {
+        if (this._currentStep >= this._options.targetFPS) {
             this._currentStep = 0;
         }
     }
@@ -72,7 +87,7 @@ export class SceneController implements Controller {
         this._currentSceneState.draw(canvas, this);
 
         if (this._transition) {
-            this._transition.draw(this._currentSceneState, canvas);
+            this._transition.draw(canvas);
         }
     }
 
@@ -92,14 +107,7 @@ export class SceneController implements Controller {
 
     goToScene(sceneName: string, data?: any): SceneState {
         this._currentSceneState.suspend(this);
-        const oldSceneState = this._currentSceneState;
-        this._currentSceneState = this.getSceneState(sceneName);
-
-        if (this.onSceneChangeCallback) {
-            this.onSceneChangeCallback(oldSceneState, this._currentSceneState);
-        }
-
-        this._currentSceneState.startOrResume(this, data);
+        this.changeScene(sceneName, data);
 
         return this._currentSceneState;
     }
@@ -122,14 +130,16 @@ export class SceneController implements Controller {
     }
 
     startTimer(options: GameTimerOptions): GameTimer {
-        const timer = GameTimer.start(options);
-        this._timers.push(timer);
-        return timer;
+        return this._timers.start(options);
     }
 
     step(): void {
         this.incrementCurrentStep();
-        this._timers.forEach(t => t.tick());
+        this._timers.step();
+
+        if (this._transition) {
+            this._transition.step(this.stepDurationMs);
+        }
 
         for (const event of this.flushEventQueue()) {
             this._currentSceneState.handleGameEvent(event, this);
@@ -144,19 +154,10 @@ export class SceneController implements Controller {
             return this._transitionPromise;
         }
 
+        this._currentSceneState.suspend(this);
+
         this._transitionPromise = new Promise(resolve => {
-            this._currentSceneState.suspend(this);
-            this._transition = SceneTransitionFactory.new(options);
-            this._transition.start(() => {
-                const oldSceneState = this._currentSceneState;  
-                this._currentSceneState = this.getSceneState(sceneName);
-
-                if (this.onSceneChangeCallback) {
-                    this.onSceneChangeCallback(oldSceneState, this._currentSceneState);
-                }
-
-                this._currentSceneState.startOrResume(this, data);
-            }, () => {
+            this._transition = new SceneTransition(options, () => this.changeScene(sceneName, data), () => {
                 this._transition = undefined;
                 this._transitionPromise = undefined;
                 resolve();

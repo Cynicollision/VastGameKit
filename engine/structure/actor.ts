@@ -1,14 +1,9 @@
-import { ActorBehaviorName, Boundary, GameError, ObjMap, RuntimeID } from './../core';
+import { Boundary, GameError, ObjMap } from './../core';
 import { CircleBoundary, RectBoundary } from './../core/boundaries';
 import { Sprite } from './../resources/sprite';
 import { Controller } from './../state/controller';
-import { ActorInstance, ActorInstanceOptions, Instance } from './../state/instance';
+import { Instance } from './../state/instance';
 import { EntityLifecycleCb, LifecycleEntityBase } from './entity';
-
-export type ActorBehavior = {
-    beforeStep?: EntityLifecycleCb<Instance>;
-    afterStep?: EntityLifecycleCb<Instance>;
-};
 
 export type ActorOptions = {
     boundary?: Boundary;
@@ -22,7 +17,6 @@ type ActorLifecycleCollisionCallback = {
 
 export interface Actor extends LifecycleEntityBase<Actor, Instance> {
     readonly name: string;
-    readonly behaviors: ActorBehaviorName[];
     readonly boundary?: Boundary;
     sprite?: Sprite;
     solid: boolean;
@@ -33,8 +27,6 @@ export interface Actor extends LifecycleEntityBase<Actor, Instance> {
     setCircleBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): CircleBoundary;
     setRectBoundary(width: number, height: number, originX?: number, originY?: number): RectBoundary
     setRectBoundaryFromSprite(sprite?: Sprite, originX?: number, originY?: number): RectBoundary;
-    useBasicMotionBehavior(): Actor;
-    useBehavior(behaviorName: ActorBehaviorName): Actor;
 }
 
 export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implements Actor {
@@ -42,13 +34,11 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
     private onDestroyCallback?: EntityLifecycleCb<Instance>;
 
     private collisionHandlerRegistry: ObjMap<ActorLifecycleCollisionCallback> = {};
+    private collisionActorNames: string[] = [];
 
     readonly name: string;
     solid: boolean;
     sprite?: Sprite;
-
-    private _behaviors: ActorBehaviorName[] = [];
-    get behaviors() { return this._behaviors; }
 
     private _boundary?: Boundary;
     get boundary() { return this._boundary; }
@@ -83,18 +73,8 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         }
     }
 
-    getCollisionActorNames(): string[] {
-        const actorNames = [];
-
-        for (const name in this.collisionHandlerRegistry) {
-            actorNames.push(name);
-        }
-
-        return actorNames;
-    }
-
-    newInstance(options: ActorInstanceOptions = {}): ActorInstance {
-        return new ActorInstance(RuntimeID.next(), this, options);
+    getCollisionActorNames(): readonly string[] {
+        return this.collisionActorNames;
     }
 
     onCreate(callback: EntityLifecycleCb<Instance>): void {
@@ -107,6 +87,7 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         }
 
         this.collisionHandlerRegistry[actorName] = callback;
+        this.collisionActorNames.push(actorName);
     }
 
     onDestroy(callback:  EntityLifecycleCb<Instance>): void {
@@ -151,18 +132,5 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
         this._boundary = boundary;
 
         return boundary;
-    }
-
-    useBasicMotionBehavior(): Actor {
-        return this.useBehavior(ActorBehaviorName.BasicMotion);
-    }
-
-    useBehavior(behaviorName: ActorBehaviorName): Actor {
-        if (this._behaviors.includes(behaviorName)) {
-            throw new GameError(`Actor ${this.name} is already using Behavior ${behaviorName}.`)
-        }
-
-        this._behaviors.push(behaviorName);
-        return this;
     }
 }
