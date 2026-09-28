@@ -15,9 +15,9 @@ export class KeyboardInputHandler implements InputHandler<KeyboardInputEvent> {
             });
         }
 
-        target.onkeydown = target.onkeyup = function(this: GlobalEventHandlers, ev: KeyboardEvent): void {
-            raiseKeyboardEvent(KeyboardInputEvent.fromKeyboardEvent(ev));
-        };
+        const onKeyboardEvent = (ev: KeyboardEvent): void => raiseKeyboardEvent(KeyboardInputEvent.fromKeyboardEvent(ev));
+        target.addEventListener('keydown', onKeyboardEvent);
+        target.addEventListener('keyup', onKeyboardEvent);
 
         return handler;
     }

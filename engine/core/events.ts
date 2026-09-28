@@ -48,17 +48,6 @@ export class PointerInputEvent extends GameEvent {
     x: number;
     y: number;
 
-    static fromMouseEvent(ev: MouseEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, ev.offsetX, ev.offsetY);
-    }
-
-    static fromTouchEvent(ev: TouchEvent): PointerInputEvent {
-        const touch = ev.touches[0];
-        const touchX = touch ? touch.clientX : 0;
-        const touchY = touch ? touch.clientY : 0;
-        return new PointerInputEvent(ev.type, touchX, touchY);
-    }
-
     constructor(type: string, x: number, y: number, innerEvent?: PointerInputEvent) {
         super(type);
         this.innerEvent = innerEvent;

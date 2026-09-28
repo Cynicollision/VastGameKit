@@ -48,7 +48,7 @@ export class GameTimer implements Timer {
 
         this._current++;
 
-        if (this._current === this._durationSteps) {
+        if (this._current >= this._durationSteps) {
             this.end();
             this._callbacks.forEach(callback => callback(this));
         }

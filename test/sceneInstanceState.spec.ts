@@ -60,6 +60,23 @@ describe('manages ActorInstances', () => {
         expect(testInstanceState.isPositionFree(20, 20, true)).toBeTrue();
     });
 
+    it('checks if a position is free of solid ActorInstances when a non-solid ActorInstance is also there', () => {
+        testInstanceState.create('testActor', { x: 10, y: 10 });
+        const solidInstance = testInstanceState.create('testActor2', { x: 10, y: 10 });
+        solidInstance.actor.solid = true;
+
+        expect(testInstanceState.isPositionFree(20, 20, true)).toBeFalse();
+    });
+
+    it('excludes an ActorInstance when getting ActorInstances within a Boundary', () => {
+        const instance = testInstanceState.create('testActor', { x: 10, y: 10 });
+        const other = testInstanceState.create('testActor2', { x: 15, y: 15 });
+
+        const found = testInstanceState.getWithinBoundaryAtPosition(new RectBoundary(20, 20), 10, 10, false, instance);
+
+        expect(found).toEqual([other]);
+    });
+
     it('gets ActorInstances of a given Actor type', () => {
         testInstanceState.create('testActor');
         testInstanceState.create('testActor');

@@ -24,17 +24,11 @@ export class SpriteAnimation {
 
     draw(canvas: GameCanvas, x: number, y: number, options: SpriteDrawOptions = {}): void {
         if (this.sprite.image) {
-            const animationFrame = this.getTransform(SpriteTransformation.Frame);
-            const frame = (options.frame !== null && options.frame !== undefined) ? options.frame : animationFrame;
-            options.frame = frame || 0;
+            const frame = options.frame !== undefined ? options.frame : this.getTransform(SpriteTransformation.Frame);
+            const opacity = options.opacity !== undefined ? options.opacity : this.getTransform(SpriteTransformation.Opacity);
+            const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(frame);
 
-            const animationOpacity = this.getTransform(SpriteTransformation.Opacity);
-            const opacity = (options.opacity !== null && options.opacity !== undefined) ? options.opacity : animationOpacity;
-            options.opacity = opacity || 1;
-
-            const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(animationFrame);
-            
-            canvas.drawImage(this.sprite.image, srcX, srcY, this.sprite.width, this.sprite.height, x, y, this.sprite.width, this.sprite.height, options);
+            canvas.drawImage(this.sprite.image, srcX, srcY, this.sprite.width, this.sprite.height, x, y, this.sprite.width, this.sprite.height, { ...options, opacity: opacity });
         }
     }
 

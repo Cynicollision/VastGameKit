@@ -32,6 +32,7 @@ export class SceneController implements Controller {
     private _persistentSceneStateMap: ObjMap<SceneState> = {};
     private _timers: GameTimer[] = [];
     private _transition?: SceneTransition;
+    private _transitionPromise?: Promise<void>;
 
     private onSceneChangeCallback?: (oldScene: SceneState, newScene: SceneState) => void;
 
@@ -137,8 +138,13 @@ export class SceneController implements Controller {
         this._currentSceneState.step(this)
     }
 
+    // Only one transition runs at a time; requests made during a transition return the one in progress.
     transitionToScene(sceneName: string, options: SceneTransitionOptions = {}, data?: any): Promise<void> {
-        return new Promise(resolve => {
+        if (this._transitionPromise) {
+            return this._transitionPromise;
+        }
+
+        this._transitionPromise = new Promise(resolve => {
             this._currentSceneState.suspend(this);
             this._transition = SceneTransitionFactory.new(options);
             this._transition.start(() => {
@@ -152,8 +158,11 @@ export class SceneController implements Controller {
                 this._currentSceneState.startOrResume(this, data);
             }, () => {
                 this._transition = undefined;
+                this._transitionPromise = undefined;
                 resolve();
             });
         });
+
+        return this._transitionPromise;
     }
 }

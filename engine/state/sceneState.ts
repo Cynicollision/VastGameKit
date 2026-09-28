@@ -68,6 +68,7 @@ export class SceneState {
 
     draw(canvas: GameCanvas, controller: Controller): void {
         const sceneCanvas = canvas.subCanvas('scene', { width: this.scene.width, height: this.scene.height });
+        sceneCanvas.clear();
 
         if (this.scene.background) {
             this.scene.background.draw(sceneCanvas);
@@ -81,6 +82,7 @@ export class SceneState {
             const camera = this.cameraMap[cameraName];
             const cameraCanvasKey = this.getCameraCanvasKey(camera);
             const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
+            cameraCanvas.clear();
             cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
             canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
         }

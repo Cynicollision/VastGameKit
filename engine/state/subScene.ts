@@ -52,6 +52,7 @@ export class SubScene {
     draw(mainCanvas: GameCanvas, targetCanvas: GameCanvas, controller: Controller): void {
         const subSceneKey = this.getSubSceneCanvasKey();
         const subSceneCanvas = mainCanvas.subCanvas(subSceneKey, { width: this.width, height: this.height });
+        subSceneCanvas.clear();
         this.sceneState.draw(subSceneCanvas, controller);
         targetCanvas.drawCanvas(subSceneCanvas, 0, 0, this.width, this.height, this.x, this.y, this.width, this.height);
     }

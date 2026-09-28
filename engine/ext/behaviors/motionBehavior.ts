@@ -9,74 +9,52 @@ export class ActorMotionBehavior implements ActorBehavior {
     previousX: number = 0;
     previousY: number = 0;
 
+    // Returns the furthest distance, up to the given distance, that can be moved along one axis.
+    private static getAllowedDistance(distance: number, isFree: (distance: number) => boolean): number {
+        if (distance === 0 || isFree(distance)) {
+            return distance;
+        }
+
+        const sign = Math.sign(distance);
+        let allowed = 0;
+
+        for (let tryDistance = sign; Math.abs(tryDistance) < Math.abs(distance); tryDistance += sign) {
+            if (!isFree(tryDistance)) {
+                break;
+            }
+            allowed = tryDistance;
+        }
+
+        return allowed;
+    }
+
     beforeStep(self: Instance, controller: Controller): void {
         this.previousX = self.x;
         this.previousY = self.y;
 
-        const round = true; // TODO: param or game config
-
-        if (this.speed !== 0) {
-            let newX = Geometry.getLengthDirectionX(this.speed, this.direction);
-            let newY = Geometry.getLengthDirectionY(this.speed, this.direction);
-            newX = round ? Math.round(newX) : newX;
-            newY = round ? Math.round(newY) : newY;
-
-            const boundary = self.actor.boundary;
-            if (!boundary) {
-                self.x += newX;
-                self.y += newY;
-                return;
-            }
-
-            let instancesAtNewPositionX = controller.sceneState.instances.getWithinBoundaryAtPosition(boundary, self.x + newX, self.y, true);
-            let freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary!.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(self.x + newX, self.y)));
-            
-            let instancesAtNewPositionY = controller.sceneState.instances.getWithinBoundaryAtPosition(boundary, self.x, self.y + newY, true);
-            let freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary!.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(self.x, self.y + newY)));
-
-            if (freeAtNewPositionX && freeAtNewPositionY) {
-                self.x += newX;
-                self.y += newY;
-                return;
-            }
-
-            // move as close to the nearest solid Boundary as possible.
-            const newXSign = newX / Math.abs(newX);
-            const newYSign = newY / Math.abs(newY);
-            let tryNewX = newX !== 0 ? newXSign : 0;
-            let tryNewY = newY !== 0 ? newYSign : 0;
-
-            if (tryNewX !== 0 && !freeAtNewPositionX) {
-                for (let i = 1; i < Math.abs(newX); i++) {
-                    instancesAtNewPositionX = controller.sceneState.instances.getWithinBoundaryAtPosition(boundary, self.x + tryNewX, self.y, true);
-                    freeAtNewPositionX = !instancesAtNewPositionX.some(instance => instance.actor.boundary!.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(self.x + tryNewX, self.y)));
-                    if (!freeAtNewPositionX) {
-                        break;
-                    }
-                    newX = tryNewX;
-                    tryNewX += newXSign;
-                }
-            }
-            
-            if (tryNewY !== 0 && !freeAtNewPositionY) {
-                for (let i = 1; i < Math.abs(newY); i++) {
-                    instancesAtNewPositionY = controller.sceneState.instances.getWithinBoundaryAtPosition(boundary, self.x, self.y + tryNewY, true);
-                    freeAtNewPositionY = !instancesAtNewPositionY.some(instance => instance.actor.boundary!.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(self.x, self.y + tryNewY)));
-                    if (!freeAtNewPositionY) {
-                        break;
-                    }
-                    newY = tryNewY;
-                    tryNewY += newYSign;
-                }
-            }
-
-            if (freeAtNewPositionX && newX !== 0) {
-                self.x += newX;
-            }
-            if (freeAtNewPositionY && newY !== 0) {
-                self.y += newY;
-            }
+        if (this.speed === 0) {
+            return;
         }
+
+        const round = true; // TODO: param or game config
+        let moveX = Geometry.getLengthDirectionX(this.speed, this.direction);
+        let moveY = Geometry.getLengthDirectionY(this.speed, this.direction);
+        moveX = round ? Math.round(moveX) : moveX;
+        moveY = round ? Math.round(moveY) : moveY;
+
+        const boundary = self.actor.boundary;
+        if (!boundary) {
+            self.x += moveX;
+            self.y += moveY;
+            return;
+        }
+
+        const instances = controller.sceneState.instances;
+        const isFreeAt = (x: number, y: number): boolean => instances.getWithinBoundaryAtPosition(boundary, x, y, true, self).length === 0;
+
+        // Resolve each axis separately, moving as close to any solid Boundary as possible.
+        self.x += ActorMotionBehavior.getAllowedDistance(moveX, distance => isFreeAt(self.x + distance, self.y));
+        self.y += ActorMotionBehavior.getAllowedDistance(moveY, distance => isFreeAt(self.x, self.y + distance));
     }
 
     afterStep(self: Instance, controller: Controller): void {

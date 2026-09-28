@@ -63,7 +63,7 @@ export class ActorInstance implements Instance {
     y: number = 0;
 
     get height(): number {
-        return this.actor.boundary ? this.actor.boundary.width : 0;
+        return this.actor.boundary ? this.actor.boundary.height : 0;
     }
 
     get width(): number {
@@ -101,12 +101,11 @@ export class ActorInstance implements Instance {
             return;
         }
 
-        const width = this._followTarget.width;
-        const newX = this._followOptions.centerOnTarget ? (this._followTarget.x - width / 2 + this._followTarget.width / 2) : this._followTarget.x;
+        const target = this._followTarget;
+        const newX = this._followOptions.centerOnTarget ? (target.x + target.width / 2 - this.width / 2) : target.x;
         this.x = Math.round(newX + this._followOptions.offsetX);
 
-        const height = this._followTarget.height;
-        const newY = this._followOptions.centerOnTarget ? (this._followTarget.y - height / 2 + this._followTarget.height / 2) : this._followTarget.y;
+        const newY = this._followOptions.centerOnTarget ? (target.y + target.height / 2 - this.height / 2) : target.y;
         this.y = Math.round(newY + this._followOptions.offsetY);
     }
 

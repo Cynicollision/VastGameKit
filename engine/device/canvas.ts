@@ -44,7 +44,9 @@ export interface GameCanvas {
 export class GameCanvasHtml2D implements GameCanvas {
     private static readonly DefaultBackgroundColor: string = '#fff';
 
-    private backgroundColor: string;
+    // Offscreen canvases have no background color and clear to transparent.
+    private readonly backgroundColor?: string;
+    private readonly imageSmoothing: boolean;
     private subCanvasMap: ObjMap<GameCanvas> = {};
 
     private _canvas: HTMLCanvasElement;
@@ -56,19 +58,17 @@ export class GameCanvasHtml2D implements GameCanvas {
     get width() { return this._canvas.width; }
 
     static initForElement(canvasElement: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
-        const canvas = new GameCanvasHtml2D(canvasElement, options);
+        const canvas = new GameCanvasHtml2D(canvasElement, { ...options, backgroundColor: options.backgroundColor || GameCanvasHtml2D.DefaultBackgroundColor });
 
         if (options.fullScreen) {
-            window.onresize = function(): void {
-                canvas.setSize(window.innerWidth, window.innerHeight);
-            };
+            window.addEventListener('resize', () => canvas.setSize(window.innerWidth, window.innerHeight));
         }
-        
+
         return canvas;
     }
 
     static initNewCanvas(options: GameCanvasOptions = {}): GameCanvas {
-        return this.initForElement(document.createElement('canvas'), options);
+        return new GameCanvasHtml2D(document.createElement('canvas'), options);
     }
 
     private constructor(canvasElement: HTMLCanvasElement, options: GameCanvasOptions) {
@@ -83,6 +83,9 @@ export class GameCanvasHtml2D implements GameCanvas {
 
         this._canvas = canvasElement;
         this.canvasContext2D = context;
+        this.backgroundColor = options.backgroundColor;
+        this.imageSmoothing = options.imageSmoothing !== undefined ? options.imageSmoothing : false;
+        this.canvasContext2D.imageSmoothingEnabled = this.imageSmoothing;
 
         if (options.fullScreen) {
             this.setSize(window.innerWidth, window.innerHeight);
@@ -90,15 +93,15 @@ export class GameCanvasHtml2D implements GameCanvas {
         else if (options.width && options.height) {
             this.setSize(options.width, options.height);
         }
-
-        this.backgroundColor = options.backgroundColor || GameCanvasHtml2D.DefaultBackgroundColor;
-        this.canvasContext2D.imageSmoothingEnabled = options.imageSmoothing !== undefined ? options.imageSmoothing : false;
     }
 
     clear(): void {
-        this.canvasContext2D.rect(0, 0, this._canvas.width, this._canvas.height);
-        this.canvasContext2D.fillStyle = this.backgroundColor;
-        this.canvasContext2D.fill();
+        this.canvasContext2D.clearRect(0, 0, this._canvas.width, this._canvas.height);
+
+        if (this.backgroundColor) {
+            this.canvasContext2D.fillStyle = this.backgroundColor;
+            this.canvasContext2D.fillRect(0, 0, this._canvas.width, this._canvas.height);
+        }
     }
 
     drawRect(color: string, x: number, y: number, w: number, h: number): void {
@@ -177,11 +180,17 @@ export class GameCanvasHtml2D implements GameCanvas {
     setSize(width: number, height: number): void {
         this._canvas.height = height;
         this._canvas.width = width;
+        // resizing a canvas resets its context state.
+        this.canvasContext2D.imageSmoothingEnabled = this.imageSmoothing;
     }
 
     subCanvas(name: string, options: GameCanvasOptions = {}): GameCanvas {
-        if (this.subCanvasMap[name]) {
-            return this.subCanvasMap[name];
+        const existing = this.subCanvasMap[name];
+        if (existing) {
+            if (options.width && options.height && (existing.width !== options.width || existing.height !== options.height)) {
+                existing.setSize(options.width, options.height);
+            }
+            return existing;
         }
         
         const subCanvas = GameCanvasHtml2D.initNewCanvas(options);

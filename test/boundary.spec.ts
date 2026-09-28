@@ -71,3 +71,23 @@ describe('CircleBoundary', () => {
         expect(circle1.atPosition(10, 10).collidesWith(circle2.atPosition(0, 25))).toBeFalse();
     })
 });
+
+describe('Boundary collisions', () => {
+
+    it('are symmetric for rectangles at fractional positions', () => {
+        const a = new RectBoundary(16, 16);
+        const b = new RectBoundary(16, 16);
+
+        expect(a.atPosition(0, 0).collidesWith(b.atPosition(15.5, 0))).toBeTrue();
+        expect(b.atPosition(15.5, 0).collidesWith(a.atPosition(0, 0))).toBeTrue();
+        expect(a.atPosition(0, 0).collidesWith(b.atPosition(0, 15.5))).toBeTrue();
+        expect(b.atPosition(0, 15.5).collidesWith(a.atPosition(0, 0))).toBeTrue();
+    });
+
+    it('do not occur for circles that only touch', () => {
+        const a = new CircleBoundary(5);
+
+        expect(a.atPosition(0, 0).collidesWith(a.atPosition(10, 0))).toBeFalse();
+        expect(a.atPosition(0, 0).collidesWith(a.atPosition(9, 0))).toBeTrue();
+    });
+});

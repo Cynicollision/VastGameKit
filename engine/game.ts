@@ -39,7 +39,7 @@ export class Game {
         try {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
             const canvas = GameCanvasHtml2D.initForElement(canvasElement, options.canvasOptions);
-            const inputHandler = GameInputHandler.initForElement(document.body);
+            const inputHandler = GameInputHandler.initForElement(document.body, canvasElement);
 
             return new Game(canvas, inputHandler, options);
         }
@@ -89,6 +89,7 @@ export class Game {
                 offset -= stepSize;
             }
 
+            this._canvas.clear();
             this.controller.draw(this._canvas);
             previous = current;
             requestAnimationFrame(gameLoop);

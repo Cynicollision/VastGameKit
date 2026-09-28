@@ -9,7 +9,7 @@ export class PointerInputHandler implements InputHandler<PointerInputEvent> {
 
     private _currentY: number = 0;
     get currentY(): number { return this._currentY; }
-    
+
     static initForElement(target: HTMLElement): PointerInputHandler {
         const handler = new PointerInputHandler();
 
@@ -21,25 +21,48 @@ export class PointerInputHandler implements InputHandler<PointerInputEvent> {
             });
         }
 
-        target.onmousemove = function trackActiveMousePosition(this: GlobalEventHandlers, ev: MouseEvent): void {
-            handler._currentX = ev.offsetX;
-            handler._currentY = ev.offsetY;
-        };
+        target.addEventListener('mousemove', (ev: MouseEvent) => {
+            [handler._currentX, handler._currentY] = PointerInputHandler.toTargetCoords(target, ev.clientX, ev.clientY);
+        });
 
-        target.ontouchmove = function trackActiveTouchPosition(ev: TouchEvent): void {
-            handler._currentX = ev.touches[0] ? ev.touches[0].clientX : 0;
-            handler._currentY = ev.touches[0] ? ev.touches[0].clientY : 0;
-        };
+        target.addEventListener('touchmove', (ev: TouchEvent) => {
+            const touch = ev.touches[0];
+            if (touch) {
+                [handler._currentX, handler._currentY] = PointerInputHandler.toTargetCoords(target, touch.clientX, touch.clientY);
+            }
+        });
 
-        target.onmousedown = target.onmouseup = function(this: GlobalEventHandlers, ev: MouseEvent): void {
-            raisePointerEvent(PointerInputEvent.fromMouseEvent(ev));
+        const onMouseEvent = (ev: MouseEvent): void => {
+            const [x, y] = PointerInputHandler.toTargetCoords(target, ev.clientX, ev.clientY);
+            raisePointerEvent(new PointerInputEvent(ev.type, x, y));
         };
+        target.addEventListener('mousedown', onMouseEvent);
+        target.addEventListener('mouseup', onMouseEvent);
 
-        target.ontouchstart = target.ontouchend = function (ev: TouchEvent) {
-            raisePointerEvent(PointerInputEvent.fromTouchEvent(ev));
+        // touches is empty on touchend, so use the touches that changed.
+        const onTouchEvent = (ev: TouchEvent): void => {
+            const touch = ev.changedTouches[0];
+            const [x, y] = touch ? PointerInputHandler.toTargetCoords(target, touch.clientX, touch.clientY) : [0, 0];
+            raisePointerEvent(new PointerInputEvent(ev.type, x, y));
         };
+        target.addEventListener('touchstart', onTouchEvent);
+        target.addEventListener('touchend', onTouchEvent);
 
         return handler;
+    }
+
+    // Converts page client coordinates to the target's coordinates, accounting for a canvas scaled by CSS.
+    static toTargetCoords(target: HTMLElement, clientX: number, clientY: number): [number, number] {
+        const rect = target.getBoundingClientRect();
+        let scaleX = 1;
+        let scaleY = 1;
+
+        if (target instanceof HTMLCanvasElement && rect.width > 0 && rect.height > 0) {
+            scaleX = target.width / rect.width;
+            scaleY = target.height / rect.height;
+        }
+
+        return [(clientX - rect.left) * scaleX, (clientY - rect.top) * scaleY];
     }
 
     subscribe(callback: (event: PointerInputEvent) => void): InputEventSubscription<PointerInputEvent> {

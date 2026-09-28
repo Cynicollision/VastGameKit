@@ -45,12 +45,13 @@ export class Background {
     }
 
     setFromSprite(sprite: Sprite, drawOptions: CanvasDrawImageOptions = {}): void {
-        drawOptions.repeatX = drawOptions.repeatX !== undefined ? drawOptions.repeatX : true;
-        drawOptions.repeatY = drawOptions.repeatY !== undefined ? drawOptions.repeatY : true;
-        drawOptions.repeatHeight = drawOptions.repeatHeight || this.height;
-        drawOptions.repeatWidth = drawOptions.repeatWidth || this.width;
-        
-        this.backgroundCanvas.drawSprite(sprite, this.x, this.y, drawOptions);
+        this.backgroundCanvas.drawSprite(sprite, this.x, this.y, {
+            ...drawOptions,
+            repeatX: drawOptions.repeatX !== undefined ? drawOptions.repeatX : true,
+            repeatY: drawOptions.repeatY !== undefined ? drawOptions.repeatY : true,
+            repeatHeight: drawOptions.repeatHeight || this.height,
+            repeatWidth: drawOptions.repeatWidth || this.width,
+        });
     }
 
     draw(canvas: GameCanvas): void {

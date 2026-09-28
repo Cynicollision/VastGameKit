@@ -74,7 +74,9 @@ export class SceneCamera implements Camera {
             newY -= this.height / 2 - this._followTarget.height / 2;
         }
 
-        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._sceneState.scene.width - this.width);
-        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._sceneState.scene.height - this.height);
+        const maxX = Math.max(0, this._sceneState.scene.width - this.width);
+        const maxY = Math.max(0, this._sceneState.scene.height - this.height);
+        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, maxX);
+        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, maxY);
     }
 }

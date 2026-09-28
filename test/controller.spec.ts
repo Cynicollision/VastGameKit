@@ -61,6 +61,28 @@ describe('SceneController', () => {
         });
     });
 
+    it('ignores a transition requested while another is in progress', done => {
+        game.controller.sceneState.startOrResume(game.controller);
+        const scnThree = game.construction.scenes.add('scnThree');
+
+        let scnTwoStarts = 0;
+        let scnThreeStarts = 0;
+        scnTwo.onStart(() => scnTwoStarts++);
+        scnThree.onStart(() => scnThreeStarts++);
+
+        const first = game.controller.transitionToScene('scnTwo', { durationMs: 20 });
+        const second = game.controller.transitionToScene('scnThree', { durationMs: 20 });
+
+        expect(second).toBe(first);
+
+        first.then(() => {
+            expect(game.controller.sceneState.scene).toBe(scnTwo);
+            expect(scnTwoStarts).toBe(1);
+            expect(scnThreeStarts).toBe(0);
+            done();
+        });
+    });
+
     it('starts a GameTimer', () => {
         const timerDurationSteps = 10;
         const timer = game.controller.startTimer({ durationSteps: timerDurationSteps });

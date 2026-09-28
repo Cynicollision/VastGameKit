@@ -17,8 +17,9 @@ export class SceneInstanceState {
         delete this.instanceMap[instance.id];
     }
 
-    private getByDepthAsc(actorName?: string): Instance[] {
-        return this.getAll(actorName).sort((a, b) => { return b.depth - a.depth; });
+    // Higher depth draws first, so lower depth appears on top.
+    private getInDrawOrder(): Instance[] {
+        return this.getAll().sort((a, b) => b.depth - a.depth);
     }
 
     // TODO: move x, y back to ActorInstanceOptions for consistency w/ SubScenes
@@ -46,7 +47,7 @@ export class SceneInstanceState {
     }
 
     draw(canvas: GameCanvas, controller: SceneController): void {
-        for (const instance of <ActorInstance[]>this.getByDepthAsc()) {
+        for (const instance of <ActorInstance[]>this.getInDrawOrder()) {
             instance.draw(canvas, controller);
         }
     }
@@ -85,11 +86,14 @@ export class SceneInstanceState {
         return instances;
     }
 
-    getWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid: boolean = false): Instance[] {
+    getWithinBoundaryAtPosition(boundary: Boundary, x: number, y: number, solid: boolean = false, exclude?: Instance): Instance[] {
         const instances = [];
 
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
+            if (instance === exclude) {
+                continue;
+            }
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).collidesWith(boundary.atPosition(x, y))) {
                 if (!solid || solid && instance.actor.solid) {
                     instances.push(instance);
@@ -103,8 +107,11 @@ export class SceneInstanceState {
     isPositionFree(x: number, y: number, solid: boolean = false): boolean {
         for (const a in this.instanceMap) {
             const instance = this.instanceMap[a];
+            if (solid && !instance.actor.solid) {
+                continue;
+            }
             if (instance.actor.boundary && instance.actor.boundary.atPosition(instance.x, instance.y).containsPosition(x, y)) {
-                return !(!solid || solid && instance.actor.solid);
+                return false;
             }
         }
 
