@@ -1,5 +1,6 @@
-import { Boundary, InstanceStatus, RuntimeID, SpatialGrid } from './../core';
+import { Boundary, InstanceStatus, ObjMap, RuntimeID, SpatialGrid } from './../core';
 import { GameCanvas } from './../device/canvas';
+import { TileMap } from './../resources/tilemap';
 import { ActorDefinition } from './../structure/actor';
 
 import { SceneController } from './controller';
@@ -92,6 +93,47 @@ export class SceneInstanceState {
                 if (actorName) {
                     instances.push(this.create(actorName, { x: j * gridSize, y: i * gridSize }));
                 }
+            }
+        }
+
+        return instances;
+    }
+
+    // Creates an Instance for each non-empty tile in a TileMap tile layer, of the given Actor or the Actor
+    // returned for the tile's global id (undefined skips the tile).
+    createFromTileLayer(map: TileMap, layerName: string, actor: string | ((gid: number) => string | undefined)): Instance[] {
+        const layer = map.getLayer(layerName);
+        const instances = [];
+
+        for (let row = 0; row < layer.height; row++) {
+            for (let column = 0; column < layer.width; column++) {
+                const gid = layer.tiles[row * layer.width + column];
+                const actorName = gid === 0 ? undefined : typeof actor === 'string' ? actor : actor(gid);
+
+                if (actorName) {
+                    const x = layer.offsetX + column * map.tileWidth;
+                    const y = layer.offsetY + row * map.tileHeight;
+                    instances.push(this.create(actorName, { x: x, y: y }));
+                }
+            }
+        }
+
+        return instances;
+    }
+
+    // Creates an Instance for each object in a TileMap object layer. Without an actorKey, each object's class names
+    // its Actor (objects without a class are skipped). With one, actorKey[class] names it, and objects whose class
+    // isn't in the key are skipped. Object properties are copied to the Instance's state.
+    createFromTileMapObjects(map: TileMap, layerName: string, actorKey?: ObjMap<string>): Instance[] {
+        const instances = [];
+
+        for (const object of map.getObjectLayer(layerName).objects) {
+            const actorName = actorKey ? actorKey[object.type] : object.type;
+
+            if (actorName) {
+                const instance = this.create(actorName, { x: object.x, y: object.y });
+                Object.assign(instance.state, object.properties);
+                instances.push(instance);
             }
         }
 

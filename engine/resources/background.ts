@@ -1,5 +1,6 @@
 import { CanvasDrawImageOptions, CanvasFillOptions, GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './../device/canvas';
 import { Sprite } from './sprite';
+import { TileMap } from './tilemap';
 
 export type BackgroundOptions = {
     color: string,
@@ -52,6 +53,27 @@ export class Background {
             repeatHeight: drawOptions.repeatHeight || this.height,
             repeatWidth: drawOptions.repeatWidth || this.width,
         });
+    }
+
+    // Draws a TileMap's visible tile layers, or the named layers in the given order, onto the Background.
+    setFromTileMap(map: TileMap, layerNames?: string[]): void {
+        const layers = layerNames ? layerNames.map(name => map.getLayer(name)) : map.layers.filter(layer => layer.visible);
+
+        for (const layer of layers) {
+            for (let row = 0; row < layer.height; row++) {
+                for (let column = 0; column < layer.width; column++) {
+                    const tile = map.getTile(layer.tiles[row * layer.width + column]);
+                    if (!tile) {
+                        continue;
+                    }
+
+                    // tiles taller than the map's tiles extend upward, as in Tiled.
+                    const x = this.x + layer.offsetX + column * map.tileWidth;
+                    const y = this.y + layer.offsetY + (row + 1) * map.tileHeight - tile.height;
+                    this.backgroundCanvas.drawImage(tile.image, tile.sx, tile.sy, tile.width, tile.height, x, y, tile.width, tile.height, { opacity: layer.opacity });
+                }
+            }
+        }
     }
 
     // Draws the part of the Background within the given view, or all of it.
