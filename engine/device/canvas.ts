@@ -50,9 +50,7 @@ export class GameCanvasHtml2D implements GameCanvas {
     private _canvas: HTMLCanvasElement;
     get canvas() { return this._canvas; }
 
-    private get canvasContext2D(): CanvasRenderingContext2D {
-        return this._canvas.getContext('2d');
-    }
+    private readonly canvasContext2D: CanvasRenderingContext2D;
 
     get height() { return this._canvas.height; }
     get width() { return this._canvas.width; }
@@ -78,7 +76,13 @@ export class GameCanvasHtml2D implements GameCanvas {
             throw new GameError(`Attempted to attach to invalid canvas element.`);
         }
 
+        const context = canvasElement.getContext('2d');
+        if (!context) {
+            throw new GameError(`Unable to get a 2D rendering context for canvas element.`);
+        }
+
         this._canvas = canvasElement;
+        this.canvasContext2D = context;
 
         if (options.fullScreen) {
             this.setSize(window.innerWidth, window.innerHeight);
@@ -122,7 +126,7 @@ export class GameCanvasHtml2D implements GameCanvas {
     drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options: CanvasDrawImageOptions = {}): void {
         // set opacity
         const defaultOpacity = 1;
-        let previousOpacity: number = null;
+        let previousOpacity: number | null = null;
 
         if (options.opacity !== defaultOpacity && options.opacity !== null && options.opacity !== undefined) {
             previousOpacity = this.canvasContext2D.globalAlpha;
@@ -132,8 +136,10 @@ export class GameCanvasHtml2D implements GameCanvas {
         if (options.repeatX || options.repeatY) {
             const repetition = options.repeatX && options.repeatY ? 'repeat' : options.repeatX ? 'repeat-x' : 'repeat-y';
             const pattern = this.canvasContext2D.createPattern(image, repetition);
-            this.canvasContext2D.fillStyle = pattern;
-            this.canvasContext2D.fillRect( dx, dy, options.repeatWidth || this.width, options.repeatHeight || this.height);
+            if (pattern) {
+                this.canvasContext2D.fillStyle = pattern;
+                this.canvasContext2D.fillRect(dx, dy, options.repeatWidth || this.width, options.repeatHeight || this.height);
+            }
         }
         else {
             this.canvasContext2D.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
@@ -150,9 +156,9 @@ export class GameCanvasHtml2D implements GameCanvas {
     }
 
     fillArea(color: string, x: number, y: number, width: number, height: number, options: CanvasFillOptions = {}): void {
-        let previousOpacity: number = null;
+        let previousOpacity: number | null = null;
 
-        if (options.opacity && options.opacity !== 1) {
+        if (options.opacity !== undefined && options.opacity !== 1) {
             previousOpacity = this.canvasContext2D.globalAlpha;
             this.canvasContext2D.globalAlpha = options.opacity;
         }

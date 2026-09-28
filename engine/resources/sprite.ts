@@ -15,12 +15,12 @@ export class Sprite {
     private _loaded: boolean = false;
     get loaded() { return this._loaded; }
 
-    private _height: number = 0;
+    private _height?: number;
     get height(): number {
         return this._height || this.image.height;
     }
     
-    private _width: number = 0;
+    private _width?: number;
     get width(): number {
         return this._width || this.image.width;
     }

@@ -36,9 +36,9 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
 
     private readonly actorPlacements: SceneActorPlacement[] = [];
 
-    private onResumeCallback: EntityLifecycleCb<SceneState>;
-    private onStartCallback: EntityLifecycleCb<SceneState>;
-    private onSuspendCallback: EntityLifecycleCb<SceneState>;
+    private onResumeCallback?: EntityLifecycleCb<SceneState>;
+    private onStartCallback?: EntityLifecycleCb<SceneState>;
+    private onSuspendCallback?: EntityLifecycleCb<SceneState>;
 
     readonly background: Background;
     readonly height: number;
@@ -54,7 +54,7 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         super();
 
         this.name = name;
-        this.persistent = options !== undefined ? options.persistent : false;
+        this.persistent = options.persistent || false;
         this.height = options.height || GameScene.DefaultSceneHeight;
         this.width = options.width || GameScene.DefaultSceneWidth;
 

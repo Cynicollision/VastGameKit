@@ -8,19 +8,21 @@ export class SceneFadeTransition implements SceneTransition {
     private static readonly DefaultDurationMs = 1000;
     private static readonly TransitionIncrements = 20;
 
-    private options: SceneTransitionOptions = {};
+    private readonly options: SceneTransitionOptions;
+    private readonly color: string;
+    private readonly durationMs: number;
 
     private currentValue = 0;
     private transitionIn = true;
 
     constructor(options: SceneTransitionOptions = {}) {
         this.options = options;
-        this.options.color = options.color || SceneFadeTransition.DefaultColor;
-        this.options.durationMs = options.durationMs || SceneFadeTransition.DefaultDurationMs;
+        this.color = options.color || SceneFadeTransition.DefaultColor;
+        this.durationMs = options.durationMs || SceneFadeTransition.DefaultDurationMs;
     }
 
     draw(sceneState: SceneState, canvas: GameCanvas): void {
-        const increment = (1000 / this.options.durationMs) / SceneFadeTransition.TransitionIncrements;
+        const increment = (1000 / this.durationMs) / SceneFadeTransition.TransitionIncrements;
         this.currentValue += this.transitionIn ? increment : -increment;
         this.currentValue = MathUtil.clamp(this.currentValue, 0, 1);
 
@@ -30,7 +32,7 @@ export class SceneFadeTransition implements SceneTransition {
             const width = this.options.width || canvas.width;
             const height = this.options.height || canvas.height;
 
-            canvas.fillArea(this.options.color, x, y, width, height, { opacity: this.currentValue });
+            canvas.fillArea(this.color, x, y, width, height, { opacity: this.currentValue });
         } 
     }
 
@@ -40,7 +42,7 @@ export class SceneFadeTransition implements SceneTransition {
             this.transitionIn = false;
             setTimeout(() => {
                 onEndCallback();
-            }, this.options.durationMs);
-        }, this.options.durationMs);
+            }, this.durationMs);
+        }, this.durationMs);
     }
 }

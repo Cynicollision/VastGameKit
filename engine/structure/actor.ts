@@ -23,8 +23,8 @@ type ActorLifecycleCollisionCallback = {
 export interface Actor extends LifecycleEntityBase<Actor, Instance> {
     readonly name: string;
     readonly behaviors: ActorBehaviorName[];
-    readonly boundary: Boundary;
-    sprite: Sprite;
+    readonly boundary?: Boundary;
+    sprite?: Sprite;
     solid: boolean;
     onCollision(actorName: string, callback: ActorLifecycleCollisionCallback): void;
     onCreate(callback: EntityLifecycleCb<Instance>): void;
@@ -38,19 +38,19 @@ export interface Actor extends LifecycleEntityBase<Actor, Instance> {
 }
 
 export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implements Actor {
-    private onCreateCallback: EntityLifecycleCb<Instance>;
-    private onDestroyCallback: EntityLifecycleCb<Instance>;
+    private onCreateCallback?: EntityLifecycleCb<Instance>;
+    private onDestroyCallback?: EntityLifecycleCb<Instance>;
 
     private collisionHandlerRegistry: ObjMap<ActorLifecycleCollisionCallback> = {};
 
     readonly name: string;
     solid: boolean;
-    sprite: Sprite;
+    sprite?: Sprite;
 
     private _behaviors: ActorBehaviorName[] = [];
     get behaviors() { return this._behaviors; }
 
-    private _boundary: Boundary;
+    private _boundary?: Boundary;
     get boundary() { return this._boundary; }
 
     static new(name: string, options: ActorOptions = {}): ActorDefinition {
@@ -158,8 +158,8 @@ export class ActorDefinition extends LifecycleEntityBase<Actor, Instance> implem
     }
 
     useBehavior(behaviorName: ActorBehaviorName): Actor {
-        if (this._behaviors[behaviorName]) {
-            throw new GameError(`Actor ${this.name} is alreadying using Behavior ${behaviorName}.`)
+        if (this._behaviors.includes(behaviorName)) {
+            throw new GameError(`Actor ${this.name} is already using Behavior ${behaviorName}.`)
         }
 
         this._behaviors.push(behaviorName);

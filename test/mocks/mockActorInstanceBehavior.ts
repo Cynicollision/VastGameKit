@@ -1,16 +1,16 @@
 import { ActorBehavior } from './../../engine/structure/actor';
-import { ActorInstance } from './../../engine/state/instance';
-import { SceneController } from './../../engine/state/controller';
+import { Instance } from './../../engine/state/instance';
+import { Controller } from './../../engine/state/controller';
 
 export class MockActorInstanceBehavior implements ActorBehavior {
     beforeStepCallCount = 0;
     afterStepCallCount = 0;
 
-    beforeStep(self: ActorInstance, gc: SceneController): void {
+    beforeStep(self: Instance, gc: Controller): void {
        this.beforeStepCallCount++;
     }
 
-    afterStep(self: ActorInstance, gc: SceneController): void {
+    afterStep(self: Instance, gc: Controller): void {
         this.afterStepCallCount++;
     }
 }

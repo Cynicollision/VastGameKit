@@ -1,5 +1,5 @@
 export class GameEvent {
-    protected innerEvent: GameEvent;
+    protected innerEvent?: GameEvent;
 
     private _name: string;
     get name(): string { return this._name; }

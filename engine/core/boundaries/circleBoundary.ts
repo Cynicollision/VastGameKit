@@ -46,6 +46,8 @@ export class PositionedCircleBoundary implements PositionedBoundary {
         else if (other instanceof PositionedRectBoundary) {
             return Geometry.rectangleIntersectsCircle(other.x, other.y, other.boundary.width, other.boundary.height, this.x, this.y, this.boundary.radius);
         }
+
+        return false;
     }
     
     containsPosition(x: number, y: number): boolean {

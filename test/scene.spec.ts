@@ -52,7 +52,7 @@ describe('Scene', () => {
 
         it('defines an onKeyboardInput callback', () => {
             let keyboardEventCalled = false;
-            let keyboardEventType = null;
+            let keyboardEventType = null as string | null;
             testScene.onKeyboardInput('testkey', (self, ev, sc) => {
                 keyboardEventCalled = true;
                 keyboardEventType = ev.type;
@@ -68,7 +68,7 @@ describe('Scene', () => {
 
         it('defines an onPointerInput callback', () => {
             let pointerEventCalled = false;
-            let pointerEventCoords = null;
+            let pointerEventCoords = null as number[] | null;
             testScene.onPointerInput('pointertest', (self, ev, sc) => {
                 pointerEventCalled = true;
                 pointerEventCoords = [ev.x, ev.y];

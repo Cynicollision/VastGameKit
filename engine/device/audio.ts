@@ -8,7 +8,7 @@ export type AudioOptions = {
 
 export class GameAudio {
     private readonly construction: GameConstruction;
-    private audioContext: AudioContext;
+    private audioContext?: AudioContext;
 
     constructor(construction: GameConstruction) {
         this.construction = construction;

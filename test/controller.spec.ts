@@ -19,7 +19,7 @@ describe('SceneController', () => {
         expect(game.controller.sceneState.scene).toBe(game.defaultScene);
         expect(game.controller.sceneState.status).toBe(SceneStatus.Running);
 
-        let sceneData = null;
+        let sceneData: any = null;
         scnTwo.onStart((self, sc, data) => {
             sceneData = data;
         });
@@ -45,7 +45,7 @@ describe('SceneController', () => {
         expect(game.controller.sceneState.scene).toBe(game.defaultScene);
         expect(game.controller.sceneState.status).toBe(SceneStatus.Running);
 
-        let sceneData = null;
+        let sceneData: any = null;
         scnTwo.onStart((self, sc, data) => {
             sceneData = data;
         });
@@ -72,7 +72,7 @@ describe('SceneController', () => {
 
     it('publishes GameEvents to the current Scene', () => {
         let eventCalled = false;
-        let eventData = null;
+        let eventData: any = null;
 
         game.defaultScene.onGameEvent('testEvent', (self, ev, sc) => {
             eventCalled = true;

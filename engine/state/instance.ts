@@ -1,4 +1,4 @@
-import { ActorBehaviorName, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { ActorBehaviorName, GameError, GameEvent, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { ActorMotionBehavior } from './../ext/behaviors/motionBehavior';
 import { SpriteAnimation } from './../resources/spriteAnimation';
@@ -32,21 +32,31 @@ export interface Instance extends PositionedEntity {
 
 export class ActorInstance implements Instance {
     private readonly behaviors: ActorBehavior[] = [];
-    private _followTarget: PositionedEntity;
-    private _followOptions: FollowEntityOptions = {};
+    private _followTarget?: PositionedEntity;
+    private _followOptions: Required<FollowEntityOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0 };
     
     readonly id: number;
     readonly actor: ActorDefinition;
     readonly state: ObjMap<any> = {};
 
-    private _animation: SpriteAnimation;
-    get animation() { return this._animation; }
+    private _animation?: SpriteAnimation;
+    get animation(): SpriteAnimation {
+        if (!this._animation) {
+            throw new GameError(`Instance of Actor ${this.actor.name} has no animation because the Actor has no Sprite.`);
+        }
+        return this._animation;
+    }
 
     private _status: InstanceStatus;
     get status() { return this._status; }
 
-    private _motion: ActorMotionBehavior;
-    get motion() { return this._motion; }
+    private _motion?: ActorMotionBehavior;
+    get motion(): ActorMotionBehavior {
+        if (!this._motion) {
+            throw new GameError(`Instance of Actor ${this.actor.name} has no motion because the Actor does not use the BasicMotion behavior.`);
+        }
+        return this._motion;
+    }
 
     depth: number = 0;
     x: number = 0;

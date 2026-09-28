@@ -1,4 +1,6 @@
 import { GameInputHandler } from './../engine/device/input';
+import { KeyboardInputHandler } from './../engine/device/keyboard';
+import { PointerInputHandler } from './../engine/device/pointer';
 import { Sprite, SpriteOptions } from './../engine/resources/sprite';
 import { Game, GameOptions } from './../engine/game';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
@@ -12,7 +14,7 @@ export class TestUtil {
 
     static getTestGame(options?: GameOptions): Game {
         options = options || this.defaultGameConfig;
-        return new Game(new MockGameCanvas(), new GameInputHandler(null, null), options);
+        return new Game(new MockGameCanvas(), new GameInputHandler(KeyboardInputHandler.initForElement(document.createElement('div')), PointerInputHandler.initForElement(document.createElement('div'))), options);
     }
 
     static getTestSprite(options?: SpriteOptions): Sprite {

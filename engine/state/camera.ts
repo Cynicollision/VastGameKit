@@ -24,8 +24,8 @@ export interface Camera extends PositionedEntity {
 
 export class SceneCamera implements Camera {
     private readonly _sceneState: SceneState;
-    private _followTarget: PositionedEntity;
-    private _followOptions: FollowEntityOptions = {};
+    private _followTarget?: PositionedEntity;
+    private _followOptions: Required<FollowEntityOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0 };
 
     readonly name: string;
     height: number = 0;

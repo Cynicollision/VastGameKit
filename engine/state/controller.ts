@@ -31,9 +31,9 @@ export class SceneController implements Controller {
     private _options: ControllerOptions;
     private _persistentSceneStateMap: ObjMap<SceneState> = {};
     private _timers: GameTimer[] = [];
-    private _transition: SceneTransition;
+    private _transition?: SceneTransition;
 
-    private onSceneChangeCallback: (oldScene: SceneState, newScene: SceneState) => void;
+    private onSceneChangeCallback?: (oldScene: SceneState, newScene: SceneState) => void;
 
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
@@ -151,7 +151,7 @@ export class SceneController implements Controller {
 
                 this._currentSceneState.startOrResume(this, data);
             }, () => {
-                this._transition = null;
+                this._transition = undefined;
                 resolve();
             });
         });

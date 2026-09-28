@@ -1,3 +1,4 @@
+import { GameError } from './../engine/core';
 import { Game } from './../engine/game';
 import { TestUtil } from './testUtil';
 
@@ -15,6 +16,6 @@ describe('SpriteAnimation', () => {
         const testInstance1 = testGame.controller.sceneState.instances.create('actTest1');
         const testInstance2 = testGame.controller.sceneState.instances.create('actTest2');
         expect(testInstance1.animation).toBeDefined();
-        expect(testInstance2.animation).toBeUndefined();
+        expect(() => testInstance2.animation).toThrowError(GameError);
     });
 });

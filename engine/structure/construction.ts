@@ -4,6 +4,14 @@ import { Sprite, SpriteOptions } from './../resources/sprite';
 import { ActorDefinition, ActorOptions } from './actor';
 import { Scene, GameScene, SceneOptions } from './scene';
 
+function requireOptions<U>(typeName: string, name: string, options?: U): U {
+    if (!options) {
+        throw new GameError(`${typeName} ${name} must be defined with options.`);
+    }
+
+    return options;
+}
+
 class GameConstructionRegistry<T, U> {
     private readonly resourceMap: ObjMap<T> = {};
     private readonly typeName: string;
@@ -51,8 +59,8 @@ export class GameConstruction {
     constructor() {
         this.actors = new GameConstructionRegistry<ActorDefinition, ActorOptions>('Actor', (name, options) => ActorDefinition.new(name, options));
         this.scenes = new GameConstructionRegistry<Scene, SceneOptions>('Scene', (name, options) => GameScene.new(name, options));
-        this.sounds = new GameConstructionRegistry<Sound, SoundOptions>('Sound', (name, options) => Sound.new(name, options));
-        this.sprites = new GameConstructionRegistry<Sprite, SpriteOptions>('Sprite', (name, options) => Sprite.new(name, options));
+        this.sounds = new GameConstructionRegistry<Sound, SoundOptions>('Sound', (name, options) => Sound.new(name, requireOptions('Sound', name, options)));
+        this.sprites = new GameConstructionRegistry<Sprite, SpriteOptions>('Sprite', (name, options) => Sprite.new(name, requireOptions('Sprite', name, options)));
     }
 
     load(): Promise <void>{

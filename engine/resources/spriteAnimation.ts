@@ -9,7 +9,7 @@ export type SpriteDrawOptions = CanvasDrawImageOptions & {
 export class SpriteAnimation {
     private readonly sprite: Sprite;
     private transformations: ObjMap<SpriteTransformation> = {};
-    private timer: NodeJS.Timeout;
+    private timer?: ReturnType<typeof setInterval>;
 
     private _paused: boolean = true;
     get stopped(): boolean {

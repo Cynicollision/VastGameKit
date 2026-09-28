@@ -39,8 +39,8 @@ export abstract class LifecycleEntityBase<T, U = T> {
     protected gameEventHandlerMap: ObjMap<EntityLifecycleGameEventCb<U>> = {};
     protected keyboardInputEventHandlerMap: ObjMap<EntityLifecycleKeyboardEventCb<U>> = {};
     protected pointerInputEventHandlerMap: ObjMap<EntityLifecyclePointerEventCb<U>> = {};
-    protected onStepCallback: EntityLifecycleCb<U>;
-    protected onDrawCallback: EntityLifecycleDrawCb<U>;
+    protected onStepCallback?: EntityLifecycleCb<U>;
+    protected onDrawCallback?: EntityLifecycleDrawCb<U>;
 
     callDraw(self: U, canvas: GameCanvas, controller: Controller): void {
         if (this.onDrawCallback) {

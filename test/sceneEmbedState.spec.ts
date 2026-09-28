@@ -45,7 +45,7 @@ describe('SceneEmbedState', () => {
     });
 
     it('draws SubScenes by depth', () => {
-        const drawOrder = [];
+        const drawOrder: string[] = [];
         testGame.construction.scenes.get('scnSub1').onDraw(self => drawOrder.push(self.scene.name));
         testGame.construction.scenes.get('scnSub2').onDraw(self => drawOrder.push(self.scene.name));
         testGame.construction.scenes.get('scnSub3').onDraw(self => drawOrder.push(self.scene.name));

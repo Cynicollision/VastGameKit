@@ -12,14 +12,18 @@ export type GameOptions = {
     defaultSceneOptions?: SceneOptions;
 };
 
-export class Game {  
+type ResolvedGameOptions = GameOptions & {
+    targetFPS: number;
+};
+
+export class Game {
     static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
 
     readonly controller: SceneController;
     readonly construction: GameConstruction;
 
-    private readonly _options: GameOptions;
+    private readonly _options: ResolvedGameOptions;
     get options() { return this._options; }
 
     private readonly _canvas: GameCanvas;
@@ -40,10 +44,10 @@ export class Game {
             return new Game(canvas, inputHandler, options);
         }
         catch (error) {
-            const message = error.message ? error.message : error;
+            const message = error instanceof Error ? error.message : String(error);
             // TODO: Add GameLog back
             console.error(`Vastgame failed to initialize. ${message}`);
-            throw new GameError(message, error);
+            throw new GameError(message, error instanceof Error ? error : undefined);
         }
     }
 
@@ -58,9 +62,8 @@ export class Game {
         this.controller = new SceneController(this.construction, this._defaultScene, { pulseLength: this.options.targetFPS });
     }
 
-    private applyGameOptions(options: GameOptions): GameOptions {
-        options.targetFPS = options.targetFPS || Game.DefaultTargetFPS;
-        return options;
+    private applyGameOptions(options: GameOptions): ResolvedGameOptions {
+        return { ...options, targetFPS: options.targetFPS || Game.DefaultTargetFPS };
     }
 
     load(): Promise<Game> {
