@@ -1,4 +1,7 @@
-import { Sprite } from './sprite';
+// TODO move file? to 'core' ?
+export type TileMapKey = {
+    [key: string]: string;
+};
 
 export type TileMapLayer = {
     frames: number[][];
@@ -6,5 +9,5 @@ export type TileMapLayer = {
 
 export type TileMap = {
     frameLayers: TileMapLayer[];
-    sprite: Sprite;
+    key?: TileMapKey;
 };

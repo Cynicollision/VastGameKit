@@ -61,7 +61,7 @@ export class GameCanvasHtml2D implements GameCanvas {
         const canvas = new GameCanvasHtml2D(canvasElement, options);
 
         if (options.fullScreen) {
-            window.onresize = function(this: GlobalEventHandlers, ev: UIEvent): void {
+            window.onresize = function(): void {
                 canvas.setSize(window.innerWidth, window.innerHeight);
             };
         }

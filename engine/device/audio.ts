@@ -24,11 +24,12 @@ export class GameAudio {
 
         const source = this.audioContext.createMediaElementSource(audio);
 
-        // TODO: process options, override "base" sound.options with those passed in.
+        // TODO: override "base" sound.options with those passed in.
         const panner = this.audioContext.createStereoPanner();
-        panner.pan.value = 1;
-        source.connect(panner).connect(this.audioContext.destination);
-        //
+        panner.pan.value = options.pan !== undefined ? options.pan : 0;
+        const gain = this.audioContext.createGain();
+        gain.gain.value = options.volume !== undefined ? options.volume : 1;
+        source.connect(gain).connect(panner).connect(this.audioContext.destination);
 
         // TODO return audio or "playback wrapper" for it
         audio.play();

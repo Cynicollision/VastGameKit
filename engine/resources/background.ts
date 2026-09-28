@@ -1,6 +1,5 @@
 import { CanvasDrawImageOptions, CanvasFillOptions, GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './../device/canvas';
 import { Sprite } from './sprite';
-import { TileMap } from './tilemap';
 
 export type BackgroundOptions = {
     color: string,
@@ -52,15 +51,6 @@ export class Background {
         drawOptions.repeatWidth = drawOptions.repeatWidth || this.width;
         
         this.backgroundCanvas.drawSprite(sprite, this.x, this.y, drawOptions);
-    }
-
-    // TODO
-    setFromTileComposition(composition: TileMap, width: number, height: number, drawOptions: CanvasDrawImageOptions = {}): void {
-        let animationFrame = 0; // TODO loop through composition.layers, frames
-        const [srcX, srcY] = composition.sprite.getFrameImageSourceCoords(animationFrame);
-
-        // TODO x, y = current i/j * tile size ?
-        //this.backgroundCanvas.drawImage...
     }
 
     draw(canvas: GameCanvas): void {

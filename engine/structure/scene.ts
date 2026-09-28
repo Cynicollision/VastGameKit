@@ -1,7 +1,6 @@
 
 import { RuntimeID } from './../core';
-import { Background, BackgroundDrawOptions } from './../resources/background';
-import { Sprite } from './../resources/sprite';
+import { Background } from './../resources/background';
 import { Controller, SceneController } from './../state/controller';
 import { ActorInstanceOptions } from './../state/instance';
 import { SceneState } from './../state/sceneState';
