@@ -19,28 +19,18 @@ export function buildPlayerActor(game: Game) {
         other.destroy();
     });
     
-    actPlayer.onKeyboardInput('w', (self, ev, sc) => {
-        self.state.moveUp = ev.type === 'keydown';
-    });
-
-    actPlayer.onKeyboardInput('a', (self, ev, sc) => {
-        self.state.moveLeft = ev.type === 'keydown';
-    });
-
-    actPlayer.onKeyboardInput('s', (self, ev, sc) => {
-        self.state.moveDown = ev.type === 'keydown';
-    });
-
-    actPlayer.onKeyboardInput('d', (self, ev, sc) => {
-        self.state.moveRight = ev.type === 'keydown';
-    });
-
     actPlayer.onPointerInput('mousedown', (self, ev, sc) => {
         console.log('you clicked me');
         sc.publishEvent('something', { foo: 'bar'});
     });
 
     actPlayer.onStep((self, controller) => {
+        const keyboard = controller.keyboard;
+        self.state.moveUp = keyboard.isDown('w') || keyboard.isDown('ArrowUp');
+        self.state.moveLeft = keyboard.isDown('a') || keyboard.isDown('ArrowLeft');
+        self.state.moveDown = keyboard.isDown('s') || keyboard.isDown('ArrowDown');
+        self.state.moveRight = keyboard.isDown('d') || keyboard.isDown('ArrowRight');
+
         if (self.state.moveUp || self.state.moveLeft || self.state.moveRight || self.state.moveDown) {
             self.motion.speed = 1;
         }

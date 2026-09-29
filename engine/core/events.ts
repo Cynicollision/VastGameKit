@@ -29,17 +29,25 @@ export class GameEvent {
 }
 
 export class KeyboardInputEvent extends GameEvent {
+    // the key's value, lowercase for single characters, e.g. 'w', 'ArrowLeft', or ' '.
     key: string;
+    // the physical key, regardless of keyboard layout or modifiers, e.g. 'KeyW', 'ArrowLeft', or 'Space'.
+    code: string;
     type: string;
+    // whether this is a keydown repeated by holding the key.
+    repeat: boolean;
 
-    static fromKeyboardEvent(ev: KeyboardEvent): KeyboardInputEvent {
-        return new KeyboardInputEvent(ev.key, ev.type);
+    // Single character keys are compared case-insensitively, so Shift or Caps Lock doesn't change them.
+    static normalizeKey(key: string): string {
+        return key.length === 1 ? key.toLowerCase() : key;
     }
 
-    constructor(key: string, type: string) {
+    constructor(key: string, type: string, code: string = key, repeat: boolean = false) {
         super(key);
-        this.key = key;
+        this.key = KeyboardInputEvent.normalizeKey(key);
+        this.code = code;
         this.type = type;
+        this.repeat = repeat;
     }
 }
 

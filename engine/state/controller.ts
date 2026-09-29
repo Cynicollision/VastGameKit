@@ -1,6 +1,7 @@
 import { GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
 import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
+import { GameKeyboardState, KeyboardState } from './../device/keyboard';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
 import { SceneState } from './sceneState';
@@ -17,6 +18,8 @@ export interface Controller {
     readonly stepDurationMs: number;
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
+    // which keys are held, pressed, or released this step.
+    readonly keyboard: KeyboardState;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     goToScene(sceneName: string, data?: any): void;
@@ -42,6 +45,7 @@ export class SceneController implements Controller {
 
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
+    readonly keyboard = new GameKeyboardState();
     readonly state: ObjMap<any> = {};
     readonly stepDurationMs: number;
 
@@ -118,6 +122,7 @@ export class SceneController implements Controller {
     }
 
     onKeyboardEvent(event: KeyboardInputEvent): void {
+        this.keyboard.onEvent(event);
         this._currentSceneState.handleKeyboardEvent(event, this);
     }
 
@@ -135,6 +140,7 @@ export class SceneController implements Controller {
 
     step(): void {
         this.incrementCurrentStep();
+        this.keyboard.step();
         this._timers.step();
 
         if (this._transition) {

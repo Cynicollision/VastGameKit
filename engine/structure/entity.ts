@@ -59,8 +59,9 @@ export abstract class LifecycleEntityBase<T, U = T> {
     }
 
     callKeyboardEvent(self: U, event: KeyboardInputEvent, controller: Controller): void {
-        if (this.keyboardInputEventHandlerMap[event.key]) {
-            this.keyboardInputEventHandlerMap[event.key](self, event, controller);
+        const callback = this.keyboardInputEventHandlerMap[event.key] || this.keyboardInputEventHandlerMap[event.code];
+        if (callback) {
+            callback(self, event, controller);
         }
     }
 
@@ -84,8 +85,9 @@ export abstract class LifecycleEntityBase<T, U = T> {
         this.gameEventHandlerMap[eventName] = callback;
     }
 
+    // key is a key value (e.g. 'w', 'ArrowLeft', ' ') or code (e.g. 'KeyW', 'Space'). See KeyboardInputEvent.
     onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<U>): void {
-        this.keyboardInputEventHandlerMap[key] = callback;
+        this.keyboardInputEventHandlerMap[KeyboardInputEvent.normalizeKey(key)] = callback;
     }
 
     onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<U>): void {
