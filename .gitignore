@@ -1,4 +1,5 @@
 game/game_bundle.js
+dist
 node_modules
 
 # local-only test assets (LPC atlas, not used by the game)

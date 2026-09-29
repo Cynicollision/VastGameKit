@@ -1,4 +1,4 @@
-const webpackConfig = require('./webpack.config');
+const webpackConfig = require('./webpack.config')({}, { mode: 'development' });
 const env = (process.env.NODE_ENV || 'development');
 
 module.exports = function (config) {

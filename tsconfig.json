@@ -2,11 +2,12 @@
     "compilerOptions": {
       "target": "es2020",
       "lib": ["es2020", "dom", "dom.iterable"],
-      "module": "commonjs",
+      "module": "es2020",
+      "moduleResolution": "node",
       "sourceMap": true,
       "esModuleInterop": true,
       "strict": true
     },
     // Tiled tilesets also use the .tsx extension.
-    "exclude": ["node_modules", "game/resources"]
+    "exclude": ["node_modules", "dist", "game/resources"]
   }
