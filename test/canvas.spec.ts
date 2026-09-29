@@ -6,6 +6,45 @@ function getPixel(canvas: GameCanvasHtml2D, x: number, y: number): number[] {
 
 describe('GameCanvasHtml2D', () => {
 
+    describe('display scale', () => {
+        it('is the largest whole number that fits in integer mode', () => {
+            expect(GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 1000, 1000)).toBe(3);
+            expect(GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 1000, 500)).toBe(2);
+        });
+
+        it('is a whole number of device pixels in integer mode', () => {
+            // at 1.5 device pixels per CSS pixel, 2x fits 640 CSS pixels: 3 device pixels per canvas pixel.
+            expect(GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 640, 1000, 1.5)).toBe(2);
+            expect(GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 600, 1000, 1.5)).toBeCloseTo(4 / 3);
+        });
+
+        it('shrinks to fit in integer mode when smaller than 1x', () => {
+            expect(GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 160, 1000)).toBe(0.5);
+        });
+
+        it('fits exactly in fit mode', () => {
+            expect(GameCanvasHtml2D.getDisplayScale('fit', 320, 180, 800, 1000)).toBe(2.5);
+        });
+
+        it('sizes a canvas to fit its parent element without changing its resolution', () => {
+            const parent = document.createElement('div');
+            parent.style.width = '700px';
+            parent.style.padding = '0 10px';
+            const element = document.createElement('canvas');
+            parent.appendChild(element);
+            document.body.appendChild(parent);
+
+            const canvas = GameCanvasHtml2D.initForElement(element, { width: 320, height: 180, scale: 'integer' });
+            const expected = GameCanvasHtml2D.getDisplayScale('integer', 320, 180, 700, window.innerHeight, window.devicePixelRatio);
+
+            expect([canvas.width, canvas.height]).toEqual([320, 180]);
+            expect(element.style.width).toBe(`${320 * expected}px`);
+            expect(element.style.height).toBe(`${180 * expected}px`);
+            expect(element.style.imageRendering).toBe('pixelated');
+            parent.remove();
+        });
+    });
+
     it('clears an offscreen canvas to transparent', () => {
         const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 10, height: 10 });
         canvas.fillArea('#f00', 0, 0, 10, 10);

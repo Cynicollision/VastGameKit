@@ -1,12 +1,21 @@
 import { GameError } from './../core';
 import { Sprite } from './../resources/sprite';
 
+// How a canvas is displayed. 'integer' scales it by the largest whole number of screen pixels that fits, so every
+// canvas pixel is the same size and stays crisp. 'fit' scales it to fit exactly, which may blur pixel art.
+export type CanvasScaleMode = 'integer' | 'fit';
+
 export type GameCanvasOptions = {
     backgroundColor?: string;
     imageSmoothing?: boolean;
+    // resizes the canvas to fill the window. Ignored when scale is set.
     fullScreen?: boolean;
+    // the canvas size, which defaults to the canvas element's size.
     height?: number;
     width?: number;
+    // keeps the canvas size and scales its display to fit its parent element's width and the window's height,
+    // centered. Default: not scaled.
+    scale?: CanvasScaleMode;
 };
 
 export type CanvasDrawImageOptions = {
@@ -61,12 +70,37 @@ export class GameCanvasHtml2D implements GameCanvas {
 
     static initForElement(canvasElement: HTMLCanvasElement, options: GameCanvasOptions = {}): GameCanvas {
         const canvas = new GameCanvasHtml2D(canvasElement, { ...options, backgroundColor: options.backgroundColor || GameCanvasHtml2D.DefaultBackgroundColor });
+        const scale = options.scale;
 
-        if (options.fullScreen) {
+        if (scale) {
+            const updateDisplaySize = (): void => canvas.updateDisplaySize(scale);
+            updateDisplaySize();
+            window.addEventListener('resize', updateDisplaySize);
+
+            if (canvasElement.parentElement && typeof ResizeObserver !== 'undefined') {
+                new ResizeObserver(updateDisplaySize).observe(canvasElement.parentElement);
+            }
+        }
+        else if (options.fullScreen) {
             window.addEventListener('resize', () => canvas.setSize(window.innerWidth, window.innerHeight));
         }
 
         return canvas;
+    }
+
+    // The scale, in CSS pixels, to display a width x height canvas at within the available size.
+    static getDisplayScale(mode: CanvasScaleMode, width: number, height: number, availableWidth: number, availableHeight: number, pixelRatio: number = 1): number {
+        const fit = Math.min(availableWidth / width, availableHeight / height);
+
+        if (mode === 'integer') {
+            // a whole number of device pixels per canvas pixel, unless the canvas has to shrink to fit.
+            const devicePixels = Math.floor(fit * pixelRatio + 1e-9);
+            if (devicePixels >= 1) {
+                return devicePixels / pixelRatio;
+            }
+        }
+
+        return fit;
     }
 
     static initNewCanvas(options: GameCanvasOptions = {}): GameCanvas {
@@ -89,12 +123,32 @@ export class GameCanvasHtml2D implements GameCanvas {
         this.imageSmoothing = options.imageSmoothing !== undefined ? options.imageSmoothing : false;
         this.canvasContext2D.imageSmoothingEnabled = this.imageSmoothing;
 
-        if (options.fullScreen) {
+        if (options.fullScreen && !options.scale) {
             this.setSize(window.innerWidth, window.innerHeight);
         }
         else if (options.width && options.height) {
             this.setSize(options.width, options.height);
         }
+    }
+
+    // Sets the canvas's displayed size to fit its parent element's width and the window's height.
+    private updateDisplaySize(mode: CanvasScaleMode): void {
+        const canvas = this._canvas;
+        const parent = canvas.parentElement;
+        let availableWidth = window.innerWidth;
+
+        if (parent && parent !== document.body) {
+            const style = window.getComputedStyle(parent);
+            availableWidth = Math.min(availableWidth, parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight));
+        }
+
+        const scale = GameCanvasHtml2D.getDisplayScale(mode, canvas.width, canvas.height, availableWidth, window.innerHeight, window.devicePixelRatio || 1);
+
+        canvas.style.display = 'block';
+        canvas.style.margin = '0 auto';
+        canvas.style.width = `${canvas.width * scale}px`;
+        canvas.style.height = `${canvas.height * scale}px`;
+        canvas.style.imageRendering = this.imageSmoothing ? 'auto' : 'pixelated';
     }
 
     clear(): void {

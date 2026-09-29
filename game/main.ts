@@ -16,7 +16,7 @@ const vastGame = Game.init({
     canvasElementId: 'gameCanvas',
     targetFPS: 60,
     canvasOptions: {
-        fullScreen: true
+        scale: 'integer'
     },
     defaultSceneOptions: {
         height: 1024, 
