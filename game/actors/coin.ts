@@ -1,5 +1,4 @@
-import { SpriteTransformation } from './../../engine/core';
-import { Game } from './../../engine/game';
+import { Game, SpriteTransformation } from './../../engine';
 
 export function buildCoinActor(game: Game) {
     const actCoin = game.construction.actors.add('actCoin', { 

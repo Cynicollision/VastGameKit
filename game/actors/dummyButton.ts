@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../engine';
 
 export function buildDummyButton(game: Game) {
 

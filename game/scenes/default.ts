@@ -1,4 +1,5 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../engine';
+import Constants from './../constants';
 
 export function buildDefaultScene(game: Game) {
 
@@ -13,22 +14,20 @@ export function buildDefaultScene(game: Game) {
     });
 
     game.defaultScene.onStart((self, controller) => {
-        console.log('defaultRoom.onStart');
-
         self.embedSubScene('scnEmbedTest', { x: 200, y: 400 });
-        self.floatSubScene('scnHUD', { x: 0, y: 0 });
+        self.floatSubScene('scnHUD', { x: 0, y: 0, width: game.canvas.width });
 
         const player = self.instances.create('actPlayer', { x: 32, y: 128 });
 
         const scale = 4;
-        self.defaultCamera.height = (game.canvas.height - 120) / scale;
+        self.defaultCamera.height = (game.canvas.height - Constants.HUDHeight) / scale;
         self.defaultCamera.width = game.canvas.width / scale;
         self.defaultCamera.portWidth = self.defaultCamera.width * scale;
         self.defaultCamera.portHeight = self.defaultCamera.height * scale;
-        self.defaultCamera.portY = 120;
+        self.defaultCamera.portY = Constants.HUDHeight;
         self.defaultCamera.follow(player, { centerOnTarget: true });
 
-        self.addCamera('minimap', { x: 0, y: 0, portX: 1000, portY: 140, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
+        self.addCamera('minimap', { x: 0, y: 0, portX: 1060, portY: Constants.HUDHeight + 20, width: 1024, height: 1024, portWidth: 200, portHeight: 200 });
 
         const map = [
             'XXXXXXXXXXXXXXXXXXXXXXXX',
@@ -58,16 +57,11 @@ export function buildDefaultScene(game: Game) {
         self.instances.createFromMap(16, map, key);
     });
 
-    game.defaultScene.onResume((self, controller) => {
-        console.log('defaultRoom.onResume');
-    });
-
     game.defaultScene.onKeyboardInput('q', (self, event, controller) => {
         controller.publishEvent('goToGame', { sceneName: 'scnAreaA1' });
     });
 
     game.defaultScene.onGameEvent('goToGame', (self, ev, controller) => {
-        console.log('game.defaultScene.onGameEvent.goToGame');
         controller.goToScene(ev.data.sceneName, { playerX: 32, playerY: 32 });
     });
 
