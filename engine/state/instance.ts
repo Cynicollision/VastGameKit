@@ -5,17 +5,12 @@ import { ActorDefinition, Actor } from './../structure/actor';
 import { FollowEntityOptions, PositionedEntity } from './../structure/entity';
 import { Controller } from './controller';
 import type { SceneInstanceState } from './instanceState';
+import { InstanceMotion } from './motion';
 
 export type ActorInstanceOptions = {
     depth?: number;
     x?: number;
     y?: number;
-};
-
-// Moves an Instance each step by speed, in direction degrees (see Direction). Movement stops short of solid Instances.
-export type InstanceMotion = {
-    direction: number;
-    speed: number;
 };
 
 export interface Instance extends PositionedEntity {
@@ -33,6 +28,8 @@ export interface Instance extends PositionedEntity {
     destroy(): void;
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
     inactivate(): void;
+    // Whether the Instance's Boundary would overlap no solid Instances (other than itself) at the position.
+    isPlaceFree(x: number, y: number): boolean;
 }
 
 export class ActorInstance implements Instance {
@@ -43,7 +40,8 @@ export class ActorInstance implements Instance {
 
     readonly id: number;
     readonly actor: ActorDefinition;
-    readonly motion: InstanceMotion = { direction: 0, speed: 0 };
+    // moves the Instance each step, stopping short of solid Instances.
+    readonly motion = new InstanceMotion();
     readonly state: ObjMap<any> = {};
 
     private _animation?: SpriteAnimation;
@@ -107,25 +105,6 @@ export class ActorInstance implements Instance {
         }
     }
 
-    // Returns the furthest distance, up to the given distance, that can be moved along one axis.
-    private static getAllowedDistance(distance: number, isFree: (distance: number) => boolean): number {
-        if (distance === 0 || isFree(distance)) {
-            return distance;
-        }
-
-        const sign = Math.sign(distance);
-        let allowed = 0;
-
-        for (let tryDistance = sign; Math.abs(tryDistance) < Math.abs(distance); tryDistance += sign) {
-            if (!isFree(tryDistance)) {
-                break;
-            }
-            allowed = tryDistance;
-        }
-
-        return allowed;
-    }
-
     private checkCollisions(controller: Controller): void {
         if (!this.actor.hasCollisionHandlers) {
             return;
@@ -144,28 +123,10 @@ export class ActorInstance implements Instance {
     }
 
     private move(): void {
-        if (this.motion.speed === 0) {
-            return;
+        if (this.motion.velocityX !== 0 || this.motion.velocityY !== 0) {
+            // each axis is resolved separately, moving as close to any solid Boundary as possible.
+            this.motion.move(this, (x, y) => this.isPlaceFree(x, y));
         }
-
-        const round = true; // TODO: param or game config
-        let moveX = Geometry.getLengthDirectionX(this.motion.speed, this.motion.direction);
-        let moveY = Geometry.getLengthDirectionY(this.motion.speed, this.motion.direction);
-        moveX = round ? Math.round(moveX) : moveX;
-        moveY = round ? Math.round(moveY) : moveY;
-
-        const boundary = this.actor.boundary;
-        if (!boundary) {
-            this.x += moveX;
-            this.y += moveY;
-            return;
-        }
-
-        const isFreeAt = (x: number, y: number): boolean => this.instances.isAreaFree(boundary, x, y, true, this);
-
-        // Resolve each axis separately, moving as close to any solid Boundary as possible.
-        this.x += ActorInstance.getAllowedDistance(moveX, distance => isFreeAt(this.x + distance, this.y));
-        this.y += ActorInstance.getAllowedDistance(moveY, distance => isFreeAt(this.x, this.y + distance));
     }
 
     private updateFollowPosition(): void {
@@ -252,6 +213,11 @@ export class ActorInstance implements Instance {
 
     inactivate(): void {
         this._status = InstanceStatus.Inactive;
+    }
+
+    isPlaceFree(x: number, y: number): boolean {
+        const boundary = this.actor.boundary;
+        return !boundary || this.instances.isAreaFree(boundary, x, y, true, this);
     }
 
     // Each step: the Actor's onStep, then motion, following, animation, and finally collisions.

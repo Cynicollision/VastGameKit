@@ -16,6 +16,7 @@ export * from './state/camera';
 export * from './state/controller';
 export * from './state/instance';
 export * from './state/instanceState';
+export * from './state/motion';
 export * from './state/sceneState';
 export * from './state/subScene';
 export * from './state/subSceneState';

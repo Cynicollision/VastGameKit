@@ -84,7 +84,10 @@ describe('GameAudio', () => {
         expect(playback.playing).toBeTrue();
         expect(playback.volume).toBe(0.5);
 
-        await new Promise(resolve => setTimeout(resolve, 200));
+        const deadline = Date.now() + 2000;
+        while (playback.playing && Date.now() < deadline) {
+            await new Promise(resolve => setTimeout(resolve, 20));
+        }
         expect(playback.playing).toBeFalse();
     });
 

@@ -161,9 +161,27 @@ same on demand.
 actor.setRectBoundaryFromSprite();  // or setRectBoundary(w, h), setCircleBoundaryFromSprite()...
 self.motion.speed = 2;              // pixels per step
 self.motion.direction = 45;         // degrees: Direction.Right = 0, Down = 90, Left = 180, Up = 270
+self.motion.velocityX = 1.5;        // or set the velocity directly; speed and direction follow it
 ```
 
-Moving Instances stop short of solid Instances, sliding along them diagonally. Queries on `self.instances` (a
+Moving Instances stop short of solid Instances, sliding along them diagonally. They stay on whole pixels, carrying
+fractions of a pixel over to later steps, so any speed moves smoothly. After moving, `motion.blockedX` and
+`motion.blockedY` say whether a solid is right against the Instance in the direction it's moving, and
+`self.isPlaceFree(x, y)` checks a position. For example, a platformer's gravity and jumping:
+
+```ts
+player.onStep((self, controller) => {
+    const onGround = self.motion.blockedY && self.motion.velocityY > 0;
+    self.motion.velocityY = onGround ? 0.3 : Math.min(self.motion.velocityY + 0.3, 6);
+    if (onGround && controller.keyboard.wasPressed(' ')) {
+        self.motion.velocityY = -5;
+    }
+    if (self.motion.blockedY && self.motion.velocityY < 0) {
+        self.motion.velocityY = 0; // bumped a ceiling
+    }
+});
+```
+ Queries on `self.instances` (a
 SceneState's) find Instances by position: `getAtPosition`, `getWithinBoundaryAtPosition`, `isPositionFree`,
 `isAreaFree`. A spatial grid keeps these and collision checks fast in large scenes.
 
