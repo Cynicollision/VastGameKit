@@ -90,6 +90,51 @@ describe('GameCanvasHtml2D', () => {
         });
     });
 
+    describe('shapes and text', () => {
+        let canvas: GameCanvasHtml2D;
+
+        beforeEach(() => {
+            canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 20, height: 20 });
+        });
+
+        it('fills circles', () => {
+            canvas.fillCircle('#f00', 10, 10, 5);
+
+            expect(getPixel(canvas, 10, 10)).toEqual([255, 0, 0, 255]);
+            expect(getPixel(canvas, 10, 3)).toEqual([0, 0, 0, 0]);
+            expect(getPixel(canvas, 1, 1)).toEqual([0, 0, 0, 0]);
+        });
+
+        it('draws lines with a width', () => {
+            canvas.drawLine('#00f', 0, 10, 20, 10, { width: 4 });
+
+            expect(getPixel(canvas, 5, 9)).toEqual([0, 0, 255, 255]);
+            expect(getPixel(canvas, 5, 11)).toEqual([0, 0, 255, 255]);
+            expect(getPixel(canvas, 5, 14)).toEqual([0, 0, 0, 0]);
+        });
+
+        it('draws with an opacity, then restores it', () => {
+            canvas.fillArea('#f00', 0, 0, 10, 10, { opacity: 0.5 });
+            canvas.fillArea('#f00', 10, 0, 10, 10);
+
+            expect(getPixel(canvas, 5, 5)[3]).toBeCloseTo(128, -1);
+            expect(getPixel(canvas, 15, 5)[3]).toBe(255);
+        });
+
+        it('aligns text to the position', () => {
+            const width = canvas.measureText('WW', '10px monospace');
+            expect(width).toBeGreaterThan(0);
+
+            canvas.drawText('WW', 20, 0, { font: '10px monospace', align: 'right', baseline: 'top', color: '#000' });
+
+            const context = canvas.canvas.getContext('2d')!;
+            const drawn = Array.from(context.getImageData(0, 0, 20, 12).data).filter((value, i) => i % 4 === 3 && value > 0).length;
+            const leftOfText = Array.from(context.getImageData(0, 0, Math.floor(20 - width) - 1, 12).data).filter((value, i) => i % 4 === 3 && value > 0).length;
+            expect(drawn).toBeGreaterThan(0);
+            expect(leftOfText).toBe(0);
+        });
+    });
+
     it('clears an offscreen canvas to transparent', () => {
         const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 10, height: 10 });
         canvas.fillArea('#f00', 0, 0, 10, 10);

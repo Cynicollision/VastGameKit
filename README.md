@@ -197,6 +197,18 @@ self.animation.setTransform(SpriteTransformation.Rotation, 90);   // also ScaleX
 
 Flips, scaling, and rotation apply around the sprite's center, so they don't move it.
 
+### Drawing
+
+`onDraw` callbacks draw on the canvas, in Scene coordinates for Instances and embedded sub-scenes:
+
+```ts
+actor.onDraw((self, canvas, controller) => {
+    canvas.drawLine('#fff', self.x, self.y, aimX, aimY, { width: 2, opacity: 0.5 });
+    canvas.fillCircle('#000', holeX, holeY, 4);             // also drawCircle, fillArea, drawRect
+    canvas.drawText(`${score}`, 160, 8, { align: 'center', baseline: 'top', font: '12px monospace', color: '#fff' });
+});
+```
+
 ### Scenes, cameras, and sub-scenes
 
 ```ts

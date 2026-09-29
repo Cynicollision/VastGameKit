@@ -1,4 +1,4 @@
-import { CanvasDrawImageOptions, CanvasDrawTextOptions, CanvasFillOptions, GameCanvas } from './../../engine/device/canvas';
+import { CanvasDrawImageOptions, CanvasDrawTextOptions, CanvasFillOptions, CanvasLineOptions, GameCanvas } from './../../engine/device/canvas';
 import { Sprite } from './../../engine/resources/sprite';
 
 type DrawnImage = {
@@ -42,7 +42,11 @@ export class MockGameCanvas implements GameCanvas {
     drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void {
         this._drawnImages.push({ src: image, sx: sx, sy: sy, sw: sw, sh: sh, dx: dx, dy: dy, dw: dw, dh: dh, options: options });
     }
-    drawRect(color: string, x: number, y: number, w: number, h: number): void {
+    drawCircle(color: string, x: number, y: number, radius: number, options?: CanvasLineOptions): void {
+    }
+    drawLine(color: string, x1: number, y1: number, x2: number, y2: number, options?: CanvasLineOptions): void {
+    }
+    drawRect(color: string, x: number, y: number, w: number, h: number, options?: CanvasLineOptions): void {
     }
     drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void {
     }
@@ -51,6 +55,11 @@ export class MockGameCanvas implements GameCanvas {
     fill(color: string, width: number, height: number, options?: CanvasFillOptions): void {
     }
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void {
+    }
+    fillCircle(color: string, x: number, y: number, radius: number, options?: CanvasFillOptions): void {
+    }
+    measureText(text: string, font?: string): number {
+        return text.length * 8;
     }
     popView(): void {
         this.viewDepth--;

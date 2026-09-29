@@ -31,25 +31,42 @@ export type CanvasDrawImageOptions = {
 };
 
 export type CanvasDrawTextOptions = {
+    // where x is along the text. Default 'left'.
+    align?: CanvasTextAlign;
+    // where y is on the text. Default 'alphabetic', the line the letters sit on.
+    baseline?: CanvasTextBaseline;
     color?: string;
+    // a CSS font. Default '16px arial'.
     font?: string;
+    opacity?: number;
 };
 
 export type CanvasFillOptions = {
     opacity?: number;
-}
+};
+
+export type CanvasLineOptions = {
+    opacity?: number;
+    // Default 1.
+    width?: number;
+};
 
 export interface GameCanvas {
     readonly height: number;
     readonly width: number;
     clear(): void;
     drawCanvas(canvas: GameCanvas, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void;
-    drawRect(color: string, x: number, y: number, w: number, h: number): void;
+    drawCircle(color: string, x: number, y: number, radius: number, options?: CanvasLineOptions): void;
+    drawLine(color: string, x1: number, y1: number, x2: number, y2: number, options?: CanvasLineOptions): void;
+    drawRect(color: string, x: number, y: number, w: number, h: number, options?: CanvasLineOptions): void;
     drawImage(image: CanvasImageSource, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options?: CanvasDrawImageOptions): void;
     drawSprite(sprite: Sprite, x: number, y: number, options?: CanvasDrawImageOptions): void;
     drawText(text: string,x: number, y: number,  options?: CanvasDrawTextOptions): void;
     fill(color: string, width: number, height: number, options?: CanvasFillOptions): void;
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
+    fillCircle(color: string, x: number, y: number, radius: number, options?: CanvasFillOptions): void;
+    // The width text would be drawn at, in pixels.
+    measureText(text: string, font?: string): number;
     // Until the matching popView, draws within the port rectangle only, with the view rectangle stretched to fill it.
     // The view defaults to the port's size at the origin. Views nest, each relative to the one before.
     popView(): void;
@@ -59,6 +76,7 @@ export interface GameCanvas {
 
 export class GameCanvasHtml2D implements GameCanvas {
     private static readonly DefaultBackgroundColor: string = '#fff';
+    private static readonly DefaultFont = '16px arial';
 
     // Offscreen canvases have no background color and clear to transparent.
     private readonly backgroundColor?: string;
@@ -164,9 +182,48 @@ export class GameCanvasHtml2D implements GameCanvas {
         }
     }
 
-    drawRect(color: string, x: number, y: number, w: number, h: number): void {
-        this.canvasContext2D.strokeStyle = color;
-        this.canvasContext2D.strokeRect(x, y, w, h);
+    // Draws with a temporary opacity, restoring the previous one afterward.
+    private withOpacity(opacity: number | undefined, draw: (context: CanvasRenderingContext2D) => void): void {
+        const context = this.canvasContext2D;
+
+        if (opacity === undefined || opacity === 1) {
+            draw(context);
+            return;
+        }
+
+        const previousOpacity = context.globalAlpha;
+        context.globalAlpha = previousOpacity * opacity;
+        draw(context);
+        context.globalAlpha = previousOpacity;
+    }
+
+    drawCircle(color: string, x: number, y: number, radius: number, options: CanvasLineOptions = {}): void {
+        this.withOpacity(options.opacity, context => {
+            context.beginPath();
+            context.arc(x, y, radius, 0, Math.PI * 2);
+            context.strokeStyle = color;
+            context.lineWidth = options.width !== undefined ? options.width : 1;
+            context.stroke();
+        });
+    }
+
+    drawLine(color: string, x1: number, y1: number, x2: number, y2: number, options: CanvasLineOptions = {}): void {
+        this.withOpacity(options.opacity, context => {
+            context.beginPath();
+            context.moveTo(x1, y1);
+            context.lineTo(x2, y2);
+            context.strokeStyle = color;
+            context.lineWidth = options.width !== undefined ? options.width : 1;
+            context.stroke();
+        });
+    }
+
+    drawRect(color: string, x: number, y: number, w: number, h: number, options: CanvasLineOptions = {}): void {
+        this.withOpacity(options.opacity, context => {
+            context.strokeStyle = color;
+            context.lineWidth = options.width !== undefined ? options.width : 1;
+            context.strokeRect(x, y, w, h);
+        });
     }
 
     drawSprite(sprite: Sprite, x: number, y: number, options: CanvasDrawImageOptions = {}): void {
@@ -174,9 +231,18 @@ export class GameCanvasHtml2D implements GameCanvas {
     }
 
     drawText(text: string, x: number, y: number, options: CanvasDrawTextOptions = {}): void {
-        this.canvasContext2D.font = options.font || '16px arial';
-        this.canvasContext2D.fillStyle = options.color || '#000';
-        this.canvasContext2D.fillText(text, x, y);
+        this.withOpacity(options.opacity, context => {
+            context.font = options.font || GameCanvasHtml2D.DefaultFont;
+            context.fillStyle = options.color || '#000';
+            context.textAlign = options.align || 'left';
+            context.textBaseline = options.baseline || 'alphabetic';
+            context.fillText(text, x, y);
+        });
+    }
+
+    measureText(text: string, font?: string): number {
+        this.canvasContext2D.font = font || GameCanvasHtml2D.DefaultFont;
+        return this.canvasContext2D.measureText(text).width;
     }
 
     drawCanvas(canvas: GameCanvas, sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number, dh: number, options: CanvasDrawImageOptions = {}): void {
@@ -230,22 +296,19 @@ export class GameCanvasHtml2D implements GameCanvas {
     }
 
     fillArea(color: string, x: number, y: number, width: number, height: number, options: CanvasFillOptions = {}): void {
-        let previousOpacity: number | null = null;
+        this.withOpacity(options.opacity, context => {
+            context.fillStyle = color;
+            context.fillRect(x, y, width, height);
+        });
+    }
 
-        if (options.opacity !== undefined && options.opacity !== 1) {
-            previousOpacity = this.canvasContext2D.globalAlpha;
-            this.canvasContext2D.globalAlpha = options.opacity;
-        }
-        
-        this.canvasContext2D.beginPath();
-        this.canvasContext2D.rect(x, y, width, height);
-        this.canvasContext2D.fillStyle = color;
-        this.canvasContext2D.fill();
-
-        // reset opacity
-        if (previousOpacity !== null) {
-            this.canvasContext2D.globalAlpha = previousOpacity;
-        }
+    fillCircle(color: string, x: number, y: number, radius: number, options: CanvasFillOptions = {}): void {
+        this.withOpacity(options.opacity, context => {
+            context.beginPath();
+            context.arc(x, y, radius, 0, Math.PI * 2);
+            context.fillStyle = color;
+            context.fill();
+        });
     }
 
     popView(): void {
