@@ -1,4 +1,5 @@
 export * from './boundary';
+export * from './clock';
 export * from './enum';
 export * from './error';
 export * from './events';

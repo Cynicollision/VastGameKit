@@ -1,4 +1,4 @@
-import { GameError } from './core';
+import { FixedStepClock, GameError } from './core';
 import { GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './device/canvas';
 import { GameInputHandler } from './device/input';
 import { GameConstruction } from './structure/construction';
@@ -10,6 +10,8 @@ export type GameOptions = {
     targetFPS?: number;
     canvasOptions?: GameCanvasOptions;
     defaultSceneOptions?: SceneOptions;
+    // whether the game keeps running while its browser tab is hidden. Default false.
+    runWhileHidden?: boolean;
 };
 
 type ResolvedGameOptions = GameOptions & {
@@ -19,6 +21,8 @@ type ResolvedGameOptions = GameOptions & {
 export class Game {
     static readonly DefaultSceneName = 'default';
     private static readonly DefaultTargetFPS = 60;
+    // the most steps run for one frame, e.g. after a slow frame.
+    private static readonly MaxStepsPerFrame = 10;
 
     readonly controller: SceneController;
     readonly construction: GameConstruction;
@@ -34,6 +38,13 @@ export class Game {
 
     private readonly _defaultScene: GameScene;
     get defaultScene(): Scene { return this._defaultScene; }
+
+    private readonly clock: FixedStepClock;
+    private hidden = false;
+
+    private _paused = false;
+    // whether the game has been paused. A paused game draws, but doesn't step.
+    get paused() { return this._paused; }
 
     static init(options: GameOptions): Game {
         try {
@@ -62,6 +73,7 @@ export class Game {
 
         this._defaultScene = <GameScene>this.construction.scenes.add(Game.DefaultSceneName, this._options.defaultSceneOptions);
         this.controller = new SceneController(this.construction, this._defaultScene, { targetFPS: this.options.targetFPS });
+        this.clock = new FixedStepClock(this.controller.stepDurationMs, Game.MaxStepsPerFrame);
     }
 
     private applyGameOptions(options: GameOptions): ResolvedGameOptions {
@@ -72,28 +84,63 @@ export class Game {
         return this.construction.load(this.controller.audio.context).then(() => Promise.resolve(this));
     }
 
+    // Stops stepping the game and pauses its audio, until resume. Drawing continues.
+    pause(): void {
+        this._paused = true;
+        this.updateRunning();
+    }
+
+    resume(): void {
+        this._paused = false;
+        this.updateRunning();
+    }
+
+    // Updates whether the game is hidden, e.g. in a background tab. Hidden games pause unless runWhileHidden is set.
+    setHidden(hidden: boolean): void {
+        this.hidden = hidden && !this.options.runWhileHidden;
+        this.updateRunning();
+    }
+
+    private get running(): boolean {
+        return !this._paused && !this.hidden;
+    }
+
+    private updateRunning(): void {
+        if (this.running) {
+            this.controller.audio.resume();
+        }
+        else {
+            this.controller.audio.suspend();
+            // time spent paused isn't caught up on.
+            this.clock.reset();
+        }
+    }
+
+    // Runs the steps due at the given time, then draws.
+    frame(nowMs: number): void {
+        if (this.running) {
+            const steps = this.clock.advance(nowMs);
+
+            for (let i = 0; i < steps; i++) {
+                this.controller.step();
+            }
+        }
+
+        this._canvas.clear();
+        this.controller.draw(this._canvas);
+    }
+
     start(): void {
         this._inputHandler.keyboard.subscribe(ev => this.controller.onKeyboardEvent(ev));
         this._inputHandler.pointer.subscribe(ev => this.controller.onPointerEvent(ev));
 
-        let offset = 0;
-        let previous = window.performance.now();
-        const stepSize = 1 / this.options.targetFPS;
+        document.addEventListener('visibilitychange', () => this.setHidden(document.hidden));
+        this.setHidden(document.hidden);
 
         this.controller.sceneState.startOrResume(this.controller);
 
-        const gameLoop: FrameRequestCallback = (): void => {
-            const current = window.performance.now();
-            offset += (Math.min(1, (current - previous) / 1000));
-
-            while (offset > stepSize) {
-                this.controller.step();
-                offset -= stepSize;
-            }
-
-            this._canvas.clear();
-            this.controller.draw(this._canvas);
-            previous = current;
+        const gameLoop: FrameRequestCallback = (now: number): void => {
+            this.frame(now);
             requestAnimationFrame(gameLoop);
         };
 

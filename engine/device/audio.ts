@@ -239,6 +239,10 @@ export class GameAudio {
 
     // Resumes audio paused by suspend.
     resume(): void {
+        if (!this.suspended) {
+            return;
+        }
+
         this.suspended = false;
         if (this.graph) {
             this.graph.context.resume().then(() => this.startPendingMusic());
