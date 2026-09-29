@@ -2,17 +2,24 @@
   "name": "vastgame",
   "version": "1.0.0",
   "description": "2D browser game engine",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "sideEffects": false,
   "scripts": {
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
+    "build:lib": "tsc -p tsconfig.lib.json",
+    "prepare": "npm run build:lib",
     "debug": "webpack-dev-server --config ./webpack.config.js --hot --progress",
     "lint": "eslint .",
     "test": "karma start --single-run",
     "test:watch": "karma start --no-single-run"
   },
   "author": "Sean Normoyle",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/jasmine": "^5.1.4",
     "@typescript-eslint/eslint-plugin": "^6.20.0",

@@ -14,13 +14,71 @@ npm run lint
 npm run build    # a production build of the game in dist/, ready to upload
 ```
 
-The game lives in `game/`: `game/main.ts` is its entry point, `game/index.html` its page, and `game/resources/` its
-images, sounds, and maps. The engine lives in `engine/`; import everything from `engine/index.ts`.
+The engine lives in `engine/`, with everything exported from `engine/index.ts`. The demo in `game/` tours the engine's
+features and is a quick way to check they still work together: `game/main.ts` is its entry point, `game/index.html` its
+page, and `game/resources/` its images, sounds, and maps.
+
+## Making a game in its own repo
+
+Games depend on this repo as a package, installed from git rather than npm. Installing it builds the engine into `lib/`.
+
+```jsonc
+// package.json
+{
+  "private": true,
+  "scripts": {
+    "start": "webpack serve --mode development",
+    "build": "webpack --mode production"
+  },
+  "dependencies": {
+    // a tagged version of the engine. While changing the engine alongside a game, use "file:../VastGameKit" instead
+    // (and run npm run build:lib in the engine after changing it).
+    "vastgame": "github:Cynicollision/VastGameKit#v1.0.0"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
+  }
+}
+```
+
+```jsonc
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "module": "es2020",
+    "moduleResolution": "node",
+    "strict": true
+  }
+}
+```
+
+```js
+// webpack.config.js: bundles src/main.ts next to the page in public/
+const path = require('path');
+
+module.exports = (env, argv) => ({
+    entry: './src/main.ts',
+    devtool: argv.mode === 'production' ? false : 'inline-source-map',
+    devServer: { static: path.join(__dirname, 'public') },
+    module: { rules: [{ test: /\.ts$/, exclude: /node_modules/, loader: 'ts-loader' }] },
+    resolve: { extensions: ['.ts', '.js'] },
+    output: { filename: 'game_bundle.js', path: path.join(__dirname, 'public') },
+});
+```
+
+Then `import { Game } from 'vastgame';` in `src/main.ts`, and put the page (with a `<canvas>` and
+`<script src="game_bundle.js" defer>`) and resources in `public/`, which is the folder to upload.
 
 ## A minimal game
 
 ```ts
-import { Direction, Game } from './../engine';
+import { Direction, Game } from 'vastgame';
 
 const game = Game.init({
     canvasElementId: 'gameCanvas',       // <canvas id="gameCanvas" width="320" height="180">

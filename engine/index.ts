@@ -1,4 +1,4 @@
-// VastGameKit: import everything from here, e.g. import { Game, Direction } from './engine';
+// VastGameKit: import everything from here, e.g. import { Game, Direction } from 'vastgame';
 export * from './core';
 export * from './device/audio';
 export * from './device/canvas';

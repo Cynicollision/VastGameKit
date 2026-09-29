@@ -1,0 +1,11 @@
+{
+    // Compiles the engine to lib/ for games that depend on this package.
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "lib",
+        "rootDir": "engine"
+    },
+    "include": ["engine"],
+    "exclude": []
+}
