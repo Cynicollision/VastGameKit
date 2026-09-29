@@ -65,7 +65,7 @@ export function buildDefaultScene(game: Game) {
         controller.goToScene(ev.data.sceneName, { playerX: 32, playerY: 32 });
     });
 
-    game.defaultScene.onPointerInput('mousedown', (self, event, controller) => {
+    game.defaultScene.onPointerInput('pointerdown', (self, event, controller) => {
         controller.audio.play('sndPlop');
     });
 

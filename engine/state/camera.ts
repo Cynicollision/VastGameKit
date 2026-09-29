@@ -20,6 +20,8 @@ export interface Camera extends PositionedEntity {
     portWidth: number;
     portHeight: number;
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
+    // Converts a canvas position within the camera's port to the Scene position it shows.
+    toScenePosition(x: number, y: number): { x: number; y: number };
 }
 
 export class SceneCamera implements Camera {
@@ -55,6 +57,13 @@ export class SceneCamera implements Camera {
         this._followOptions.centerOnTarget = options.centerOnTarget !== undefined ? options.centerOnTarget : false;
         this._followOptions.offsetX = options.offsetX || 0;
         this._followOptions.offsetY = options.offsetY || 0;
+    }
+
+    toScenePosition(x: number, y: number): { x: number; y: number } {
+        return {
+            x: this.x + (x - this.portX) * (this.width / this.portWidth),
+            y: this.y + (y - this.portY) * (this.height / this.portHeight),
+        };
     }
 
     portContainsPosition(x: number, y: number): boolean {

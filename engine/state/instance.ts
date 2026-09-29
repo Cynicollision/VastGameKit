@@ -190,7 +190,7 @@ export class ActorInstance implements Instance {
     }
 
     handlePointerEvent(self: Instance, event: PointerInputEvent, controller: Controller): void {
-        if (!event.isCancelled) {
+        if (!event.isCancelled && this.actor.hasPointerInputHandler(event.type)) {
             if (self.actor.boundary && self.actor.boundary.containsPositionAt(self.x, self.y, event.x, event.y)) {
                 this.actor.callPointerEvent(self, event, controller);
             }

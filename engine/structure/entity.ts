@@ -65,6 +65,10 @@ export abstract class LifecycleEntityBase<T, U = T> {
         }
     }
 
+    hasPointerInputHandler(type: string): boolean {
+        return this.pointerInputEventHandlerMap[type] !== undefined;
+    }
+
     callPointerEvent(self: U, event: PointerInputEvent, controller: Controller): void {
         if (this.pointerInputEventHandlerMap[event.type]) {
             this.pointerInputEventHandlerMap[event.type](self, event, controller);
@@ -90,6 +94,7 @@ export abstract class LifecycleEntityBase<T, U = T> {
         this.keyboardInputEventHandlerMap[KeyboardInputEvent.normalizeKey(key)] = callback;
     }
 
+    // type is 'pointerdown', 'pointermove', or 'pointerup'. Instances receive events over their Boundary.
     onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<U>): void {
         this.pointerInputEventHandlerMap[type] = callback;
     }

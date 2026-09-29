@@ -41,15 +41,25 @@ export class SceneState {
     }
 
     private scalePointerEventToCamera(event: PointerInputEvent, camera: SceneCamera): PointerInputEvent {
-        const translatedEvent = event.translate(-camera.portX, -camera.portY);
+        const position = camera.toScenePosition(event.x, event.y);
+        return event.translate(position.x - event.x, position.y - event.y);
+    }
 
-        translatedEvent.x *= (camera.width / camera.portWidth);
-        translatedEvent.y *= (camera.height / camera.portHeight);
+    // The camera showing a canvas position: the first secondary camera whose port contains it, or else the default camera.
+    private getCameraAt(x: number, y: number): SceneCamera {
+        for (const cameraName in this.cameraMap) {
+            const camera = this.cameraMap[cameraName];
+            if (cameraName !== SceneState.DefaultCameraName && camera.portContainsPosition(x, y)) {
+                return camera;
+            }
+        }
 
-        translatedEvent.x += camera.x;
-        translatedEvent.y += camera.y;
+        return this._defaultCamera;
+    }
 
-        return translatedEvent;
+    // Converts a canvas position, like the pointer's, to the Scene position shown there.
+    toScenePosition(x: number, y: number): { x: number; y: number } {
+        return this.getCameraAt(x, y).toScenePosition(x, y);
     }
 
     addCamera(cameraName: string, options: SceneCameraOptions = {}): Camera {
@@ -132,27 +142,9 @@ export class SceneState {
             return;
         }
 
-        // transform to secondary cameras first.
-        let transformedEvent = null;
-        for (const cameraName in this.cameraMap) {
-            if (cameraName === SceneState.DefaultCameraName) {
-                continue;
-            }
-
-            // TODO: camera.handlePointerEvent
-            const camera = this.getCamera(cameraName);
-            if (camera.portContainsPosition(event.x, event.y)) {
-                transformedEvent = this.scalePointerEventToCamera(event, camera);
-                break;
-            }
-        }
-
-        // transform to default camera if not already transformed to a secondary camera.
-        if (!transformedEvent && this._defaultCamera.portContainsPosition(event.x, event.y)) {
-            transformedEvent = this.scalePointerEventToCamera(event, this._defaultCamera);
-        }
-
-        const propogatedEvent = transformedEvent || event;
+        // transform to the camera the event is in, if any.
+        const camera = this.getCameraAt(event.x, event.y);
+        const propogatedEvent = camera.portContainsPosition(event.x, event.y) ? this.scalePointerEventToCamera(event, camera) : event;
         this.embeddedSubScenes.handlePointerEvent(propogatedEvent, <SceneController>controller);
         
         this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));

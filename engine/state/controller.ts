@@ -2,6 +2,7 @@ import { GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEven
 import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameKeyboardState, KeyboardState } from './../device/keyboard';
+import { GamePointerState, PointerState } from './../device/pointer';
 import { GameStorage } from './../device/storage';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
@@ -23,6 +24,8 @@ export interface Controller {
     readonly gameConstruction: GameConstruction;
     // which keys are held, pressed, or released this step.
     readonly keyboard: KeyboardState;
+    // the pointer's position and presses this step.
+    readonly pointer: PointerState;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
     // saved values, like high scores, that persist between visits.
@@ -51,6 +54,7 @@ export class SceneController implements Controller {
     readonly audio: GameAudio;
     readonly gameConstruction: GameConstruction;
     readonly keyboard = new GameKeyboardState();
+    readonly pointer = new GamePointerState();
     readonly state: ObjMap<any> = {};
     readonly stepDurationMs: number;
     readonly storage: GameStorage;
@@ -134,6 +138,7 @@ export class SceneController implements Controller {
     }
 
     onPointerEvent(event: PointerInputEvent): void {
+        this.pointer.onEvent(event);
         this._currentSceneState.handlePointerEvent(event, this);
     }
 
@@ -148,6 +153,7 @@ export class SceneController implements Controller {
     step(): void {
         this.incrementCurrentStep();
         this.keyboard.step();
+        this.pointer.step();
         this._timers.step();
 
         if (this._transition) {

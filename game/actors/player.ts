@@ -23,7 +23,7 @@ export function buildPlayerActor(game: Game) {
         }
     });
 
-    actPlayer.onPointerInput('mousedown', (self, event, controller) => {
+    actPlayer.onPointerInput('pointerdown', (self, event, controller) => {
         console.log('you clicked me');
     });
 

@@ -9,7 +9,7 @@ export function buildDummyButton(game: Game) {
         button.setRectBoundaryFromSprite();
     });
 
-    button.onPointerInput('mousedown', (self, event, controller) => {
+    button.onPointerInput('pointerdown', (self, event, controller) => {
         if (self.animation.stopped) {
             self.animation.start(0, 1, 100);
         }

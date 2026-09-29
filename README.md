@@ -143,7 +143,7 @@ Actors and Scenes take callbacks, each given the Instance or SceneState (`self`)
 | `onDraw` | after the Instance or Scene draws |
 | `onCollision(actorName, cb)` (Actors) | each step an Instance overlaps an Instance of the named Actor |
 | `onKeyboardInput(key, cb)` | on keydown and keyup of a key (check `event.type` and `event.repeat`) |
-| `onPointerInput(type, cb)` | on mouse or touch events, e.g. `'mousedown'`, over an Instance or anywhere in a Scene |
+| `onPointerInput(type, cb)` | on `'pointerdown'`, `'pointermove'`, or `'pointerup'` (mouse, touch, or pen) over an Instance, or anywhere in a Scene |
 | `onGameEvent(name, cb)` | on the next step after `controller.publishEvent(name, data)` |
 
 ### Steps and time
@@ -228,8 +228,18 @@ controller.keyboard.wasReleased(' ');    // went up since the previous step
 
 Keys are key values (`'a'`, `'ArrowLeft'`, `' '`, case-insensitive for letters) or codes (`'KeyA'`, `'Space'`) for
 the physical key regardless of layout. Arrow keys and space don't scroll the page, typing into page form fields is
-ignored, and held keys are released when the window loses focus. Pointer positions are in canvas pixels, however the
-canvas is scaled on the page.
+ignored, and held keys are released when the window loses focus.
+
+```ts
+const pointer = controller.pointer;      // mouse, touch, and pen alike
+if (pointer.wasPressed) { ... }          // also isDown and wasReleased
+const aim = { x: pointer.pressX - pointer.x, y: pointer.pressY - pointer.y };  // dragging back from the press
+if (pointer.swipe === Direction.Up) { ... }                                    // a swipe released this step
+const target = self.toScenePosition(pointer.x, pointer.y);                     // through the camera showing it
+```
+
+Pointer positions are in canvas pixels, however the canvas is scaled on the page. A drag keeps reporting after it leaves
+the canvas, touching the canvas doesn't scroll the page, and `pointer.pointers` has every touch for multi-touch.
 
 ### Audio
 
