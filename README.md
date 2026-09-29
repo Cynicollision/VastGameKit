@@ -235,7 +235,7 @@ const pointer = controller.pointer;      // mouse, touch, and pen alike
 if (pointer.wasPressed) { ... }          // also isDown and wasReleased
 const aim = { x: pointer.pressX - pointer.x, y: pointer.pressY - pointer.y };  // dragging back from the press
 if (pointer.swipe === Direction.Up) { ... }                                    // a swipe released this step
-const target = self.toScenePosition(pointer.x, pointer.y);                     // through the camera showing it
+const target = controller.sceneState.toScenePosition(pointer.x, pointer.y);    // through the camera showing it
 ```
 
 Pointer positions are in canvas pixels, however the canvas is scaled on the page. A drag keeps reporting after it leaves
