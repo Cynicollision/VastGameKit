@@ -28,5 +28,10 @@ export enum SpriteTransformation {
     Frame = 1,
     TileX = 2,
     TileY = 3,
+    // scale and rotation apply around the sprite's center. A negative scale flips the sprite.
+    ScaleX = 4,
+    ScaleY = 5,
+    // in degrees, clockwise.
+    Rotation = 6,
 }
 

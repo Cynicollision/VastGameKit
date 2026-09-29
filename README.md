@@ -191,7 +191,11 @@ SceneState's) find Instances by position: `getAtPosition`, `getWithinBoundaryAtP
 game.construction.sprites.add('sprCoin', { source: './resources/coin.png', width: 16, height: 16 }); // a sheet of frames
 self.animation.start(0, 3, 100, { loop: true });   // frames 0 to 3, 100ms each
 self.animation.setTransform(SpriteTransformation.Opacity, 0.5);
+self.animation.flipX = true;         // face the other way
+self.animation.setTransform(SpriteTransformation.Rotation, 90);   // also ScaleX and ScaleY
 ```
+
+Flips, scaling, and rotation apply around the sprite's center, so they don't move it.
 
 ### Scenes, cameras, and sub-scenes
 

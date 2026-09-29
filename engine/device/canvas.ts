@@ -20,6 +20,10 @@ export type GameCanvasOptions = {
 
 export type CanvasDrawImageOptions = {
     opacity?: number;
+    // scale and rotation (in degrees, clockwise) apply around the center of the destination. Negative scales flip.
+    rotation?: number;
+    scaleX?: number;
+    scaleY?: number;
     repeatHeight?: number;
     repeatWidth?: number;
     repeatX?: boolean;
@@ -199,6 +203,17 @@ export class GameCanvasHtml2D implements GameCanvas {
                 this.canvasContext2D.fillStyle = pattern;
                 this.canvasContext2D.fillRect(dx, dy, options.repeatWidth || this.width, options.repeatHeight || this.height);
             }
+        }
+        else if (options.rotation || (options.scaleX !== undefined && options.scaleX !== 1) || (options.scaleY !== undefined && options.scaleY !== 1)) {
+            const context = this.canvasContext2D;
+            context.save();
+            context.translate(dx + dw / 2, dy + dh / 2);
+            if (options.rotation) {
+                context.rotate(options.rotation * Math.PI / 180);
+            }
+            context.scale(options.scaleX !== undefined ? options.scaleX : 1, options.scaleY !== undefined ? options.scaleY : 1);
+            context.drawImage(image, sx, sy, sw, sh, -dw / 2, -dh / 2, dw, dh);
+            context.restore();
         }
         else {
             this.canvasContext2D.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);

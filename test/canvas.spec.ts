@@ -45,6 +45,51 @@ describe('GameCanvasHtml2D', () => {
         });
     });
 
+    describe('transformed images', () => {
+        // a 4x2 image: red on the left half, blue on the right.
+        function createImage(): HTMLCanvasElement {
+            const image = document.createElement('canvas');
+            image.width = 4;
+            image.height = 2;
+            const context = image.getContext('2d')!;
+            context.fillStyle = '#f00';
+            context.fillRect(0, 0, 2, 2);
+            context.fillStyle = '#00f';
+            context.fillRect(2, 0, 2, 2);
+            return image;
+        }
+
+        it('flips around the image center', () => {
+            const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 8, height: 8 });
+
+            canvas.drawImage(createImage(), 0, 0, 4, 2, 2, 2, 4, 2, { scaleX: -1 });
+
+            expect(getPixel(canvas, 2, 2)).toEqual([0, 0, 255, 255]);
+            expect(getPixel(canvas, 5, 2)).toEqual([255, 0, 0, 255]);
+        });
+
+        it('rotates clockwise around the image center', () => {
+            const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 8, height: 8 });
+
+            // centered at (4, 4): rotated 90 degrees, red is above and blue below.
+            canvas.drawImage(createImage(), 0, 0, 4, 2, 2, 3, 4, 2, { rotation: 90 });
+
+            expect(getPixel(canvas, 4, 2)).toEqual([255, 0, 0, 255]);
+            expect(getPixel(canvas, 4, 5)).toEqual([0, 0, 255, 255]);
+            expect(getPixel(canvas, 2, 3)).toEqual([0, 0, 0, 0]);
+        });
+
+        it('draws normally afterward', () => {
+            const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 8, height: 8 });
+
+            canvas.drawImage(createImage(), 0, 0, 4, 2, 0, 0, 4, 2, { scaleX: -1, rotation: 45 });
+            canvas.clear();
+            canvas.drawImage(createImage(), 0, 0, 4, 2, 0, 0, 4, 2);
+
+            expect(getPixel(canvas, 0, 0)).toEqual([255, 0, 0, 255]);
+        });
+    });
+
     it('clears an offscreen canvas to transparent', () => {
         const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 10, height: 10 });
         canvas.fillArea('#f00', 0, 0, 10, 10);

@@ -92,6 +92,33 @@ describe('SpriteAnimation stepping', () => {
         expect(animation.getTransform(SpriteTransformation.Frame)).toBe(1);
     });
 
+    it('flips while keeping its scale', () => {
+        const animation = TestUtil.getTestSprite().newAnimation();
+        animation.setTransform(SpriteTransformation.ScaleX, 2);
+
+        animation.flipX = true;
+        expect([animation.flipX, animation.getTransform(SpriteTransformation.ScaleX)]).toEqual([true, -2]);
+
+        animation.flipX = false;
+        expect(animation.getTransform(SpriteTransformation.ScaleX)).toBe(2);
+        expect(animation.flipY).toBeFalse();
+    });
+
+    it('extends beyond its frame only when scaled up or rotated', () => {
+        const animation = TestUtil.getTestSprite({ source: TestImage1.Source, width: 16, height: 16 }).newAnimation();
+        expect(animation.overhang).toBe(0);
+
+        animation.flipX = true;
+        expect(animation.overhang).toBe(0);
+
+        animation.setTransform(SpriteTransformation.ScaleY, 2);
+        expect(animation.overhang).toBe(8);
+
+        animation.setTransform(SpriteTransformation.ScaleY, 1);
+        animation.setTransform(SpriteTransformation.Rotation, 45);
+        expect(animation.overhang).toBeCloseTo((Math.SQRT2 * 16 - 16) / 2);
+    });
+
     it('does not advance while its Instance\'s Scene is paused', () => {
         const testGame = TestUtil.getTestGame();
         testGame.construction.actors.add('actAnimated', { sprite: TestUtil.getTestSprite() });

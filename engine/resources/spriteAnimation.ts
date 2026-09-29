@@ -31,10 +31,35 @@ export class SpriteAnimation {
         return this._paused;
     }
 
+    // whether the sprite is drawn mirrored left to right, e.g. to face the other way.
+    get flipX(): boolean { return this.getTransform(SpriteTransformation.ScaleX) < 0; }
+    set flipX(value: boolean) {
+        this.setTransform(SpriteTransformation.ScaleX, Math.abs(this.getTransform(SpriteTransformation.ScaleX)) * (value ? -1 : 1));
+    }
+
+    // whether the sprite is drawn upside down.
+    get flipY(): boolean { return this.getTransform(SpriteTransformation.ScaleY) < 0; }
+    set flipY(value: boolean) {
+        this.setTransform(SpriteTransformation.ScaleY, Math.abs(this.getTransform(SpriteTransformation.ScaleY)) * (value ? -1 : 1));
+    }
+
+    // How far the drawn sprite may extend beyond its frame on each side, due to scale and rotation.
+    get overhang(): number {
+        const scale = Math.max(Math.abs(this.getTransform(SpriteTransformation.ScaleX)), Math.abs(this.getTransform(SpriteTransformation.ScaleY)));
+        const size = this.getTransform(SpriteTransformation.Rotation) % 360 !== 0
+            ? Math.sqrt(this.sprite.width * this.sprite.width + this.sprite.height * this.sprite.height)
+            : Math.max(this.sprite.width, this.sprite.height);
+
+        return Math.max(0, (size * scale - Math.min(this.sprite.width, this.sprite.height)) / 2);
+    }
+
     constructor(sprite: Sprite) {
         this.sprite = sprite;
         this.setTransform(SpriteTransformation.Frame, 0);
         this.setTransform(SpriteTransformation.Opacity, 1);
+        this.setTransform(SpriteTransformation.ScaleX, 1);
+        this.setTransform(SpriteTransformation.ScaleY, 1);
+        this.setTransform(SpriteTransformation.Rotation, 0);
     }
 
     private advanceFrame(): void {
@@ -60,10 +85,15 @@ export class SpriteAnimation {
     draw(canvas: GameCanvas, x: number, y: number, options: SpriteDrawOptions = {}): void {
         if (this.sprite.image) {
             const frame = options.frame !== undefined ? options.frame : this.getTransform(SpriteTransformation.Frame);
-            const opacity = options.opacity !== undefined ? options.opacity : this.getTransform(SpriteTransformation.Opacity);
             const [srcX, srcY] = this.sprite.getFrameImageSourceCoords(frame);
 
-            canvas.drawImage(this.sprite.image, srcX, srcY, this.sprite.width, this.sprite.height, x, y, this.sprite.width, this.sprite.height, { ...options, opacity: opacity });
+            canvas.drawImage(this.sprite.image, srcX, srcY, this.sprite.width, this.sprite.height, x, y, this.sprite.width, this.sprite.height, {
+                ...options,
+                opacity: options.opacity !== undefined ? options.opacity : this.getTransform(SpriteTransformation.Opacity),
+                rotation: options.rotation !== undefined ? options.rotation : this.getTransform(SpriteTransformation.Rotation),
+                scaleX: options.scaleX !== undefined ? options.scaleX : this.getTransform(SpriteTransformation.ScaleX),
+                scaleY: options.scaleY !== undefined ? options.scaleY : this.getTransform(SpriteTransformation.ScaleY),
+            });
         }
     }
 

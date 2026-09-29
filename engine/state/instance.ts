@@ -208,7 +208,8 @@ export class ActorInstance implements Instance {
         }
 
         const sprite = this._animation.sprite;
-        return Geometry.rectangleIntersectsRectangle(this._x, this._y, sprite.width, sprite.height, viewX, viewY, viewWidth, viewHeight);
+        const overhang = this._animation.overhang;
+        return Geometry.rectangleIntersectsRectangle(this._x - overhang, this._y - overhang, sprite.width + overhang * 2, sprite.height + overhang * 2, viewX, viewY, viewWidth, viewHeight);
     }
 
     inactivate(): void {

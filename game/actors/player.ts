@@ -32,6 +32,10 @@ export function buildPlayerActor(game: Game) {
         const dx = (keyboard.isDown('d') || keyboard.isDown('ArrowRight') ? 1 : 0) - (keyboard.isDown('a') || keyboard.isDown('ArrowLeft') ? 1 : 0);
         const dy = (keyboard.isDown('s') || keyboard.isDown('ArrowDown') ? 1 : 0) - (keyboard.isDown('w') || keyboard.isDown('ArrowUp') ? 1 : 0);
 
+        if (dx !== 0) {
+            self.animation.flipX = dx < 0;
+        }
+
         self.motion.speed = dx !== 0 || dy !== 0 ? 1 : 0;
         if (self.motion.speed > 0) {
             self.motion.direction = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
