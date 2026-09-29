@@ -2,6 +2,7 @@ import { GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEven
 import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameKeyboardState, KeyboardState } from './../device/keyboard';
+import { GameStorage } from './../device/storage';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
 import { SceneState } from './sceneState';
@@ -9,6 +10,8 @@ import { SceneTransition, SceneTransitionOptions } from './transition';
 
 export type ControllerOptions = {
     targetFPS: number;
+    // Default: values are kept only in memory.
+    storage?: GameStorage;
 };
 
 export interface Controller {
@@ -22,6 +25,8 @@ export interface Controller {
     readonly keyboard: KeyboardState;
     readonly sceneState: SceneState;
     readonly state: ObjMap<any>;
+    // saved values, like high scores, that persist between visits.
+    readonly storage: GameStorage;
     goToScene(sceneName: string, data?: any): void;
     onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void;
     // TODO:
@@ -48,6 +53,7 @@ export class SceneController implements Controller {
     readonly keyboard = new GameKeyboardState();
     readonly state: ObjMap<any> = {};
     readonly stepDurationMs: number;
+    readonly storage: GameStorage;
 
     private _currentStep = 0;
     get currentStep() { return this._currentStep; }
@@ -60,6 +66,7 @@ export class SceneController implements Controller {
         this.gameConstruction = construction;
         this._options = _options;
         this.stepDurationMs = 1000 / _options.targetFPS;
+        this.storage = _options.storage || new GameStorage('', null);
         this._currentSceneState = this.getSceneState(initialScene.name);
     }
 

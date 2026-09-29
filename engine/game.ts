@@ -1,12 +1,15 @@
 import { FixedStepClock, GameError } from './core';
 import { GameCanvas, GameCanvasHtml2D, GameCanvasOptions } from './device/canvas';
 import { GameInputHandler } from './device/input';
+import { GameStorage } from './device/storage';
 import { GameConstruction } from './structure/construction';
 import { GameScene, Scene, SceneOptions } from './structure/scene';
 import { SceneController } from './state/controller';
 
 export type GameOptions = {
     canvasElementId: string;
+    // keeps the game's saved values separate from other games on the same site. Default: canvasElementId.
+    name?: string;
     targetFPS?: number;
     canvasOptions?: GameCanvasOptions;
     defaultSceneOptions?: SceneOptions;
@@ -51,7 +54,7 @@ export class Game {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
             const canvas = GameCanvasHtml2D.initForElement(canvasElement, options.canvasOptions);
             const inputHandler = GameInputHandler.initForElement(document.body, canvasElement);
-            const game = new Game(canvas, inputHandler, options);
+            const game = new Game(canvas, inputHandler, options, new GameStorage(options.name || options.canvasElementId));
             game.controller.audio.unlockOnUserGesture(document);
 
             return game;
@@ -64,7 +67,7 @@ export class Game {
         }
     }
 
-    constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions) {
+    constructor(canvas: GameCanvas, inputHandler: GameInputHandler, options: GameOptions, storage?: GameStorage) {
         this._canvas = canvas;
         this._inputHandler = inputHandler;
         this._options = this.applyGameOptions(options);
@@ -72,7 +75,7 @@ export class Game {
         this.construction = new GameConstruction();
 
         this._defaultScene = <GameScene>this.construction.scenes.add(Game.DefaultSceneName, this._options.defaultSceneOptions);
-        this.controller = new SceneController(this.construction, this._defaultScene, { targetFPS: this.options.targetFPS });
+        this.controller = new SceneController(this.construction, this._defaultScene, { targetFPS: this.options.targetFPS, storage: storage });
         this.clock = new FixedStepClock(this.controller.stepDurationMs, Game.MaxStepsPerFrame);
     }
 
