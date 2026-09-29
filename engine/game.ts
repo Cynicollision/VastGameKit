@@ -40,8 +40,10 @@ export class Game {
             const canvasElement = <HTMLCanvasElement>document.getElementById(options.canvasElementId);
             const canvas = GameCanvasHtml2D.initForElement(canvasElement, options.canvasOptions);
             const inputHandler = GameInputHandler.initForElement(document.body, canvasElement);
+            const game = new Game(canvas, inputHandler, options);
+            game.controller.audio.unlockOnUserGesture(document);
 
-            return new Game(canvas, inputHandler, options);
+            return game;
         }
         catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -67,7 +69,7 @@ export class Game {
     }
 
     load(): Promise<Game> {
-        return this.construction.load().then(() => Promise.resolve(this));
+        return this.construction.load(this.controller.audio.context).then(() => Promise.resolve(this));
     }
 
     start(): void {

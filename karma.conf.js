@@ -19,7 +19,14 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
-        browsers: ['ChromeHeadless'],
+        browsers: ['ChromeHeadlessAudio'],
+        customLaunchers: {
+            // lets audio tests start audio without a user gesture.
+            ChromeHeadlessAudio: {
+                base: 'ChromeHeadless',
+                flags: ['--autoplay-policy=no-user-gesture-required'],
+            },
+        },
         singleRun: env !== 'development',
         concurrency: Infinity,
         webpack: {

@@ -66,10 +66,11 @@ export class GameConstruction {
         this.tileMaps = new GameConstructionRegistry<TileMap, TileMapOptions>('TileMap', (name, options) => TileMap.new(name, requireOptions('TileMap', name, options)));
     }
 
-    load(): Promise <void>{
+    // Loads all resources. Sounds are decoded for the audio context, and stay unloaded without one.
+    load(audioContext?: BaseAudioContext): Promise<void> {
         const promises: Promise<void | string>[] = [];
 
-        this.sounds.resources.forEach(sound => promises.push(sound.loadAudio()));
+        this.sounds.resources.forEach(sound => promises.push(sound.load(audioContext)));
         this.sprites.resources.forEach(sprite => promises.push(sprite.loadImage()));
         this.tileMaps.resources.forEach(map => promises.push(map.load()));
 
