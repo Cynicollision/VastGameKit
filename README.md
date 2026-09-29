@@ -253,6 +253,23 @@ const target = controller.sceneState.toScenePosition(pointer.x, pointer.y);    /
 Pointer positions are in canvas pixels, however the canvas is scaled on the page. A drag keeps reporting after it leaves
 the canvas, touching the canvas doesn't scroll the page, and `pointer.pointers` has every touch for multi-touch.
 
+### Touch buttons
+
+Games played with a keyboard can add on-screen buttons that press keys, so they can be played on phones:
+
+```ts
+controller.setTouchButtons([
+    { key: 'ArrowLeft', x: 8, y: 140, width: 32, height: 32, label: '◀' },
+    { key: 'ArrowRight', x: 44, y: 140, width: 32, height: 32, label: '▶' },
+    { key: ' ', x: 276, y: 136, width: 36, height: 36, shape: 'circle', label: 'A' },
+]);
+```
+
+Buttons (in canvas coordinates) appear once the player touches the screen, so they're never in the way on a computer
+(set `controller.touchControls.visibility` to `'always'` or `'never'` to change that). Pressing one is the same as
+pressing its key, for `controller.keyboard` and `onKeyboardInput` alike. A touch that starts on a button slides between
+buttons like a d-pad and isn't pointer input; other touches are.
+
 ### Audio
 
 ```ts

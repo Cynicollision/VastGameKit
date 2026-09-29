@@ -45,6 +45,17 @@ vastGame.load().then(game => {
     buildDefaultScene(game);
     buildAreas(game);
 
+    // shown once the screen is touched.
+    game.controller.setTouchButtons([
+        { key: 'ArrowUp', x: 160, y: 600, width: 120, height: 120, label: '▲' },
+        { key: 'ArrowLeft', x: 40, y: 720, width: 120, height: 120, label: '◀' },
+        { key: 'ArrowRight', x: 280, y: 720, width: 120, height: 120, label: '▶' },
+        { key: 'ArrowDown', x: 160, y: 840, width: 120, height: 120, label: '▼' },
+        { key: 'q', x: 1100, y: 780, width: 140, height: 140, shape: 'circle', label: 'Q' },
+        { key: 'm', x: 940, y: 820, width: 110, height: 110, shape: 'circle', label: 'M' },
+        { key: 'e', x: 1120, y: 640, width: 110, height: 110, shape: 'circle', label: 'E' },
+    ]);
+
     game.controller.onSceneChange((oldSceneState, newSceneState) => {
         console.log(`Changing from ${oldSceneState.scene.name} to ${newSceneState.scene.name}`);
     });

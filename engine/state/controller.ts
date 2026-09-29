@@ -3,6 +3,7 @@ import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameKeyboardState, KeyboardState } from './../device/keyboard';
 import { GamePointerState, PointerState } from './../device/pointer';
+import { TouchButtonOptions, TouchControls } from './../device/touchControls';
 import { GameStorage } from './../device/storage';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
@@ -27,6 +28,8 @@ export interface Controller {
     // the pointer's position and presses this step.
     readonly pointer: PointerState;
     readonly sceneState: SceneState;
+    // on-screen buttons that press keys on touch screens (see TouchControls).
+    readonly touchControls: TouchControls;
     readonly state: ObjMap<any>;
     // saved values, like high scores, that persist between visits.
     readonly storage: GameStorage;
@@ -36,6 +39,8 @@ export interface Controller {
     //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     publishEvent(eventName: string, data?: any): void;
+    // Replaces the on-screen touch buttons, releasing any that were pressed.
+    setTouchButtons(buttons: TouchButtonOptions[]): void;
     // starts a GameTimer that ticks every step regardless of Scene. See SceneState.startTimer for Scene-scoped timers.
     startTimer(options: GameTimerOptions): GameTimer;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, data?: any): Promise<void>;
@@ -55,6 +60,7 @@ export class SceneController implements Controller {
     readonly gameConstruction: GameConstruction;
     readonly keyboard = new GameKeyboardState();
     readonly pointer = new GamePointerState();
+    readonly touchControls = new TouchControls();
     readonly state: ObjMap<any> = {};
     readonly stepDurationMs: number;
     readonly storage: GameStorage;
@@ -100,6 +106,7 @@ export class SceneController implements Controller {
 
     draw(canvas: GameCanvas): void {
         this._currentSceneState.draw(canvas, this);
+        this.touchControls.draw(canvas);
 
         if (this._transition) {
             this._transition.draw(canvas);
@@ -138,8 +145,16 @@ export class SceneController implements Controller {
     }
 
     onPointerEvent(event: PointerInputEvent): void {
+        if (this.touchControls.handlePointerEvent(event, ev => this.onKeyboardEvent(ev))) {
+            return;
+        }
+
         this.pointer.onEvent(event);
         this._currentSceneState.handlePointerEvent(event, this);
+    }
+
+    setTouchButtons(buttons: TouchButtonOptions[]): void {
+        this.touchControls.setButtons(buttons, ev => this.onKeyboardEvent(ev));
     }
 
     onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void {

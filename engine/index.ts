@@ -6,6 +6,7 @@ export * from './device/input';
 export * from './device/keyboard';
 export * from './device/pointer';
 export * from './device/storage';
+export * from './device/touchControls';
 export * from './game';
 export * from './resources/background';
 export * from './resources/sound';
