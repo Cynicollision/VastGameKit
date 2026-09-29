@@ -24,7 +24,8 @@ module.exports = function (config) {
             // lets audio tests start audio without a user gesture.
             ChromeHeadlessAudio: {
                 base: 'ChromeHeadless',
-                flags: ['--autoplay-policy=no-user-gesture-required'],
+                // CI's Linux runners can't start Chrome's sandbox.
+                flags: ['--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : [])],
             },
         },
         singleRun: env !== 'development',
