@@ -1,5 +1,6 @@
-import { GameError, GameEvent, Geometry, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent } from './../core';
+import { GameError, GameEvent, Geometry, InstanceStatus, KeyboardInputEvent, ObjMap, PointerInputEvent, SpriteTransformation } from './../core';
 import { GameCanvas } from './../device/canvas';
+import { Sprite } from './../resources/sprite';
 import { SpriteAnimation } from './../resources/spriteAnimation';
 import { ActorDefinition, Actor } from './../structure/actor';
 import { FollowEntityOptions, PositionedEntity } from './../structure/entity';
@@ -30,6 +31,8 @@ export interface Instance extends PositionedEntity {
     inactivate(): void;
     // Whether the Instance's Boundary would overlap no solid Instances (other than itself) at the position.
     isPlaceFree(x: number, y: number): boolean;
+    // Draws the Instance with a different Sprite (e.g. an attack), keeping its flip, scale, rotation, and opacity.
+    setSprite(sprite: Sprite): void;
 }
 
 export class ActorInstance implements Instance {
@@ -214,6 +217,17 @@ export class ActorInstance implements Instance {
 
     inactivate(): void {
         this._status = InstanceStatus.Inactive;
+    }
+
+    setSprite(sprite: Sprite): void {
+        const previous = this._animation;
+        this._animation = sprite.newAnimation();
+
+        if (previous) {
+            for (const transformation of [SpriteTransformation.Opacity, SpriteTransformation.ScaleX, SpriteTransformation.ScaleY, SpriteTransformation.Rotation]) {
+                this._animation.setTransform(transformation, previous.getTransform(transformation));
+            }
+        }
     }
 
     isPlaceFree(x: number, y: number): boolean {

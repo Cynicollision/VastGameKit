@@ -92,6 +92,23 @@ describe('SpriteAnimation stepping', () => {
         expect(animation.getTransform(SpriteTransformation.Frame)).toBe(1);
     });
 
+    it('can be replaced by another Sprite\'s, keeping its transforms', () => {
+        const testGame = TestUtil.getTestGame();
+        testGame.construction.actors.add('actHero', { sprite: TestUtil.getTestSprite() });
+        const hero = testGame.controller.sceneState.instances.create('actHero');
+        hero.animation.flipX = true;
+        hero.animation.setTransform(SpriteTransformation.Opacity, 0.5);
+        hero.animation.start(0, 3, 100);
+
+        const attack = TestUtil.getTestSprite2();
+        hero.setSprite(attack);
+
+        expect(hero.animation.sprite).toBe(attack);
+        expect(hero.animation.flipX).toBeTrue();
+        expect(hero.animation.getTransform(SpriteTransformation.Opacity)).toBe(0.5);
+        expect([hero.animation.stopped, hero.animation.getTransform(SpriteTransformation.Frame)]).toEqual([true, 0]);
+    });
+
     it('flips while keeping its scale', () => {
         const animation = TestUtil.getTestSprite().newAnimation();
         animation.setTransform(SpriteTransformation.ScaleX, 2);

@@ -195,7 +195,8 @@ self.animation.flipX = true;         // face the other way
 self.animation.setTransform(SpriteTransformation.Rotation, 90);   // also ScaleX and ScaleY
 ```
 
-Flips, scaling, and rotation apply around the sprite's center, so they don't move it.
+Flips, scaling, and rotation apply around the sprite's center, so they don't move it. `self.setSprite(sprite)` switches
+an Instance to another Sprite, like a separate sheet for attacking, keeping its flip, scale, rotation, and opacity.
 
 ### Drawing
 
