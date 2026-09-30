@@ -44,6 +44,11 @@ export const Points = {
     fish: 200,
 };
 
-// steps a hop takes, and the steps before a lost life's next cat appears.
+// steps a hop takes, the steps before a lost life's next cat appears, and the steps to celebrate a cat getting home
+// before the next one does.
 export const HopSteps = 6;
 export const RespawnSteps = 60;
+export const CelebrateSteps = 45;
+
+// how fast the camera pans back down to each new cat, in pixels per step. Faster than a hop, so it keeps up with them.
+export const CameraPanSpeed = 4;

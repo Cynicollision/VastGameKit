@@ -1,6 +1,7 @@
 import { Controller, Game, Instance, SceneState } from './../../engine';
 import { getRow, loseLife } from './../actors/cat';
-import { HudHeight, Points, RespawnSteps, Rules, Screen, Tile } from './../constants';
+import { celebrate } from './../actors/scenery';
+import { CameraPanSpeed, CelebrateSteps, HudHeight, Points, RespawnSteps, Rules, Screen, Tile } from './../constants';
 import { Sprites } from './../generated/art';
 import { addScore, getSession } from './../session';
 import { showTouchButtons } from './../settings';
@@ -16,7 +17,8 @@ function spawnCat(self: SceneState, controller: Controller): Instance {
     self.state.cat = cat;
     self.state.bestRow = getRow(cat);
     getSession(controller).timeLeft = Rules.timeSteps;
-    self.defaultCamera.follow(cat, { centerOnTarget: true });
+    // the camera pans to each new cat, which starts out far below where the last one finished.
+    self.defaultCamera.follow(cat, { centerOnTarget: true, maxSpeed: CameraPanSpeed });
     return cat;
 }
 
@@ -45,7 +47,7 @@ function isCatPlaying(self: SceneState): boolean {
     return !!cat && !cat.state.lost && !self.state.roundOver;
 }
 
-// A cat that made it home: it curls up in the box, and the next one starts out.
+// A cat that made it home: it curls up in the box, and after a moment to celebrate, the next one starts out.
 function fillBox(self: SceneState, cat: Instance, controller: Controller): void {
     const box = self.instances.getAll('actBox').find(box => Math.abs(box.x - cat.x) < 4);
     if (!box) {
@@ -54,6 +56,7 @@ function fillBox(self: SceneState, cat: Instance, controller: Controller): void 
 
     box.state.filled = true;
     box.animation.setFrame(BoxFrames.cat);
+    celebrate(box, self);
     cat.destroy();
     self.state.cat = undefined;
 
@@ -93,7 +96,7 @@ function fillBox(self: SceneState, cat: Instance, controller: Controller): void 
         });
     }
     else {
-        spawnCat(self, controller);
+        self.startTimer({ durationSteps: CelebrateSteps }).onEnd(() => spawnCat(self, controller));
     }
 }
 
