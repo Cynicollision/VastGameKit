@@ -41,13 +41,15 @@ describe('SubScene', () => {
         expect(subScene.isDestroyed).toBeTrue();
     });
 
-    it('can be drawn on a GameCanvas', () => {
-        const subScene = new SubScene(123, testGame.controller.sceneState);
+    it('can be drawn on a GameCanvas, within its own area', () => {
+        const subScene = new SubScene(123, testGame.controller.sceneState, { x: 10, y: 20, width: 100, height: 50 });
         const mockCanvas = <MockGameCanvas>testGame.canvas;
-        
-        expect(mockCanvas.drawnImages.length).toBe(0);
-        subScene.draw(mockCanvas, mockCanvas, testGame.controller);
 
+        expect(mockCanvas.drawnImages.length).toBe(0);
+        subScene.draw(mockCanvas, testGame.controller);
+
+        expect(mockCanvas.pushedViews[0]).toEqual({ port: [10, 20, 100, 50], view: [0, 0, 100, 50] });
         expect(mockCanvas.drawnImages.length).toBe(1);
+        expect(mockCanvas.viewDepth).toBe(0);
     });
 });

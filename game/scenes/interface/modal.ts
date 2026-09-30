@@ -1,12 +1,10 @@
-import { Game } from './../../../engine/game';
+import { Game } from './../../../engine';
 
 export function buildModal(game: Game): void {
     const modal = game.construction.scenes.add('scnModal', { width: 240, height: 160 });
     modal.background.setFromColor('#CC0');
 
     modal.onStart((self, controller, data) => {
-        console.log('modal onStart');
-
         self.defaultCamera.width = 240;
         self.defaultCamera.height = 160;
         self.defaultCamera.portWidth = 960;

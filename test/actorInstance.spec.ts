@@ -57,6 +57,27 @@ describe('ActorInstance', () => {
         expect(testInstance.y).toBe(90);
     });
 
+    it('has the height and width of its Boundary', () => {
+        testInstance.actor.setRectBoundary(20, 10);
+
+        expect(testInstance.width).toBe(20);
+        expect(testInstance.height).toBe(10);
+    });
+
+    it('can follow another Instance, centered on it', () => {
+        testInstance.actor.setRectBoundary(10, 10);
+        const other = game.construction.actors.add('otherActor');
+        other.setRectBoundary(30, 50);
+        const otherInstance = game.controller.sceneState.instances.create('otherActor', { x: 100, y: 200 });
+
+        testInstance.follow(otherInstance, { centerOnTarget: true });
+        testInstance.activate();
+        (<ActorInstance>testInstance).step(game.controller);
+
+        expect(testInstance.x).toBe(110);
+        expect(testInstance.y).toBe(220);
+    });
+
     describe('status', () => {
         it('begins as New', () => {
             expect(testInstance.status).toBe(InstanceStatus.New);

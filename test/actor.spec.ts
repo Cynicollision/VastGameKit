@@ -1,6 +1,6 @@
 
 
-import { ActorBehaviorName, GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
+import { GameEvent, KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { ActorDefinition } from './../engine/structure/actor';
 import { Game } from './../engine/game';
 import { TestImage1 } from './mocks/testImages';
@@ -28,13 +28,6 @@ describe('Actor', () => {
         expect(testActor.getCollisionActorNames().indexOf('otherActor3')).toBe(-1);
     });
 
-    it('can use a built-in behavior', () => {
-        expect(testActor.behaviors.length).toBe(0);
-        testActor.useBehavior(ActorBehaviorName.BasicMotion);
-        expect(testActor.behaviors.length).toBe(1);
-        expect(testActor.behaviors.indexOf(ActorBehaviorName.BasicMotion)).toBe(0);
-    });
-
     describe('lifecycle callbacks', () => {
 
         it('defines an onCollision callback', () => {
@@ -48,7 +41,7 @@ describe('Actor', () => {
 
             expect(collisionHandlerCalled).toBeFalse();
 
-            testActor.callCollision(null, instance2, testGame.controller);
+            testActor.callCollision(testGame.controller.sceneState.instances.create('testActor'), instance2, testGame.controller);
             
             expect(collisionHandlerCalled).toBeTrue();
         });
@@ -61,7 +54,7 @@ describe('Actor', () => {
 
             expect(createCalled).toBeFalse();
             
-            testActor.callCreate(null, testGame.controller)
+            testActor.callCreate(testGame.controller.sceneState.instances.create('testActor'), testGame.controller)
 
             expect(createCalled).toBeTrue();
         });
@@ -74,7 +67,7 @@ describe('Actor', () => {
 
             expect(destroyCalled).toBeFalse();
 
-            testActor.callDestroy(null, testGame.controller);
+            testActor.callDestroy(testGame.controller.sceneState.instances.create('testActor'), testGame.controller);
 
             expect(destroyCalled).toBeTrue();
         });
@@ -87,7 +80,7 @@ describe('Actor', () => {
 
             expect(drawCalled).toBeFalse();
 
-            testActor.callDraw(null, testGame.canvas, testGame.controller);
+            testActor.callDraw(testGame.controller.sceneState.instances.create('testActor'), testGame.canvas, testGame.controller);
 
             expect(drawCalled).toBeTrue();
         });
@@ -100,14 +93,14 @@ describe('Actor', () => {
 
             expect(gameEventHandlerCalled).toBeFalse();
 
-            testActor.callGameEvent(null, GameEvent.new('testEvent'), testGame.controller);
+            testActor.callGameEvent(testGame.controller.sceneState.instances.create('testActor'), GameEvent.new('testEvent'), testGame.controller);
 
             expect(gameEventHandlerCalled).toBeTrue();
         });
 
         it('defines an onKeyboardInput callback', () => {
             let keyboardEventCalled = false;
-            let keyboardEventType = null;
+            let keyboardEventType = null as string | null;
             testActor.onKeyboardInput('testkey', (self, event, sc) => {
                 keyboardEventCalled = true;
                 keyboardEventType = event.type;
@@ -115,7 +108,7 @@ describe('Actor', () => {
 
             expect(keyboardEventCalled).toBeFalse();
 
-            testActor.callKeyboardEvent(null, new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
+            testActor.callKeyboardEvent(testGame.controller.sceneState.instances.create('testActor'), new KeyboardInputEvent('testkey', 'testkeytype'), testGame.controller);
 
             expect(keyboardEventCalled).toBeTrue();
             expect(keyboardEventType).toBe('testkeytype');
@@ -123,7 +116,7 @@ describe('Actor', () => {
 
         it('defines an onPointerInput callback', () => {
             let pointerEventCalled = false;
-            let pointerEventCoords = null;
+            let pointerEventCoords = null as number[] | null;
             testActor.onPointerInput('pointertest', (self, ev, sc) => {
                 pointerEventCalled = true;
                 pointerEventCoords = [ev.x, ev.y];
@@ -131,7 +124,7 @@ describe('Actor', () => {
 
             expect(pointerEventCalled).toBeFalse();
 
-            testActor.callPointerEvent(null, new PointerInputEvent('pointertest', 20, 40), testGame.controller);
+            testActor.callPointerEvent(testGame.controller.sceneState.instances.create('testActor'), new PointerInputEvent('pointertest', 20, 40), testGame.controller);
 
             expect(pointerEventCalled).toBeTrue();
             expect(pointerEventCoords).toEqual([20, 40]);
@@ -145,7 +138,7 @@ describe('Actor', () => {
 
             expect(stepCalled).toBeFalse();
 
-            testActor.callStep(null, testGame.controller);
+            testActor.callStep(testGame.controller.sceneState.instances.create('testActor'), testGame.controller);
 
             expect(stepCalled).toBeTrue();
         });
@@ -159,11 +152,11 @@ describe('Actor', () => {
             const radius = 8;
             testActor.setCircleBoundary(radius, -8, -8);
 
-            expect(testActor.boundary.height).toBe(radius * 2);
-            expect(testActor.boundary.atPosition(32, 32).containsPosition(22, 22)).toBeFalse();
-            expect(testActor.boundary.atPosition(32, 32).containsPosition(28, 28)).toBeTrue();
-            expect(testActor.boundary.atPosition(32, 32).containsPosition(36, 36)).toBeTrue();
-            expect(testActor.boundary.atPosition(32, 32).containsPosition(42, 42)).toBeFalse();
+            expect(testActor.boundary!.height).toBe(radius * 2);
+            expect(testActor.boundary!.atPosition(32, 32).containsPosition(22, 22)).toBeFalse();
+            expect(testActor.boundary!.atPosition(32, 32).containsPosition(28, 28)).toBeTrue();
+            expect(testActor.boundary!.atPosition(32, 32).containsPosition(36, 36)).toBeTrue();
+            expect(testActor.boundary!.atPosition(32, 32).containsPosition(42, 42)).toBeFalse();
         });
 
         it('as a circle the size of its Sprite', done => {
@@ -188,8 +181,8 @@ describe('Actor', () => {
             const width = 20;
             const height = 10;
             testActor.setRectBoundary(width, height, 0, 0);
-            expect(testActor.boundary.width).toBe(width);
-            expect(testActor.boundary.width).toBe(width);
+            expect(testActor.boundary!.width).toBe(width);
+            expect(testActor.boundary!.width).toBe(width);
         });
 
         it('as a rectangle the size of its Sprite', done => {

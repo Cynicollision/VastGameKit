@@ -20,12 +20,14 @@ export interface Camera extends PositionedEntity {
     portWidth: number;
     portHeight: number;
     follow(target: PositionedEntity, options?: FollowEntityOptions): void;
+    // Converts a canvas position within the camera's port to the Scene position it shows.
+    toScenePosition(x: number, y: number): { x: number; y: number };
 }
 
 export class SceneCamera implements Camera {
     private readonly _sceneState: SceneState;
-    private _followTarget: PositionedEntity;
-    private _followOptions: FollowEntityOptions = {};
+    private _followTarget?: PositionedEntity;
+    private _followOptions: Required<FollowEntityOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0 };
 
     readonly name: string;
     height: number = 0;
@@ -57,6 +59,13 @@ export class SceneCamera implements Camera {
         this._followOptions.offsetY = options.offsetY || 0;
     }
 
+    toScenePosition(x: number, y: number): { x: number; y: number } {
+        return {
+            x: this.x + (x - this.portX) * (this.width / this.portWidth),
+            y: this.y + (y - this.portY) * (this.height / this.portHeight),
+        };
+    }
+
     portContainsPosition(x: number, y: number): boolean {
         return Geometry.rectangleContainsPosition(this.portX, this.portY, this.portWidth, this.portHeight, x, y);
     }
@@ -74,7 +83,9 @@ export class SceneCamera implements Camera {
             newY -= this.height / 2 - this._followTarget.height / 2;
         }
 
-        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, this._sceneState.scene.width - this.width);
-        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, this._sceneState.scene.height - this.height);
+        const maxX = Math.max(0, this._sceneState.scene.width - this.width);
+        const maxY = Math.max(0, this._sceneState.scene.height - this.height);
+        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, maxX);
+        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, maxY);
     }
 }

@@ -1,4 +1,4 @@
-import { GameError, GameEvent, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
+import { GameError, GameEvent, GameTimer, GameTimerOptions, GameTimerSet, KeyboardInputEvent, ObjMap, PointerInputEvent, SceneStatus } from './../core';
 import { GameCanvas } from './../device/canvas';
 import { GameScene, Scene } from './../structure/scene';
 import { ActorInstance } from './instance';
@@ -14,6 +14,7 @@ export class SceneState {
     private readonly cameraMap: ObjMap<SceneCamera> = {};
     private readonly embeddedSubScenes: SceneSubSceneState;
     private readonly floatingSubScenes: SceneSubSceneState;
+    private readonly timers = new GameTimerSet();
     readonly instances: SceneInstanceState;
     readonly id: number;
     readonly scene: Scene;
@@ -39,20 +40,26 @@ export class SceneState {
         this._defaultCamera = <SceneCamera>this.addCamera(SceneState.DefaultCameraName);
     }
 
-    private getCameraCanvasKey(camera: SceneCamera): string {
-        return `${this.scene.name}_${this.id}_${camera.name}`;
+    private scalePointerEventToCamera(event: PointerInputEvent, camera: SceneCamera): PointerInputEvent {
+        const position = camera.toScenePosition(event.x, event.y);
+        return event.translate(position.x - event.x, position.y - event.y);
     }
 
-    private scalePointerEventToCamera(event: PointerInputEvent, camera: SceneCamera): PointerInputEvent {
-        const translatedEvent = event.translate(-camera.portX, -camera.portY);
+    // The camera showing a canvas position: the first secondary camera whose port contains it, or else the default camera.
+    private getCameraAt(x: number, y: number): SceneCamera {
+        for (const cameraName in this.cameraMap) {
+            const camera = this.cameraMap[cameraName];
+            if (cameraName !== SceneState.DefaultCameraName && camera.portContainsPosition(x, y)) {
+                return camera;
+            }
+        }
 
-        translatedEvent.x *= (camera.width / camera.portWidth);
-        translatedEvent.y *= (camera.height / camera.portHeight);
+        return this._defaultCamera;
+    }
 
-        translatedEvent.x += camera.x;
-        translatedEvent.y += camera.y;
-
-        return translatedEvent;
+    // Converts a canvas position, like the pointer's, to the Scene position shown there.
+    toScenePosition(x: number, y: number): { x: number; y: number } {
+        return this.getCameraAt(x, y).toScenePosition(x, y);
     }
 
     addCamera(cameraName: string, options: SceneCameraOptions = {}): Camera {
@@ -66,27 +73,21 @@ export class SceneState {
         return camera;
     }
 
+    // Draws the Scene through each Camera onto the Camera's port, then the Scene's onDraw and floating SubScenes over them.
     draw(canvas: GameCanvas, controller: Controller): void {
-        const sceneCanvas = canvas.subCanvas('scene', { width: this.scene.width, height: this.scene.height });
-
-        if (this.scene.background) {
-            this.scene.background.draw(sceneCanvas);
-        }
-
-        this.embeddedSubScenes.draw(canvas, sceneCanvas, <SceneController>controller);
-        this.instances.draw(sceneCanvas, <SceneController>controller);
-
-        // TODO: Camera.draw(scenCanvas)
         for (const cameraName in this.cameraMap) {
             const camera = this.cameraMap[cameraName];
-            const cameraCanvasKey = this.getCameraCanvasKey(camera);
-            const cameraCanvas = canvas.subCanvas(cameraCanvasKey, { width: camera.width, height: camera.height });
-            cameraCanvas.drawCanvas(sceneCanvas, camera.x, camera.y, camera.width, camera.height, 0, 0, camera.width, camera.height);
-            canvas.drawCanvas(cameraCanvas, 0, 0, camera.width, camera.height, camera.portX, camera.portY, camera.portWidth, camera.portHeight);
+            canvas.pushView(camera.portX, camera.portY, camera.portWidth, camera.portHeight, camera.x, camera.y, camera.width, camera.height);
+
+            this.scene.background.draw(canvas, camera);
+            this.embeddedSubScenes.draw(canvas, <SceneController>controller, camera);
+            this.instances.draw(canvas, <SceneController>controller, camera);
+
+            canvas.popView();
         }
 
         this.scene.callDraw(this, canvas, controller);
-        this.floatingSubScenes.draw(canvas, canvas, <SceneController>controller);
+        this.floatingSubScenes.draw(canvas, <SceneController>controller);
     }
 
     embedSubScene(sceneName: string, options: SubSceneOptions = {}): SubScene {
@@ -141,27 +142,9 @@ export class SceneState {
             return;
         }
 
-        // transform to secondary cameras first.
-        let transformedEvent = null;
-        for (const cameraName in this.cameraMap) {
-            if (cameraName === SceneState.DefaultCameraName) {
-                continue;
-            }
-
-            // TODO: camera.handlePointerEvent
-            const camera = this.getCamera(cameraName);
-            if (camera.portContainsPosition(event.x, event.y)) {
-                transformedEvent = this.scalePointerEventToCamera(event, camera);
-                break;
-            }
-        }
-
-        // transform to default camera if not already transformed to a secondary camera.
-        if (!transformedEvent && this._defaultCamera.portContainsPosition(event.x, event.y)) {
-            transformedEvent = this.scalePointerEventToCamera(event, this._defaultCamera);
-        }
-
-        const propogatedEvent = transformedEvent || event;
+        // transform to the camera the event is in, if any.
+        const camera = this.getCameraAt(event.x, event.y);
+        const propogatedEvent = camera.portContainsPosition(event.x, event.y) ? this.scalePointerEventToCamera(event, camera) : event;
         this.embeddedSubScenes.handlePointerEvent(propogatedEvent, <SceneController>controller);
         
         this.instances.forEach(instance => (<ActorInstance>instance).handlePointerEvent(instance, propogatedEvent, controller));
@@ -190,6 +173,7 @@ export class SceneState {
             return;
         }
 
+        this.timers.step();
         this.scene.callStep(this, controller);
         this.instances.step(<SceneController>controller);
         this.embeddedSubScenes.step(<SceneController>controller);
@@ -198,6 +182,11 @@ export class SceneState {
             const camera = this.cameraMap[cameraName];
             camera.updateFollowPosition();
         }
+    }
+
+    // starts a GameTimer that only ticks while this Scene is running and not paused.
+    startTimer(options: GameTimerOptions): GameTimer {
+        return this.timers.start(options);
     }
 
     suspend(controller: Controller, data?: any): void {

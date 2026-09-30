@@ -1,127 +1,50 @@
-import { Direction } from './../../engine/core';
-import { Game } from './../../engine/game';
-import Constants from './../constants';
+import { Game } from './../../engine';
+import { exitAreaAtEdge } from './../scenes/areas';
 
 export function buildPlayerActor(game: Game) {
-
-    const actPlayer = game.construction.actors.add('actPlayer', { 
+    const actPlayer = game.construction.actors.add('actPlayer', {
         sprite: game.construction.sprites.get('sprLink'),
     });
 
     actPlayer.setRectBoundaryFromSprite();
-    actPlayer.useBasicMotionBehavior();
 
-    actPlayer.onCreate((self, sc) => {
+    actPlayer.onCreate((self, controller) => {
         self.depth = -20;
-        self.state.stats = { health: 100 };
+        self.state.coins = 0;
     });
 
-    actPlayer.onCollision('actCoin', (self, other, sc) => {
+    actPlayer.onCollision('actCoin', (self, other, controller) => {
         other.destroy();
-    });
-    
-    actPlayer.onKeyboardInput('w', (self, ev, sc) => {
-        self.state.moveUp = ev.type === 'keydown';
+        self.state.coins++;
+
+        const best = controller.storage.get('bestCoins', 0);
+        if (self.state.coins > best) {
+            controller.storage.set('bestCoins', self.state.coins);
+        }
     });
 
-    actPlayer.onKeyboardInput('a', (self, ev, sc) => {
-        self.state.moveLeft = ev.type === 'keydown';
-    });
-
-    actPlayer.onKeyboardInput('s', (self, ev, sc) => {
-        self.state.moveDown = ev.type === 'keydown';
-    });
-
-    actPlayer.onKeyboardInput('d', (self, ev, sc) => {
-        self.state.moveRight = ev.type === 'keydown';
-    });
-
-    actPlayer.onPointerInput('mousedown', (self, ev, sc) => {
+    actPlayer.onPointerInput('pointerdown', (self, event, controller) => {
         console.log('you clicked me');
-        sc.publishEvent('something', { foo: 'bar'});
     });
 
     actPlayer.onStep((self, controller) => {
-        if (self.state.moveUp || self.state.moveLeft || self.state.moveRight || self.state.moveDown) {
-            self.motion.speed = 1;
-        }
-        else {
-            self.motion.speed = 0;
-        }
-    
-        if (self.state.moveUp && self.state.moveLeft) {
-            self.motion.direction = 225;
-        }
-        else if (self.state.moveUp && self.state.moveRight) {
-            self.motion.direction = 315;
-        }
-        else if (self.state.moveDown && self.state.moveLeft) {
-            self.motion.direction = 135;
-        }
-        else if (self.state.moveDown && self.state.moveRight) {
-            self.motion.direction = 45;
-        }
-        else if (self.state.moveUp) {
-            self.motion.direction = Direction.Up;
-        }
-        else if (self.state.moveLeft) {
-            self.motion.direction = Direction.Left;
-        }
-        else if (self.state.moveRight) {
-            self.motion.direction = Direction.Right;
-        }
-        else if (self.state.moveDown) {
-            self.motion.direction = Direction.Down;
+        const keyboard = controller.keyboard;
+        const dx = (keyboard.isDown('d') || keyboard.isDown('ArrowRight') ? 1 : 0) - (keyboard.isDown('a') || keyboard.isDown('ArrowLeft') ? 1 : 0);
+        const dy = (keyboard.isDown('s') || keyboard.isDown('ArrowDown') ? 1 : 0) - (keyboard.isDown('w') || keyboard.isDown('ArrowUp') ? 1 : 0);
+
+        if (dx !== 0) {
+            self.animation.flipX = dx < 0;
         }
 
-        // TODO: "gameWorld" script(s)
-        const sceneHeight = controller.sceneState.scene.height;
-        const sceneWidth= controller.sceneState.scene.width;
-        const threshold = 16;
-        const placementOffset = 4;
-        if (self.y < 0) {
-            if (controller.sceneState.scene.name === 'scnAreaB1') {
-                const nextRoom = 'scnAreaA1';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: self.x, playerY: sceneHeight - threshold - placementOffset });
-            }
-            else if (controller.sceneState.scene.name === 'scnAreaB2') {
-                const nextRoom = 'scnAreaA2';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: self.x, playerY: sceneHeight - threshold - placementOffset });
-            }
+        self.motion.speed = dx !== 0 || dy !== 0 ? 1 : 0;
+        if (self.motion.speed > 0) {
+            self.motion.direction = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
         }
-        else if (self.y > sceneHeight - threshold) {
-            if (controller.sceneState.scene.name === 'scnAreaA1') {
-                const nextRoom = 'scnAreaB1';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: self.x, playerY: placementOffset });
-            }
-            else if (controller.sceneState.scene.name === 'scnAreaA2') {
-                const nextRoom = 'scnAreaB2';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: self.x, playerY: placementOffset });
-            }
-        }
-        else if (self.x < 0) {
-            if (controller.sceneState.scene.name === 'scnAreaA2') {
-                const nextRoom = 'scnAreaA1';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: sceneWidth - threshold - placementOffset, playerY: self.y });
-            }
-            else if (controller.sceneState.scene.name === 'scnAreaB2') {
-                const nextRoom = 'scnAreaB1';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: sceneWidth - threshold - placementOffset, playerY: self.y });
-            }
-        }
-        else if (self.x > sceneWidth - threshold) {
-            if (controller.sceneState.scene.name === 'scnAreaA1') {
-                const nextRoom = 'scnAreaA2';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: placementOffset, playerY: self.y });
-            }
-            else if (controller.sceneState.scene.name === 'scnAreaB1') {
-                const nextRoom = 'scnAreaB2';
-                controller.transitionToScene(nextRoom, { durationMs: 800, portY: Constants.HUDHeight }, { playerX: placementOffset, playerY: self.y });
-            }
-        }
+
+        exitAreaAtEdge(self, controller);
     });
 
-    actPlayer.onDraw((self, canvas, sc) => {
+    actPlayer.onDraw((self, canvas, controller) => {
         canvas.drawText(`(${self.x},${self.y})`, self.x + 32, self.y + 10);
     });
 }

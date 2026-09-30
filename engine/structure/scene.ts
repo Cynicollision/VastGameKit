@@ -1,7 +1,6 @@
 
 import { RuntimeID } from './../core';
-import { Background, BackgroundDrawOptions } from './../resources/background';
-import { Sprite } from './../resources/sprite';
+import { Background } from './../resources/background';
 import { Controller, SceneController } from './../state/controller';
 import { ActorInstanceOptions } from './../state/instance';
 import { SceneState } from './../state/sceneState';
@@ -37,9 +36,9 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
 
     private readonly actorPlacements: SceneActorPlacement[] = [];
 
-    private onResumeCallback: EntityLifecycleCb<SceneState>;
-    private onStartCallback: EntityLifecycleCb<SceneState>;
-    private onSuspendCallback: EntityLifecycleCb<SceneState>;
+    private onResumeCallback?: EntityLifecycleCb<SceneState>;
+    private onStartCallback?: EntityLifecycleCb<SceneState>;
+    private onSuspendCallback?: EntityLifecycleCb<SceneState>;
 
     readonly background: Background;
     readonly height: number;
@@ -55,7 +54,7 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         super();
 
         this.name = name;
-        this.persistent = options !== undefined ? options.persistent : false;
+        this.persistent = options.persistent || false;
         this.height = options.height || GameScene.DefaultSceneHeight;
         this.width = options.width || GameScene.DefaultSceneWidth;
 

@@ -8,7 +8,7 @@ export class Geometry {
     }
 
     static circleIntersectsCircle(x1: number, y1: number, r1: number, x2: number, y2: number, r2: number): boolean {
-        return Math.hypot(x1 - x2, y1 - y2) <= r1 + r2;
+        return Math.hypot(x1 - x2, y1 - y2) < r1 + r2;
     }
 
     static getLengthDirectionX(length: number, direction: number): number {
@@ -38,15 +38,8 @@ export class Geometry {
         return (dX * dX) + (dY * dY) < (r * r);
     }
 
+    // Edges that only touch do not intersect.
     static rectangleIntersectsRectangle(x1: number, y1: number, w1: number, h1: number, x2: number, y2: number, w2: number, h2: number): boolean {
-        if (x1 > x2 + w2 || x2 >= x1 + w1) {
-            return false;
-        }
-
-        if (y1 > y2 + h2 || y2 >= y1 + h1) {
-            return false;
-        }
-
-        return true;
+        return x1 < x2 + w2 && x2 < x1 + w1 && y1 < y2 + h2 && y2 < y1 + h1;
     }
 }

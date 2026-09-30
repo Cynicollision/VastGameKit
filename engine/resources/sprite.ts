@@ -15,12 +15,12 @@ export class Sprite {
     private _loaded: boolean = false;
     get loaded() { return this._loaded; }
 
-    private _height: number = 0;
+    private _height?: number;
     get height(): number {
         return this._height || this.image.height;
     }
     
-    private _width: number = 0;
+    private _width?: number;
     get width(): number {
         return this._width || this.image.width;
     }
@@ -40,20 +40,14 @@ export class Sprite {
     }
 
     getFrameImageSourceCoords(frame: number): [number, number] {
-        let frameRow = 0;
+        const framesPerRow = this.image.width
+            ? Math.max(1, Math.floor((this.image.width + this.frameBorder) / (this.width + this.frameBorder)))
+            : Number.MAX_SAFE_INTEGER;
+        const frameColumn = frame % framesPerRow;
+        const frameRow = Math.floor(frame / framesPerRow);
 
-        if (this.image.width) {
-            const framesPerRow = Math.floor(this.image.width / this.width);
-            while (this.width * frame >= framesPerRow * this.width) {
-                frame -= framesPerRow;
-                frameRow++;
-            }
-        }
-
-        const frameXOffset = frame * this.frameBorder;
-        const frameYOffset = frameRow * this.frameBorder;
-        const srcX = frame * this.width + frameXOffset;
-        const srcY = frameRow * this.height + frameYOffset;
+        const srcX = frameColumn * (this.width + this.frameBorder);
+        const srcY = frameRow * (this.height + this.frameBorder);
 
         return [srcX, srcY];
     }
@@ -66,8 +60,18 @@ export class Sprite {
         const spriteName = this.name;
         const imageSrc = this.image.src ? this.image.src.substring(0, 100) : undefined;
 
+        // the image may have finished loading (or failed) before this was called.
+        if (this.image.complete) {
+            if (this.image.naturalWidth > 0) {
+                this._loaded = true;
+                return Promise.resolve();
+            }
+            return Promise.reject(`Failed to load Sprite "${spriteName}" from source: ${imageSrc}.`);
+        }
+
         return new Promise((resolve, reject) => {
-            this.image.onload = function(this: GlobalEventHandlers): void {
+            this.image.onload = (): void => {
+                this._loaded = true;
                 resolve();
             };
             this.image.onerror = function(this: GlobalEventHandlers): void {

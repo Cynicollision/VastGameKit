@@ -2,7 +2,6 @@ import { InstanceStatus } from './../engine/core';
 import { RectBoundary } from './../engine/core/boundaries';
 import { SceneInstanceState } from './../engine/state/instanceState';
 import { Game } from './../engine/game';
-import { MockActorInstanceBehavior } from './mocks/mockActorInstanceBehavior';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
 
@@ -60,6 +59,32 @@ describe('manages ActorInstances', () => {
         expect(testInstanceState.isPositionFree(20, 20, true)).toBeTrue();
     });
 
+    it('checks if a position is free of solid ActorInstances when a non-solid ActorInstance is also there', () => {
+        testInstanceState.create('testActor', { x: 10, y: 10 });
+        const solidInstance = testInstanceState.create('testActor2', { x: 10, y: 10 });
+        solidInstance.actor.solid = true;
+
+        expect(testInstanceState.isPositionFree(20, 20, true)).toBeFalse();
+    });
+
+    it('excludes an ActorInstance when getting ActorInstances within a Boundary', () => {
+        const instance = testInstanceState.create('testActor', { x: 10, y: 10 });
+        const other = testInstanceState.create('testActor2', { x: 15, y: 15 });
+
+        const found = testInstanceState.getWithinBoundaryAtPosition(new RectBoundary(20, 20), 10, 10, false, instance);
+
+        expect(found).toEqual([other]);
+    });
+
+    it('ignores destroyed ActorInstances when checking positions', () => {
+        const instance = testInstanceState.create('testActor', { x: 10, y: 10 });
+        instance.destroy();
+
+        expect(testInstanceState.isPositionFree(20, 20)).toBeTrue();
+        expect(testInstanceState.getAtPosition(20, 20).length).toBe(0);
+        expect(testInstanceState.getWithinBoundaryAtPosition(new RectBoundary(20, 20), 10, 10).length).toBe(0);
+    });
+
     it('gets ActorInstances of a given Actor type', () => {
         testInstanceState.create('testActor');
         testInstanceState.create('testActor');
@@ -95,6 +120,54 @@ describe('manages ActorInstances', () => {
         expect(mockCanvas.drawnImages.length).toBe(2);
         expect(mockCanvas.drawnImages[0].src).toBe(testSprite1.image);
         expect(mockCanvas.drawnImages[1].src).toBe(testSprite2.image);
+    });
+
+    it('draws only ActorInstances within a view, unless their Actor draws for itself', () => {
+        const mockCanvas = <MockGameCanvas>testGame.canvas;
+        testGame.construction.actors.add('actSelfDrawn', { sprite: testSprite1 }).onDraw(() => null);
+        testInstanceState.create('testActor', { x: 0, y: 0 });
+        testInstanceState.create('testActor', { x: 500, y: 500 });
+        testInstanceState.create('actSelfDrawn', { x: 1000, y: 1000 });
+        testInstanceState.step(testGame.controller);
+
+        testInstanceState.draw(mockCanvas, testGame.controller, { x: 490, y: 490, width: 100, height: 100 });
+
+        // the sprite at (500, 500), and the self-drawn Actor's sprite
+        expect(mockCanvas.drawnImages.length).toBe(2);
+        expect(mockCanvas.drawnImages[0].dx).toBe(500);
+    });
+
+    it('finds ActorInstances at their new position once moved', () => {
+        const instance = testInstanceState.create('testActor', { x: 0, y: 0 });
+
+        instance.x = 300;
+        instance.y = 400;
+
+        expect(testInstanceState.getAtPosition(10, 10)).toEqual([]);
+        expect(testInstanceState.getAtPosition(310, 410)).toEqual([instance]);
+    });
+
+    it('finds ActorInstances by a Boundary set on their Actor after they were created', () => {
+        testGame.construction.actors.add('actLateBoundary');
+        const instance = testInstanceState.create('actLateBoundary', { x: 0, y: 0 });
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([]);
+
+        testGame.construction.actors.get('actLateBoundary').setRectBoundary(10, 10);
+        testInstanceState.step(testGame.controller);
+
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([instance]);
+    });
+
+    it('removes destroyed ActorInstances on the next step', () => {
+        const instance = testInstanceState.create('testActor', { x: 0, y: 0 });
+        const other = testInstanceState.create('testActor2', { x: 0, y: 0 });
+        instance.destroy();
+
+        testInstanceState.step(testGame.controller);
+
+        expect(testInstanceState.getAll()).toEqual([other]);
+        expect(testInstanceState.getAll('testActor')).toEqual([]);
+        expect(testInstanceState.getAtPosition(5, 5)).toEqual([other]);
     });
 
     it('gets ActorInstances at a position', () => {
@@ -159,21 +232,15 @@ describe('manages ActorInstances', () => {
             expect(instance.status).toBe(InstanceStatus.Active);
         });
 
-        it('steps active ActorInstances, calls Behaviors, and calls Actor callbacks', () => {
-            const instance = testInstanceState.create('testActor');
-            const mockBehavior = new MockActorInstanceBehavior();
-            instance.useBehavior(mockBehavior);
+        it('steps active ActorInstances and calls Actor callbacks', () => {
+            testInstanceState.create('testActor');
             testInstanceState.step(testGame.controller);
 
             expect(actorOnStepCalled).toBeFalse();
-            expect(mockBehavior.beforeStepCallCount).toBe(0);
-            expect(mockBehavior.afterStepCallCount).toBe(0);
 
             testInstanceState.step(testGame.controller);
 
             expect(actorOnStepCalled).toBeTrue();
-            expect(mockBehavior.beforeStepCallCount).toBe(1);
-            expect(mockBehavior.afterStepCallCount).toBe(1);
         });
 
         it('deletes destoyed ActorInstances and calls Actor callbacks', () => {

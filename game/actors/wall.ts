@@ -1,4 +1,4 @@
-import { Game } from './../../engine/game';
+import { Game } from './../../engine';
 
 export function buildWallActor(game: Game) {
     game.construction.actors.add('actWall', { 

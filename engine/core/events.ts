@@ -1,5 +1,7 @@
+import { Direction } from './enum';
+
 export class GameEvent {
-    protected innerEvent: GameEvent;
+    protected innerEvent?: GameEvent;
 
     private _name: string;
     get name(): string { return this._name; }
@@ -29,46 +31,59 @@ export class GameEvent {
 }
 
 export class KeyboardInputEvent extends GameEvent {
+    // the key's value, lowercase for single characters, e.g. 'w', 'ArrowLeft', or ' '.
     key: string;
+    // the physical key, regardless of keyboard layout or modifiers, e.g. 'KeyW', 'ArrowLeft', or 'Space'.
+    code: string;
     type: string;
+    // whether this is a keydown repeated by holding the key.
+    repeat: boolean;
 
-    static fromKeyboardEvent(ev: KeyboardEvent): KeyboardInputEvent {
-        return new KeyboardInputEvent(ev.key, ev.type);
+    // Single character keys are compared case-insensitively, so Shift or Caps Lock doesn't change them.
+    static normalizeKey(key: string): string {
+        return key.length === 1 ? key.toLowerCase() : key;
     }
 
-    constructor(key: string, type: string) {
+    constructor(key: string, type: string, code: string = key, repeat: boolean = false) {
         super(key);
-        this.key = key;
+        this.key = KeyboardInputEvent.normalizeKey(key);
+        this.code = code;
         this.type = type;
+        this.repeat = repeat;
     }
 }
 
+export type PointerInputDetails = {
+    // identifies each pointer, e.g. each finger, while it's down.
+    pointerId?: number;
+    // 'mouse', 'touch', or 'pen'.
+    pointerType?: string;
+    // on 'pointerup', the direction of a swipe (see PointerInputHandler.SwipeDistance).
+    swipe?: Direction;
+};
+
 export class PointerInputEvent extends GameEvent {
+    // 'pointerdown', 'pointermove', or 'pointerup'.
     type: string;
     x: number;
     y: number;
+    readonly pointerId: number;
+    readonly pointerType: string;
+    readonly swipe?: Direction;
 
-    static fromMouseEvent(ev: MouseEvent): PointerInputEvent {
-        return new PointerInputEvent(ev.type, ev.offsetX, ev.offsetY);
-    }
-
-    static fromTouchEvent(ev: TouchEvent): PointerInputEvent {
-        const touch = ev.touches[0];
-        const touchX = touch ? touch.clientX : 0;
-        const touchY = touch ? touch.clientY : 0;
-        return new PointerInputEvent(ev.type, touchX, touchY);
-    }
-
-    constructor(type: string, x: number, y: number, innerEvent?: PointerInputEvent) {
+    constructor(type: string, x: number, y: number, innerEvent?: PointerInputEvent, details: PointerInputDetails = {}) {
         super(type);
         this.innerEvent = innerEvent;
         this.type = type;
         this.x = x;
         this.y = y;
+        this.pointerId = details.pointerId !== undefined ? details.pointerId : 1;
+        this.pointerType = details.pointerType || 'mouse';
+        this.swipe = details.swipe;
     }
 
     translate(diffX: number, diffY: number): PointerInputEvent {
-        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY, this);
+        return new PointerInputEvent(this.type, this.x + diffX, this.y + diffY, this, this);
     }
 }
 

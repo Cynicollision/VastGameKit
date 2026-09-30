@@ -76,7 +76,20 @@ describe('SceneCamera', () => {
             expect(testCamera.x).toBe(100);
 
             expect(testCamera.y).toBe(testInstance.y - testCamera.height / 2 + testInstance.height / 2);
-            expect(testCamera.y).toBe(350);
+            expect(testCamera.y).toBe(300);
+        });
+
+        it('stays at the scene origin when larger than the scene', () => {
+            testCamera.width = 3000;
+            testCamera.height = 2000;
+            testInstance.x = 500;
+            testInstance.y = 500;
+
+            testCamera.follow(testInstance, { centerOnTarget: true });
+            testCamera.updateFollowPosition();
+
+            expect(testCamera.x).toBe(0);
+            expect(testCamera.y).toBe(0);
         });
 
         it('centered around the ActorInstance\'s Boundary, staying within the scene maximum bounds', () => {

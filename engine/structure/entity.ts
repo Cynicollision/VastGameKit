@@ -39,8 +39,12 @@ export abstract class LifecycleEntityBase<T, U = T> {
     protected gameEventHandlerMap: ObjMap<EntityLifecycleGameEventCb<U>> = {};
     protected keyboardInputEventHandlerMap: ObjMap<EntityLifecycleKeyboardEventCb<U>> = {};
     protected pointerInputEventHandlerMap: ObjMap<EntityLifecyclePointerEventCb<U>> = {};
-    protected onStepCallback: EntityLifecycleCb<U>;
-    protected onDrawCallback: EntityLifecycleDrawCb<U>;
+    protected onStepCallback?: EntityLifecycleCb<U>;
+    protected onDrawCallback?: EntityLifecycleDrawCb<U>;
+
+    get hasDrawCallback(): boolean {
+        return this.onDrawCallback !== undefined;
+    }
 
     callDraw(self: U, canvas: GameCanvas, controller: Controller): void {
         if (this.onDrawCallback) {
@@ -55,9 +59,14 @@ export abstract class LifecycleEntityBase<T, U = T> {
     }
 
     callKeyboardEvent(self: U, event: KeyboardInputEvent, controller: Controller): void {
-        if (this.keyboardInputEventHandlerMap[event.key]) {
-            this.keyboardInputEventHandlerMap[event.key](self, event, controller);
+        const callback = this.keyboardInputEventHandlerMap[event.key] || this.keyboardInputEventHandlerMap[event.code];
+        if (callback) {
+            callback(self, event, controller);
         }
+    }
+
+    hasPointerInputHandler(type: string): boolean {
+        return this.pointerInputEventHandlerMap[type] !== undefined;
     }
 
     callPointerEvent(self: U, event: PointerInputEvent, controller: Controller): void {
@@ -80,10 +89,12 @@ export abstract class LifecycleEntityBase<T, U = T> {
         this.gameEventHandlerMap[eventName] = callback;
     }
 
+    // key is a key value (e.g. 'w', 'ArrowLeft', ' ') or code (e.g. 'KeyW', 'Space'). See KeyboardInputEvent.
     onKeyboardInput(key: string, callback: EntityLifecycleKeyboardEventCb<U>): void {
-        this.keyboardInputEventHandlerMap[key] = callback;
+        this.keyboardInputEventHandlerMap[KeyboardInputEvent.normalizeKey(key)] = callback;
     }
 
+    // type is 'pointerdown', 'pointermove', or 'pointerup'. Instances receive events over their Boundary.
     onPointerInput(type: string, callback: EntityLifecyclePointerEventCb<U>): void {
         this.pointerInputEventHandlerMap[type] = callback;
     }

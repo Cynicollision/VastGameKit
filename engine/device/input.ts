@@ -13,9 +13,9 @@ export class GameInputHandler {
     private _pointerHandler: PointerInputHandler;
     get pointer() { return this._pointerHandler; }
 
-    static initForElement(target: HTMLElement): GameInputHandler {
-        const keyboardHandler = KeyboardInputHandler.initForElement(target);
-        const pointerHandler = PointerInputHandler.initForElement(target);
+    static initForElement(keyboardTarget: HTMLElement, pointerTarget: HTMLElement = keyboardTarget): GameInputHandler {
+        const keyboardHandler = KeyboardInputHandler.initForElement(keyboardTarget);
+        const pointerHandler = PointerInputHandler.initForElement(pointerTarget);
         return new GameInputHandler(keyboardHandler, pointerHandler);
     }
     

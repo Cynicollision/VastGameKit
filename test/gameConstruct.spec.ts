@@ -18,7 +18,7 @@ describe('GameConstruct', () => {
     });
 
     it('defines and gets Audio', () => {
-        testConstruct.sounds.add('testAudio', { source: null });
+        testConstruct.sounds.add('testAudio', { source: '' });
 
         const audio = testConstruct.sounds.get('testAudio');
 

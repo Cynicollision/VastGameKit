@@ -1,4 +1,8 @@
+import { GameError, SpriteTransformation } from './../engine/core';
+import { SpriteAnimation } from './../engine/resources/spriteAnimation';
 import { Game } from './../engine/game';
+import { MockGameCanvas } from './mocks/mockGameCanvas';
+import { TestImage1 } from './mocks/testImages';
 import { TestUtil } from './testUtil';
 
 describe('SpriteAnimation', () => {
@@ -15,6 +19,137 @@ describe('SpriteAnimation', () => {
         const testInstance1 = testGame.controller.sceneState.instances.create('actTest1');
         const testInstance2 = testGame.controller.sceneState.instances.create('actTest2');
         expect(testInstance1.animation).toBeDefined();
-        expect(testInstance2.animation).toBeUndefined();
+        expect(() => testInstance2.animation).toThrowError(GameError);
+    });
+});
+
+describe('SpriteAnimation drawing', () => {
+    it('draws the given frame and opacity without changing the given options', async () => {
+        const sprite = TestUtil.getTestSprite({ source: TestImage1.Source, width: 8, height: 8 });
+        await sprite.loadImage();
+        const animation = sprite.newAnimation();
+        const canvas = new MockGameCanvas();
+        const options = { frame: 5, opacity: 0 };
+
+        animation.draw(canvas, 0, 0, options);
+
+        const drawn = canvas.drawnImages[0];
+        expect([drawn.sx, drawn.sy]).toEqual([8, 8]);
+        expect(drawn.options!.opacity).toBe(0);
+        expect(options).toEqual({ frame: 5, opacity: 0 });
+    });
+
+    it('draws its current frame by default', async () => {
+        const sprite = TestUtil.getTestSprite({ source: TestImage1.Source, width: 8, height: 8 });
+        await sprite.loadImage();
+        const animation = sprite.newAnimation();
+        const canvas = new MockGameCanvas();
+
+        animation.setFrame(2);
+        animation.draw(canvas, 0, 0);
+
+        expect(canvas.drawnImages[0].sx).toBe(16);
+        expect(canvas.drawnImages[0].options!.opacity).toBe(1);
+    });
+});
+
+describe('SpriteAnimation stepping', () => {
+    let animation: SpriteAnimation;
+
+    beforeEach(() => {
+        animation = TestUtil.getTestSprite({ source: TestImage1.Source, width: 8, height: 8 }).newAnimation();
+    });
+
+    it('advances a frame each time its delay passes, then loops', () => {
+        animation.start(0, 2, 100);
+
+        animation.step(99);
+        expect(animation.getTransform(SpriteTransformation.Frame)).toBe(0);
+
+        animation.step(1);
+        expect(animation.getTransform(SpriteTransformation.Frame)).toBe(1);
+
+        animation.step(200);
+        expect(animation.getTransform(SpriteTransformation.Frame)).toBe(0);
+    });
+
+    it('stops on its end frame when not looping, calling onEnd', () => {
+        let endCount = 0;
+        animation.start(0, 2, 100, { loop: false, onEnd: () => endCount++ });
+
+        animation.step(1000);
+
+        expect(animation.getTransform(SpriteTransformation.Frame)).toBe(2);
+        expect(animation.stopped).toBeTrue();
+        expect(endCount).toBe(1);
+    });
+
+    it('plays frames in reverse when the end frame is before the start frame', () => {
+        animation.start(3, 1, 100);
+
+        animation.step(200);
+
+        expect(animation.getTransform(SpriteTransformation.Frame)).toBe(1);
+    });
+
+    it('can be replaced by another Sprite\'s, keeping its transforms', () => {
+        const testGame = TestUtil.getTestGame();
+        testGame.construction.actors.add('actHero', { sprite: TestUtil.getTestSprite() });
+        const hero = testGame.controller.sceneState.instances.create('actHero');
+        hero.animation.flipX = true;
+        hero.animation.setTransform(SpriteTransformation.Opacity, 0.5);
+        hero.animation.start(0, 3, 100);
+
+        const attack = TestUtil.getTestSprite2();
+        hero.setSprite(attack);
+
+        expect(hero.animation.sprite).toBe(attack);
+        expect(hero.animation.flipX).toBeTrue();
+        expect(hero.animation.getTransform(SpriteTransformation.Opacity)).toBe(0.5);
+        expect([hero.animation.stopped, hero.animation.getTransform(SpriteTransformation.Frame)]).toEqual([true, 0]);
+    });
+
+    it('flips while keeping its scale', () => {
+        const animation = TestUtil.getTestSprite().newAnimation();
+        animation.setTransform(SpriteTransformation.ScaleX, 2);
+
+        animation.flipX = true;
+        expect([animation.flipX, animation.getTransform(SpriteTransformation.ScaleX)]).toEqual([true, -2]);
+
+        animation.flipX = false;
+        expect(animation.getTransform(SpriteTransformation.ScaleX)).toBe(2);
+        expect(animation.flipY).toBeFalse();
+    });
+
+    it('extends beyond its frame only when scaled up or rotated', () => {
+        const animation = TestUtil.getTestSprite({ source: TestImage1.Source, width: 16, height: 16 }).newAnimation();
+        expect(animation.overhang).toBe(0);
+
+        animation.flipX = true;
+        expect(animation.overhang).toBe(0);
+
+        animation.setTransform(SpriteTransformation.ScaleY, 2);
+        expect(animation.overhang).toBe(8);
+
+        animation.setTransform(SpriteTransformation.ScaleY, 1);
+        animation.setTransform(SpriteTransformation.Rotation, 45);
+        expect(animation.overhang).toBeCloseTo((Math.SQRT2 * 16 - 16) / 2);
+    });
+
+    it('does not advance while its Instance\'s Scene is paused', () => {
+        const testGame = TestUtil.getTestGame();
+        testGame.construction.actors.add('actAnimated', { sprite: TestUtil.getTestSprite() });
+        const instance = testGame.controller.sceneState.instances.create('actAnimated');
+        testGame.controller.sceneState.startOrResume(testGame.controller);
+        testGame.controller.step(); // activates new instances
+
+        instance.animation.start(0, 5, testGame.controller.stepDurationMs);
+        testGame.controller.sceneState.paused = true;
+        testGame.controller.step();
+        expect(instance.animation.getTransform(SpriteTransformation.Frame)).toBe(0);
+
+        testGame.controller.sceneState.paused = false;
+        testGame.controller.step();
+        expect(instance.animation.getTransform(SpriteTransformation.Frame)).toBe(1);
     });
 });
