@@ -35,6 +35,8 @@ export const Points = {
     // for each second left when reaching a box.
     secondLeft: 10,
     allBoxes: 1000,
+    // for a box with a fish in it.
+    fish: 200,
 };
 
 // steps a hop takes, and the steps before a lost life's next cat appears.

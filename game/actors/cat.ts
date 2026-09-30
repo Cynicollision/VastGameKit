@@ -7,7 +7,7 @@ const Frames = Sprites.sprCat.frames;
 
 // what the cat can stand on in the water, and what flattens it.
 export const Floaters = ['actCrate', 'actDuck'];
-const Traffic = ['actCar', 'actTruck', 'actBike'];
+const Traffic = ['actCar', 'actTruck', 'actBike', 'actTrain'];
 
 export type CatLoss = 'squashed' | 'splashed' | 'lost' | 'timeUp';
 

@@ -1,6 +1,6 @@
 import { Controller, Game, Instance, SceneState } from './../../engine';
 import { getRow, loseLife } from './../actors/cat';
-import { HudHeight, Points, RespawnSteps, Rules, Screen } from './../constants';
+import { HudHeight, Points, RespawnSteps, Rules, Screen, Tile } from './../constants';
 import { Sprites } from './../generated/art';
 import { ignorePointerThisStep } from './../input';
 import { addScore, getSession } from './../session';
@@ -9,6 +9,9 @@ import { showBanner } from './panels';
 
 const BoxFrames = Sprites.sprBox.frames;
 
+// steps between fish.
+const FishWaitSteps = 60 * 12;
+
 function spawnCat(self: SceneState, controller: Controller): Instance {
     const cat = self.instances.create('actCat', { x: self.state.startX, y: self.state.startY });
     self.state.cat = cat;
@@ -16,6 +19,26 @@ function spawnCat(self: SceneState, controller: Controller): Instance {
     getSession(controller).timeLeft = Rules.timeSteps;
     self.defaultCamera.follow(cat, { centerOnTarget: true });
     return cat;
+}
+
+// Shows points floating up from where they were scored.
+function showPoints(self: SceneState, x: number, y: number, points: number): void {
+    self.instances.create('actPoints', { x: x, y: y }).state.points = points;
+}
+
+// Now and then, a fish appears in an empty box for a while.
+function placeFish(self: SceneState): void {
+    self.state.fishWait = (self.state.fishWait || FishWaitSteps) - 1;
+    if (self.state.fishWait > 0 || self.instances.getAll('actFish').length > 0) {
+        return;
+    }
+
+    const empty = self.instances.getAll('actBox').filter(box => !box.state.filled);
+    if (empty.length > 1) {
+        const box = empty[Math.floor(Math.random() * empty.length)];
+        self.instances.create('actFish', { x: box.x, y: box.y });
+    }
+    self.state.fishWait = FishWaitSteps;
 }
 
 function isCatPlaying(self: SceneState): boolean {
@@ -36,7 +59,17 @@ function fillBox(self: SceneState, cat: Instance, controller: Controller): void 
     self.state.cat = undefined;
 
     const secondsLeft = Math.floor(getSession(controller).timeLeft * controller.stepDurationMs / 1000);
-    addScore(controller, Points.box + secondsLeft * Points.secondLeft);
+    let points = Points.box + secondsLeft * Points.secondLeft;
+
+    const fish = self.instances.getAll('actFish').find(fish => fish.x === box.x);
+    if (fish) {
+        fish.destroy();
+        points += Points.fish;
+        controller.audio.play('sndBonus');
+    }
+
+    addScore(controller, points);
+    showPoints(self, box.x, box.y + Tile, points);
     controller.publishEvent('boxFilled');
 
     const boxes = self.instances.getAll('actBox');
@@ -155,6 +188,8 @@ export function buildLevel(game: Game): void {
         if (!cat || !isCatPlaying(self)) {
             return;
         }
+
+        placeFish(self);
 
         const session = getSession(controller);
         session.timeLeft--;

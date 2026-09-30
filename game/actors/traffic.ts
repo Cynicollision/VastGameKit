@@ -1,10 +1,15 @@
-import { Game, Instance } from './../../engine';
+import { Controller, Game, Instance } from './../../engine';
 import { Tile } from './../constants';
 import { Sprites } from './../generated/art';
 import { getSpeedMultiplier } from './../session';
 
 const CarColors = Object.values(Sprites.sprCar.frames);
 const DuckFrames = Sprites.sprDuck.frames;
+const SignalFrames = Sprites.sprSignal.frames;
+const TrainFrames = Sprites.sprTrain.frames;
+
+// steps the signals flash before a train comes.
+const TrainWarningSteps = 150;
 
 // Diving ducks swim, dive, stay under, and come back up, in steps.
 const DiveCycle = { swim: 240, dive: 30, under: 90, surface: 30 };
@@ -110,8 +115,77 @@ function buildFloaters(game: Game): void {
     });
 }
 
+// A train of an engine and cars, all moving together from one side of the scene to the other.
+function sendTrain(self: Instance, controller: Controller): void {
+    const speed = self.state.speed * getSpeedMultiplier(controller);
+    const sceneWidth = controller.sceneState.scene.width;
+    const carWidth = Sprites.sprTrain.width;
+
+    for (let i = 0; i <= self.state.cars; i++) {
+        const x = speed > 0 ? -carWidth * (i + 1) : sceneWidth + carWidth * i;
+        const car = controller.sceneState.instances.create('actTrain', { x: x, y: self.y });
+        car.state.frame = i === 0 ? TrainFrames.engine : TrainFrames.car;
+        car.state.last = i === self.state.cars;
+        car.animation.flipX = speed < 0;
+        car.motion.velocityX = speed;
+    }
+
+    controller.audio.play('sndTrain');
+}
+
+// A railroad track, placed in Tiled as an object across its row with properties:
+//   speed:    pixels per step, to the right, or to the left if negative.
+//   cars:     how many cars follow the engine.
+//   interval: seconds between trains.
+// Before each train, the crossing signals flash and the bell rings.
+function buildRailway(game: Game): void {
+    const sprites = game.construction.sprites;
+    const actTrack = game.construction.actors.add('actTrack');
+
+    actTrack.onCreate((self, controller) => {
+        self.state.wait = Math.round(self.state.interval * 1000 / controller.stepDurationMs / 2);
+    });
+
+    actTrack.onStep((self, controller) => {
+        self.state.wait--;
+
+        if (self.state.wait === TrainWarningSteps) {
+            controller.publishEvent('trainWarning');
+        }
+        if (self.state.wait > 0 && self.state.wait <= TrainWarningSteps && self.state.wait % 40 === 0) {
+            controller.audio.play('sndBell');
+        }
+        if (self.state.wait <= 0) {
+            sendTrain(self, controller);
+            // trains come more often in faster rounds.
+            self.state.wait = Math.round(self.state.interval * 1000 / controller.stepDurationMs / getSpeedMultiplier(controller));
+        }
+    });
+
+    const actTrain = game.construction.actors.add('actTrain', { sprite: sprites.get('sprTrain') });
+    actTrain.setRectBoundary(30, 12, 1, 2);
+    actTrain.onCreate((self) => self.animation.setFrame(self.state.frame));
+    actTrain.onStep((self, controller) => {
+        const sceneWidth = controller.sceneState.scene.width;
+        const gone = self.motion.velocityX > 0 ? self.x > sceneWidth : self.x < -Sprites.sprTrain.width;
+
+        if (gone) {
+            self.destroy();
+            if (self.state.last) {
+                controller.publishEvent('trainPassed');
+            }
+        }
+    });
+
+    const actSignal = game.construction.actors.add('actSignal', { sprite: sprites.get('sprSignal') });
+    actSignal.onCreate((self) => self.animation.setFrame(SignalFrames.off));
+    actSignal.onGameEvent('trainWarning', (self) => self.animation.start(SignalFrames.left, SignalFrames.right, 300));
+    actSignal.onGameEvent('trainPassed', (self) => self.animation.setFrame(SignalFrames.off));
+}
+
 export function buildTraffic(game: Game): void {
     buildLane(game);
     buildVehicles(game);
     buildFloaters(game);
+    buildRailway(game);
 }
