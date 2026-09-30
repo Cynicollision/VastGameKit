@@ -34,7 +34,7 @@ export function addScore(controller: Controller, points: number): void {
     }
 }
 
-// Lanes move faster each round.
+// Lanes start out slow and move faster each round, up to a top speed.
 export function getSpeedMultiplier(controller: Controller): number {
-    return 1 + (getSession(controller).round - 1) * Rules.roundSpeedup;
+    return Math.min(Rules.topSpeed, Rules.firstRoundSpeed + (getSession(controller).round - 1) * Rules.roundSpeedup);
 }

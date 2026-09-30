@@ -32,7 +32,7 @@ its images, sounds, and maps.
 | Motion and collision | traffic and floaters wrap around their lanes; the cat rides crates and ducks and is flattened by traffic (`actors/`) |
 | Sprites | animation, flips, hop scaling, fading ghosts, and switching to a splash sprite |
 | Text | a bitmap font for all text, and a logo drawn from it |
-| Input | keys, swipes and taps, a tappable HUD, and optional on-screen arrow buttons (`input.ts`, `settings.ts`) |
+| Input | arrow keys, on-screen arrow buttons once the screen is touched, and a tappable HUD (`input.ts`, `settings.ts`) |
 | Audio, timers, events, storage | sound effects (off until turned on), respawns and trains on timers, game events between the level, HUD, and actors, and saved high scores and settings |
 
 Its images are drawn as text in `tools/art/`, each character a color from `tools/art/palette.mjs`, and `npm run art`

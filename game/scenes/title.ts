@@ -2,12 +2,11 @@ import { Game } from './../../engine';
 import { Colors, Screen } from './../constants';
 import { wasStartPressed } from './../input';
 import { getHighScore, newSession } from './../session';
-import { isMuted, showTouchButtons, toggleMute, toggleTouchButtons, usesTouchButtons } from './../settings';
+import { isMuted, showTouchButtons, toggleMute } from './../settings';
 import { drawText } from './../text';
 
-// the lines of settings, which can be tapped to change them.
-const SoundY = 152;
-const ControlsY = 166;
+// the sound setting, which can be tapped to change it.
+const SoundY = 156;
 
 // The title screen: a Tiled map with the cat on a rooftop and traffic going by.
 export function buildTitle(game: Game): void {
@@ -29,14 +28,10 @@ export function buildTitle(game: Game): void {
         self.state.clock++;
 
         const pointer = controller.pointer;
-        const tappedSetting = pointer.wasReleased && pointer.swipe === undefined && pointer.pressY >= SoundY - 4 && pointer.pressY < ControlsY + 12;
+        const tappedSound = pointer.wasReleased && pointer.pressY >= SoundY - 4 && pointer.pressY < SoundY + 12;
 
-        if (controller.keyboard.wasPressed('m') || (tappedSetting && pointer.pressY < ControlsY - 2)) {
+        if (controller.keyboard.wasPressed('m') || tappedSound) {
             toggleMute(controller);
-            controller.audio.play('sndSelect');
-        }
-        else if (controller.keyboard.wasPressed('c') || (tappedSetting && pointer.pressY >= ControlsY - 2)) {
-            toggleTouchButtons(controller);
             controller.audio.play('sndSelect');
         }
         else if (!self.state.starting && wasStartPressed(controller)) {
@@ -57,8 +52,7 @@ export function buildTitle(game: Game): void {
         }
 
         drawText(canvas, `${isMuted(controller) ? '🔇' : '🔊'} SOUND ${isMuted(controller) ? 'OFF' : 'ON'}`, center, SoundY, { align: 'center' });
-        drawText(canvas, `TOUCH: ${usesTouchButtons(controller) ? 'BUTTONS' : 'SWIPE'}`, center, ControlsY, { align: 'center' });
-        drawText(canvas, 'ARROWS/SWIPE TO HOP', center, 228, { align: 'center' });
+        drawText(canvas, 'HOP WITH THE ARROWS', center, 228, { align: 'center' });
         drawText(canvas, 'M SOUND  P PAUSE', center, 242, { align: 'center' });
     });
 }

@@ -2,7 +2,6 @@ import { Controller, Game, Instance, SceneState } from './../../engine';
 import { getRow, loseLife } from './../actors/cat';
 import { HudHeight, Points, RespawnSteps, Rules, Screen, Tile } from './../constants';
 import { Sprites } from './../generated/art';
-import { ignorePointerThisStep } from './../input';
 import { addScore, getSession } from './../session';
 import { showTouchButtons } from './../settings';
 import { showBanner } from './panels';
@@ -121,8 +120,8 @@ function loseCat(self: SceneState, cat: Instance, controller: Controller): void 
     });
 }
 
-// Pausing floats a panel over the level. The tap that resumes isn't also a hop.
-function togglePause(self: SceneState, controller: Controller): void {
+// Pausing floats a panel over the level.
+function togglePause(self: SceneState): void {
     if (self.state.gameOver) {
         return;
     }
@@ -130,7 +129,6 @@ function togglePause(self: SceneState, controller: Controller): void {
     if (self.state.pausePanel) {
         self.state.pausePanel.destroy();
         self.state.pausePanel = undefined;
-        ignorePointerThisStep(controller);
     }
     else {
         self.state.pausePanel = self.floatSubScene('scnPause', { width: Screen.width, height: Screen.height, depth: -10 });
@@ -167,19 +165,19 @@ export function buildLevel(game: Game): void {
         showTouchButtons(controller, true, font);
     });
 
-    level.onKeyboardInput('p', (self, event, controller) => {
+    level.onKeyboardInput('p', (self, event) => {
         if (event.type === 'keydown' && !event.repeat) {
-            togglePause(self, controller);
+            togglePause(self);
         }
     });
 
-    level.onKeyboardInput('Escape', (self, event, controller) => {
+    level.onKeyboardInput('Escape', (self, event) => {
         if (event.type === 'keydown' && !event.repeat && self.state.pausePanel) {
-            togglePause(self, controller);
+            togglePause(self);
         }
     });
 
-    level.onGameEvent('togglePause', (self, event, controller) => togglePause(self, controller));
+    level.onGameEvent('togglePause', (self) => togglePause(self));
 
     level.onGameEvent('gameOver', (self, event, controller) => showTouchButtons(controller, false, font));
 

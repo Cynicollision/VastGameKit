@@ -24,8 +24,13 @@ export const Rules = {
     lives: 9,
     // steps to cross before a life is lost.
     timeSteps: 60 * 40,
-    // how much faster the lanes are each round.
-    roundSpeedup: 0.15,
+    // how fast the lanes are in the first round (compared to their speeds in the map), how much faster they get each
+    // round, and how fast they can get.
+    firstRoundSpeed: 0.6,
+    roundSpeedup: 0.1,
+    topSpeed: 1.3,
+    // the first round that ducks dive.
+    firstDivingRound: 2,
 };
 
 export const Points = {

@@ -1,7 +1,7 @@
 import { Controller, Game, Instance } from './../../engine';
-import { Tile } from './../constants';
+import { Rules, Tile } from './../constants';
 import { Sprites } from './../generated/art';
-import { getSpeedMultiplier } from './../session';
+import { getSession, getSpeedMultiplier } from './../session';
 
 const CarColors = Object.values(Sprites.sprCar.frames);
 const DuckFrames = Sprites.sprDuck.frames;
@@ -19,7 +19,7 @@ const DiveCycle = { swim: 240, dive: 30, under: 90, surface: 30 };
 //   speed: pixels per step, to the right, or to the left if negative.
 //   count: how many groups are spaced evenly along the lane.
 //   size:  how many are in each group, side by side (default 1).
-//   dive:  whether the first group dives now and then (ducks).
+//   dive:  whether the first group dives now and then (ducks), after the first round.
 // Everything in the lane wraps around from one side to the other, off screen.
 function buildLane(game: Game): void {
     const actLane = game.construction.actors.add('actLane');
@@ -92,8 +92,8 @@ function buildFloaters(game: Game): void {
         self.animation.start(DuckFrames.swim1, DuckFrames.swim2, 400);
     });
 
-    actDuck.onStep((self) => {
-        if (!self.state.dives) {
+    actDuck.onStep((self, controller) => {
+        if (!self.state.dives || getSession(controller).round < Rules.firstDivingRound) {
             return;
         }
 
