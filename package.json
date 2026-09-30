@@ -9,6 +9,7 @@
   ],
   "sideEffects": false,
   "scripts": {
+    "art": "node tools/build-art.mjs",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development",
     "build:lib": "tsc -p tsconfig.lib.json",

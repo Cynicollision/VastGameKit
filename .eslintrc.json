@@ -1,11 +1,19 @@
 /* eslint-env node */
 {
     "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-    "ignorePatterns": ["karma.conf.js", "webpack.config.js", "game/**", "dist/**", "lib/**", "test/**/*.ts"],
+    "ignorePatterns": ["karma.conf.js", "webpack.config.js", "game/game_bundle.js", "game/generated/**", "game/resources/**", "dist/**", "lib/**", "test/**/*.ts"],
     "parser": "@typescript-eslint/parser",
     "plugins": ["@typescript-eslint"],
     "root": true,
     "rules": {
         "@typescript-eslint/no-explicit-any": "off"
-    }
+    },
+    "overrides": [
+        {
+            // the asset scripts run in Node.
+            "files": ["tools/**/*.mjs"],
+            "env": { "es2022": true, "node": true },
+            "parserOptions": { "sourceType": "module" }
+        }
+    ]
 }

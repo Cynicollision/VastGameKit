@@ -1,63 +1,24 @@
-// A demo of the engine's features, and a quick way to check they still work together. See the HUD for controls.
+// Nine Lives: a cat crosses town to get home. The engine's demo, using most of its features.
 import { Game } from './../engine';
+import { FontCellSize, FontCharacters } from './generated/art';
 
-import { buildCoinActor } from './actors/coin';
-import { buildDummyButton } from './actors/dummyButton';
-import { buildPlayerActor } from './actors/player';
-import { buildWallActor } from './actors/wall';
-import { buildAreas } from './scenes/areas';
-import { buildDefaultScene } from './scenes/default';
-import { buildHUD } from './scenes/interface/hud';
-import { buildModal } from './scenes/interface/modal';
-
-const vastGame = Game.init({
+const game = Game.init({
     canvasElementId: 'gameCanvas',
-    name: 'vastgameDemo',
-    targetFPS: 60,
+    name: 'nineLives',
     canvasOptions: {
-        scale: 'integer'
+        backgroundColor: '#1b1b2f',
+        scale: 'integer',
     },
-    defaultSceneOptions: {
-        height: 1024,
-        width: 1532,
-        persistent: true
-    }
 });
 
-vastGame.construction.sounds.add('sndPlop', { source: './resources/sounds/plop.wav' });
-vastGame.construction.sprites.add('sprButton', { source: './resources/pinkblue.png', height: 32, width: 32 });
-vastGame.construction.sprites.add('sprLink', { source: './resources/guy_sheet.png', height: 16, width: 16 });
-vastGame.construction.sprites.add('granite', { source: './resources/greenblock.png' });
-vastGame.construction.sprites.add('bgAreaA1', { source: './resources/backgrounds/testWorld.png' });
-vastGame.construction.sprites.add('sprCoin', { source: './resources/coin.png' });
-vastGame.construction.sprites.add('sprGrass', { source: './resources/grass.png' });
-vastGame.construction.sprites.add('sprSky', { source: './resources/sky.png' });
+game.construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
 
-vastGame.load().then(game => {
-    buildCoinActor(game);
-    buildDummyButton(game);
-    buildPlayerActor(game);
-    buildWallActor(game);
+game.load().then(() => {
+    const font = game.construction.fonts.get('fntPixel');
 
-    buildHUD(game);
-    buildModal(game);
-
-    buildDefaultScene(game);
-    buildAreas(game);
-
-    // shown once the screen is touched.
-    game.controller.setTouchButtons([
-        { key: 'ArrowUp', x: 160, y: 600, width: 120, height: 120, label: '▲' },
-        { key: 'ArrowLeft', x: 40, y: 720, width: 120, height: 120, label: '◀' },
-        { key: 'ArrowRight', x: 280, y: 720, width: 120, height: 120, label: '▶' },
-        { key: 'ArrowDown', x: 160, y: 840, width: 120, height: 120, label: '▼' },
-        { key: 'q', x: 1100, y: 780, width: 140, height: 140, shape: 'circle', label: 'Q' },
-        { key: 'm', x: 940, y: 820, width: 110, height: 110, shape: 'circle', label: 'M' },
-        { key: 'e', x: 1120, y: 640, width: 110, height: 110, shape: 'circle', label: 'E' },
-    ]);
-
-    game.controller.onSceneChange((oldSceneState, newSceneState) => {
-        console.log(`Changing from ${oldSceneState.scene.name} to ${newSceneState.scene.name}`);
+    game.defaultScene.onDraw((self, canvas) => {
+        canvas.drawText('NINE LIVES', 112, 120, { font: font, align: 'center', color: '#f59a3a' });
+        canvas.drawText('Coming soon!', 112, 136, { font: font, align: 'center', color: '#f4f4f4' });
     });
 
     game.start();

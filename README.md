@@ -12,11 +12,15 @@ npm run debug    # the demo at http://localhost:9000, rebuilt as you edit
 npm test         # run the tests once (npm run test:watch to keep watching)
 npm run lint
 npm run build    # a production build of the game in dist/, ready to upload
+npm run art      # redraw the demo's images from tools/art/
 ```
 
-The engine lives in `engine/`, with everything exported from `engine/index.ts`. The demo in `game/` tours the engine's
-features and is a quick way to check they still work together: `game/main.ts` is its entry point, `game/index.html` its
-page, and `game/resources/` its images, sounds, and maps.
+The engine lives in `engine/`, with everything exported from `engine/index.ts`. The demo in `game/` is *Nine Lives*, a
+small game that uses most of the engine's features and is a quick way to check they still work together:
+`game/main.ts` is its entry point, `game/index.html` its page, and `game/resources/` its images, sounds, and maps.
+
+The demo's images are drawn as text in `tools/art/` (each character a color from `tools/art/palette.mjs`), and
+`npm run art` turns them into PNGs. Add `-- --preview <folder>` to also save copies scaled up 4x.
 
 ## Making a game in its own repo
 
