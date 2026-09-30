@@ -291,7 +291,8 @@ controller.setTouchButtons([
 ```
 
 Buttons (in canvas coordinates) appear once the player touches the screen, so they're never in the way on a computer
-(set `controller.touchControls.visibility` to `'always'` or `'never'` to change that). Pressing one is the same as
+(set `controller.touchControls.visibility` to `'always'` or `'never'` to change that). Labels can have a `font`, such
+as a bitmap font. Pressing one is the same as
 pressing its key, for `controller.keyboard` and `onKeyboardInput` alike. A touch that starts on a button slides between
 buttons like a d-pad and isn't pointer input; other touches are.
 

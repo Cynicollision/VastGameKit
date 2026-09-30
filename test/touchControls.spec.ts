@@ -2,6 +2,8 @@ import { KeyboardInputEvent, PointerInputEvent } from './../engine/core';
 import { GameCanvasHtml2D } from './../engine/device/canvas';
 import { TouchControls } from './../engine/device/touchControls';
 import { Game } from './../engine/game';
+import { BitmapFont } from './../engine/resources/bitmapFont';
+import { TestImage1 } from './mocks/testImages';
 import { TestUtil } from './testUtil';
 
 function touch(type: string, x: number, y: number, pointerId: number = 1, pointerType: string = 'touch'): PointerInputEvent {
@@ -96,6 +98,20 @@ describe('TouchControls', () => {
         controls.draw(canvas);
         expect(alphaAt(5, 105)).toBeGreaterThan(0);
         expect(alphaAt(110, 110)).toBeGreaterThan(0);
+    });
+
+    it('draws labels in a sans-serif sized to the button, or the given font', () => {
+        const canvas = <GameCanvasHtml2D>GameCanvasHtml2D.initNewCanvas({ width: 120, height: 120 });
+        const font = BitmapFont.new('fntTest', { source: TestImage1.Source, width: 8, height: 8, characters: 'AB' });
+        spyOn(canvas, 'drawText');
+        controls.visibility = 'always';
+
+        controls.draw(canvas);
+        controls.setButtons([{ key: 'z', x: 0, y: 0, width: 20, height: 20, label: 'B', font: font }]);
+        controls.draw(canvas);
+
+        expect((<jasmine.Spy>canvas.drawText).calls.argsFor(0)).toEqual(['A', 110, 110, jasmine.objectContaining({ font: 'bold 8px sans-serif' })]);
+        expect((<jasmine.Spy>canvas.drawText).calls.argsFor(1)).toEqual(['B', 10, 10, jasmine.objectContaining({ font: font })]);
     });
 });
 

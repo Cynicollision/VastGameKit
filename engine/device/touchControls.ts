@@ -1,4 +1,5 @@
 import { KeyboardInputEvent, PointerInputEvent } from './../core';
+import { BitmapFont } from './../resources/bitmapFont';
 import { GameCanvas } from './canvas';
 
 export type TouchButtonOptions = {
@@ -14,13 +15,16 @@ export type TouchButtonOptions = {
     // Default 'rect'. A circle fills the smaller of width and height.
     shape?: 'rect' | 'circle';
     label?: string;
+    // the label's font. Default: a bold sans-serif a third of the button's size.
+    font?: string | BitmapFont;
 };
 
 // When touch buttons show: 'touch' once the player has touched the screen, 'always', or 'never'.
 export type TouchControlsVisibility = 'touch' | 'always' | 'never';
 
-type TouchButton = Required<Omit<TouchButtonOptions, 'label'>> & {
+type TouchButton = Required<Omit<TouchButtonOptions, 'label' | 'font'>> & {
     label?: string;
+    font?: string | BitmapFont;
     pressed: boolean;
 };
 
@@ -138,7 +142,8 @@ export class TouchControls {
 
             if (button.label) {
                 const fontSize = Math.max(8, Math.round(Math.min(button.width, button.height) / 3));
-                canvas.drawText(button.label, centerX, centerY, { align: 'center', baseline: 'middle', color: '#fff', font: `bold ${fontSize}px sans-serif`, opacity: 0.8 });
+                const font = button.font || `bold ${fontSize}px sans-serif`;
+                canvas.drawText(button.label, centerX, centerY, { align: 'center', baseline: 'middle', color: '#fff', font: font, opacity: 0.8 });
             }
         }
     }
