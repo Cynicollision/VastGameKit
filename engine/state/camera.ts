@@ -13,13 +13,19 @@ export type SceneCameraOptions = {
     portHeight?: number;
 };
 
+export type CameraFollowOptions = FollowEntityOptions & {
+    // the most pixels the camera moves toward its target each step, so it pans to a target that jumps (like a player
+    // starting over). Default: no limit, keeping up exactly.
+    maxSpeed?: number;
+};
+
 export interface Camera extends PositionedEntity {
     readonly name: string
     portX: number;
     portY: number;
     portWidth: number;
     portHeight: number;
-    follow(target: PositionedEntity, options?: FollowEntityOptions): void;
+    follow(target: PositionedEntity, options?: CameraFollowOptions): void;
     // Converts a canvas position within the camera's port to the Scene position it shows.
     toScenePosition(x: number, y: number): { x: number; y: number };
 }
@@ -27,7 +33,7 @@ export interface Camera extends PositionedEntity {
 export class SceneCamera implements Camera {
     private readonly _sceneState: SceneState;
     private _followTarget?: PositionedEntity;
-    private _followOptions: Required<FollowEntityOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0 };
+    private _followOptions: Required<CameraFollowOptions> = { centerOnTarget: false, offsetX: 0, offsetY: 0, maxSpeed: Infinity };
 
     readonly name: string;
     height: number = 0;
@@ -52,11 +58,12 @@ export class SceneCamera implements Camera {
         this.portHeight = options.portHeight ? options.portHeight : sceneState.scene.height;
     }
 
-    follow(target: PositionedEntity, options: FollowEntityOptions = {}): void {
+    follow(target: PositionedEntity, options: CameraFollowOptions = {}): void {
         this._followTarget = target;
         this._followOptions.centerOnTarget = options.centerOnTarget !== undefined ? options.centerOnTarget : false;
         this._followOptions.offsetX = options.offsetX || 0;
         this._followOptions.offsetY = options.offsetY || 0;
+        this._followOptions.maxSpeed = options.maxSpeed !== undefined ? options.maxSpeed : Infinity;
     }
 
     toScenePosition(x: number, y: number): { x: number; y: number } {
@@ -85,7 +92,13 @@ export class SceneCamera implements Camera {
 
         const maxX = Math.max(0, this._sceneState.scene.width - this.width);
         const maxY = Math.max(0, this._sceneState.scene.height - this.height);
-        this.x = MathUtil.clamp(newX - this._followOptions.offsetX, 0, maxX);
-        this.y = MathUtil.clamp(newY - this._followOptions.offsetY, 0, maxY);
+        const targetX = MathUtil.clamp(newX - this._followOptions.offsetX, 0, maxX);
+        const targetY = MathUtil.clamp(newY - this._followOptions.offsetY, 0, maxY);
+
+        // moves straight toward the target, no farther than the maximum speed.
+        const distance = Math.hypot(targetX - this.x, targetY - this.y);
+        const fraction = distance > this._followOptions.maxSpeed ? this._followOptions.maxSpeed / distance : 1;
+        this.x += (targetX - this.x) * fraction;
+        this.y += (targetY - this.y) * fraction;
     }
 }

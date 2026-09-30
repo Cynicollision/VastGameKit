@@ -270,7 +270,8 @@ controller.transitionToScene('scnLevel2', { durationMs: 400, color: '#000' }, { 
 ```
 
 A camera shows a rectangle of the Scene (`x`, `y`, `width`, `height`) in a rectangle of the canvas (`portX`, `portY`,
-`portWidth`, `portHeight`), scaling to fit. Sub-scenes run a Scene inside another: *embedded* sub-scenes are part of the
+`portWidth`, `portHeight`), scaling to fit. A following camera stays with its target; with a `maxSpeed` (pixels per
+step) it pans instead when the target jumps, e.g. to a player starting over. Sub-scenes run a Scene inside another: *embedded* sub-scenes are part of the
 Scene's world, and *floating* ones sit above it on the canvas, like a HUD or a dialog.
 
 ### Keyboard, pointer, and events
