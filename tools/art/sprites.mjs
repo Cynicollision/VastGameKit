@@ -86,8 +86,8 @@ const Cat = {
         ..k..........k..
         .kpk........kpk.
         .kookkkkkkkkook.
-        kooOokookooOook.
-        koooooooooooooko
+        kooOokooookoOook
+        kooooooooooooook
         .kooOooooooOook.
         ..kkkkkkkkkkkk..
         ................
@@ -134,16 +134,16 @@ const Car = [
     '................................',
     '....kkkk..............kkkk......',
     '..kkkkkkkkkkkkkkkkkkkkkkkkkkkk..',
-    '.krXXXXXXXXXXXXXXXXXXXXXXXXXXyk.',
     '.kXXXXXXXXXXXXXXXXXXXXXXXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXkcckXXXXXXXXXkccckXXXXXXk.',
-    '.kXXXXXXXXXXXXXXXXXXXXXXXXXXXXk.',
-    '.krZZZZZZZZZZZZZZZZZZZZZZZZZZyk.',
+    '.krXXXXkcckZZZZZZZZZkccckXXXXyk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.kXXXXXkcckZZZZZZZZZkccckXXXXXk.',
+    '.krXXXXkcckZZZZZZZZZkccckXXXXyk.',
+    '.kZZZZZZZZZZZZZZZZZZZZZZZZZZZZk.',
     '..kkkkkkkkkkkkkkkkkkkkkkkkkkkk..',
     '....kkkk..............kkkk......',
     '................................',

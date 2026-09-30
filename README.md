@@ -13,14 +13,32 @@ npm test         # run the tests once (npm run test:watch to keep watching)
 npm run lint
 npm run build    # a production build of the game in dist/, ready to upload
 npm run art      # redraw the demo's images from tools/art/
+npm run sfx      # synthesize the demo's sound effects from tools/sounds/
 ```
 
-The engine lives in `engine/`, with everything exported from `engine/index.ts`. The demo in `game/` is *Nine Lives*, a
-small game that uses most of the engine's features and is a quick way to check they still work together:
-`game/main.ts` is its entry point, `game/index.html` its page, and `game/resources/` its images, sounds, and maps.
+The engine lives in `engine/`, with everything exported from `engine/index.ts`.
 
-The demo's images are drawn as text in `tools/art/` (each character a color from `tools/art/palette.mjs`), and
-`npm run art` turns them into PNGs. Add `-- --preview <folder>` to also save copies scaled up 4x.
+## The demo: Nine Lives
+
+The demo in `game/` is *Nine Lives*, a lane-crossing arcade game: a cat hops across roads, a railroad, and a canal to
+the boxes on a rooftop, with nine lives to do it. It uses most of the engine's features, so it's also a quick way to
+check they still work together. `game/main.ts` is its entry point, `game/index.html` its page, and `game/resources/`
+its images, sounds, and maps.
+
+| Feature | In the demo |
+| --- | --- |
+| Tiled maps | `resources/maps/level.tmx` and `title.tmx` (open them in Tiled): tile layers for the background, walls, and water; objects for the cat, boxes, signals, and lanes, with lane speeds and spacing as custom properties |
+| Cameras and sub-scenes | the camera follows the cat up the level; the HUD, pause and game over panels, and round banners float over it (`scenes/`) |
+| Motion and collision | traffic and floaters wrap around their lanes; the cat rides crates and ducks and is flattened by traffic (`actors/`) |
+| Sprites | animation, flips, hop scaling, fading ghosts, and switching to a splash sprite |
+| Text | a bitmap font for all text, and a logo drawn from it |
+| Input | keys, swipes and taps, a tappable HUD, and optional on-screen arrow buttons (`input.ts`, `settings.ts`) |
+| Audio, timers, events, storage | sound effects (off until turned on), respawns and trains on timers, game events between the level, HUD, and actors, and saved high scores and settings |
+
+Its images are drawn as text in `tools/art/`, each character a color from `tools/art/palette.mjs`, and `npm run art`
+turns them into PNGs and the tileset's `.tsx` (add `-- --preview <folder>` to also save copies scaled up 4x). Its sound
+effects are lists of chiptune voices in `tools/sounds/effects.mjs`, and `npm run sfx` turns them into WAVs. Both write
+what the game needs to know about them to `game/generated/`.
 
 ## Making a game in its own repo
 
