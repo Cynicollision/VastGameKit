@@ -1,4 +1,5 @@
 import { CanvasDrawImageOptions, CanvasDrawTextOptions, CanvasFillOptions, CanvasLineOptions, GameCanvas } from './../../engine/device/canvas';
+import { BitmapFont } from './../../engine/resources/bitmapFont';
 import { Sprite } from './../../engine/resources/sprite';
 
 type DrawnImage = {
@@ -58,7 +59,7 @@ export class MockGameCanvas implements GameCanvas {
     }
     fillCircle(color: string, x: number, y: number, radius: number, options?: CanvasFillOptions): void {
     }
-    measureText(text: string, font?: string): number {
+    measureText(text: string, font?: string | BitmapFont): number {
         return text.length * 8;
     }
     popView(): void {

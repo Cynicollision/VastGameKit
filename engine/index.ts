@@ -9,6 +9,7 @@ export * from './device/storage';
 export * from './device/touchControls';
 export * from './game';
 export * from './resources/background';
+export * from './resources/bitmapFont';
 export * from './resources/sound';
 export * from './resources/sprite';
 export * from './resources/spriteAnimation';

@@ -117,7 +117,7 @@ game.load().then(() => {
 The engine separates what a game *is* from what's happening while it runs.
 
 **Construction** (`game.construction`) defines the game before it starts: registries of `actors`, `scenes`, `sprites`,
-`sounds`, and `tileMaps`, each added by name. `game.load()` loads every sprite, sound, and map.
+`sounds`, `tileMaps`, and `fonts`, each added by name. `game.load()` loads every sprite, sound, map, and font.
 
 - An **Actor** is a kind of thing (a player, a wall, a coin): its sprite, boundary, whether it's solid, and lifecycle
   callbacks.
@@ -209,6 +209,26 @@ actor.onDraw((self, canvas, controller) => {
     canvas.drawText(`${score}`, 160, 8, { align: 'center', baseline: 'top', font: '12px monospace', color: '#fff' });
 });
 ```
+
+CSS fonts blur when a small canvas is scaled up. For crisp pixel text, add a bitmap font: an image of equally sized
+glyphs, with the characters they are in order.
+
+```ts
+game.construction.fonts.add('fntPixel', {
+    source: './resources/font.png',
+    width: 8, height: 8,              // each glyph
+    characters: ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?',
+    letterSpacing: 0, lineSpacing: 2, // optional
+});
+
+const font = game.construction.fonts.get('fntPixel');
+canvas.drawText('GAME OVER\nPRESS START', 112, 128, { font: font, align: 'center', baseline: 'middle', color: '#ff0' });
+canvas.measureText('GAME OVER', font); // 72
+```
+
+Glyphs are drawn on whole pixels, recolored to `color` if given (draw them in white), and a font with only one case of
+letters draws the other case too. Characters the font doesn't have are left blank. `'\n'` starts a new line, and
+`baseline: 'alphabetic'` (the default) puts the bottom of the glyphs at `y`.
 
 ### Scenes, cameras, and sub-scenes
 
