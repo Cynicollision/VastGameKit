@@ -1,25 +1,45 @@
 // Nine Lives: a cat crosses town to get home. The engine's demo, using most of its features.
 import { Game } from './../engine';
-import { FontCellSize, FontCharacters } from './generated/art';
+import { buildCat } from './actors/cat';
+import { buildScenery } from './actors/scenery';
+import { buildTraffic } from './actors/traffic';
+import { Colors, Screen } from './constants';
+import { FontCellSize, FontCharacters, Sprites } from './generated/art';
+import { buildHud } from './scenes/hud';
+import { buildLevel } from './scenes/level';
+import { setFont } from './text';
 
 const game = Game.init({
     canvasElementId: 'gameCanvas',
     name: 'nineLives',
     canvasOptions: {
-        backgroundColor: '#1b1b2f',
+        backgroundColor: Colors.outline,
+        width: Screen.width,
+        height: Screen.height,
         scale: 'integer',
     },
 });
 
-game.construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
+const construction = game.construction;
+construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
+construction.tileMaps.add('mapLevel', { source: './resources/maps/level.tmx' });
+
+// every sprite drawn by tools/build-art.mjs.
+for (const [name, sprite] of Object.entries(Sprites)) {
+    construction.sprites.add(name, { source: `./resources/sprites/${name}.png`, width: sprite.width, height: sprite.height });
+}
 
 game.load().then(() => {
-    const font = game.construction.fonts.get('fntPixel');
+    setFont(construction.fonts.get('fntPixel'));
 
-    game.defaultScene.onDraw((self, canvas) => {
-        canvas.drawText('NINE LIVES', 112, 120, { font: font, align: 'center', color: '#f59a3a' });
-        canvas.drawText('Coming soon!', 112, 136, { font: font, align: 'center', color: '#f4f4f4' });
-    });
+    buildCat(game);
+    buildScenery(game);
+    buildTraffic(game);
+
+    buildHud(game);
+    buildLevel(game);
+
+    game.defaultScene.onStart((self, controller) => controller.goToScene('scnLevel'));
 
     game.start();
 })

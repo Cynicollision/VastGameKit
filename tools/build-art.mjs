@@ -5,6 +5,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FontCellSize, FontCharacters, Glyphs } from './art/font.mjs';
 import { Palette } from './art/palette.mjs';
+import { Sprites } from './art/sprites.mjs';
+import { Tiles, TileSize } from './art/tiles.mjs';
 import { Image, sheet } from './lib/pixelArt.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -50,7 +52,34 @@ if (missingGlyphs.length > 0) {
 
 save(sheet(Array.from(FontCharacters).map(character => Glyphs[character]), FontCellSize, FontCellSize, 16, Palette), 'font.png');
 
+// each sprite's size and the index of each of its frames, by name.
+const spriteFrames = {};
+for (const [name, sprite] of Object.entries(Sprites)) {
+    const frameNames = Object.keys(sprite.frames);
+    const columns = Math.max(1, Math.floor(256 / sprite.width));
+    save(sheet(Object.values(sprite.frames), sprite.width, sprite.height, columns, Palette, true), `sprites/${name}.png`);
+    spriteFrames[name] = { width: sprite.width, height: sprite.height, frames: Object.fromEntries(frameNames.map((frame, index) => [frame, index])) };
+}
+
+// the tileset, with a Tiled tileset (.tsx) describing it.
+const tileNames = Object.keys(Tiles);
+const tileColumns = 8;
+const tileset = sheet(Object.values(Tiles), TileSize, TileSize, tileColumns, Palette, true);
+save(tileset, 'maps/tiles.png');
+writeFileSync(join(resources, 'maps', 'tiles.tsx'), [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    `<tileset version="1.10" tiledversion="1.11.0" name="tiles" tilewidth="${TileSize}" tileheight="${TileSize}" tilecount="${tileNames.length}" columns="${tileColumns}">`,
+    ` <image source="tiles.png" width="${tileset.width}" height="${tileset.height}"/>`,
+    ...tileNames.map((name, id) => ` <tile id="${id}" type="${name}"/>`),
+    '</tileset>',
+    '',
+].join('\n'));
+
 saveModule({
     FontCharacters: FontCharacters,
     FontCellSize: FontCellSize,
+    Sprites: spriteFrames,
+    TileSize: TileSize,
+    // each tile's id in the tileset, by name.
+    Tiles: Object.fromEntries(tileNames.map((name, id) => [name, id])),
 });

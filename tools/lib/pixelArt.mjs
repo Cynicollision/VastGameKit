@@ -50,14 +50,19 @@ export class Image {
     }
 }
 
-// An image of frames (each an array of rows), `columns` frames per row.
-export function sheet(frames, frameWidth, frameHeight, columns, palette) {
+// An image of frames (each an array of rows), `columns` frames per row. With exact, every frame must fill its size, to
+// catch miscounted rows.
+export function sheet(frames, frameWidth, frameHeight, columns, palette, exact = false) {
     const rows = Math.ceil(frames.length / columns);
     const image = new Image(frameWidth * Math.min(columns, frames.length), frameHeight * rows);
 
     frames.forEach((frame, index) => {
         if (frame.length > frameHeight || frame.some(row => row.length > frameWidth)) {
             throw new Error(`Frame ${index} is larger than ${frameWidth}x${frameHeight}.`);
+        }
+        if (exact && (frame.length !== frameHeight || frame.some(row => row.length !== frameWidth))) {
+            const row = frame.findIndex(row => row.length !== frameWidth);
+            throw new Error(`Frame ${index} isn't ${frameWidth}x${frameHeight}: it has ${frame.length} rows${row >= 0 ? `, and row ${row} is ${frame[row].length} wide` : ''}.`);
         }
         image.draw(frame, (index % columns) * frameWidth, Math.floor(index / columns) * frameHeight, palette);
     });
