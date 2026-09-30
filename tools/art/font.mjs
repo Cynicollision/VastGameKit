@@ -398,6 +398,55 @@ export const Glyphs = {
         .##.##.
         .......
         .......`),
+    '▲': pixels(`
+        .......
+        ...#...
+        ..###..
+        .#####.
+        #######
+        .......
+        .......`),
+    '▼': pixels(`
+        .......
+        .......
+        #######
+        .#####.
+        ..###..
+        ...#...
+        .......`),
+    '◀': pixels(`
+        ....#..
+        ...##..
+        ..###..
+        .####..
+        ..###..
+        ...##..
+        ....#..`),
+    '▶': pixels(`
+        ..#....
+        ..##...
+        ..###..
+        ..####.
+        ..###..
+        ..##...
+        ..#....`),
+    // sound on and off.
+    '🔊': pixels(`
+        ...#...
+        ..##..#
+        ####.#.
+        ####.#.
+        ####.#.
+        ..##..#
+        ...#...`),
+    '🔇': pixels(`
+        ...#...
+        ..##...
+        ####.#.
+        ####..#
+        ####.#.
+        ..##...
+        ...#...`),
     '♥': pixels(`
         .......
         .##.##.
@@ -409,4 +458,4 @@ export const Glyphs = {
 };
 
 // the glyphs' order in the image. (Object keys that look like numbers come first, so the order is spelled out.)
-export const FontCharacters = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?:-+=/()\'×♥';
+export const FontCharacters = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?:-+=/()\'×♥▲▼◀▶🔊🔇';

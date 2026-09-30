@@ -20,6 +20,17 @@ export function buildScenery(game: Game): void {
     game.construction.actors.add('actWall', { solid: true }).setRectBoundary(Tile, Tile);
     game.construction.actors.add('actWater').setRectBoundary(Tile, Tile);
 
+    // the cat on the title screen, sitting and blinking now and then.
+    const actTitleCat = game.construction.actors.add('actTitleCat', { sprite: sprites.get('sprCat') });
+    actTitleCat.onCreate((self) => {
+        self.state.clock = 0;
+        self.animation.setFrame(CatFrames.down);
+    });
+    actTitleCat.onStep((self) => {
+        const time = self.state.clock++ % 200;
+        self.animation.setFrame(time > 190 || (time > 170 && time < 176) ? CatFrames.blink : CatFrames.down);
+    });
+
     // a lost life, floating away.
     const actGhost = game.construction.actors.add('actGhost', { sprite: sprites.get('sprCat') });
     actGhost.onCreate((self) => {

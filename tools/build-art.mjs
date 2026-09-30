@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { FontCellSize, FontCharacters, Glyphs } from './art/font.mjs';
+import { logo } from './art/logo.mjs';
 import { Palette } from './art/palette.mjs';
 import { Sprites } from './art/sprites.mjs';
 import { Tiles, TileSize } from './art/tiles.mjs';
@@ -60,6 +61,10 @@ for (const [name, sprite] of Object.entries(Sprites)) {
     save(sheet(Object.values(sprite.frames), sprite.width, sprite.height, columns, Palette, true), `sprites/${name}.png`);
     spriteFrames[name] = { width: sprite.width, height: sprite.height, frames: Object.fromEntries(frameNames.map((frame, index) => [frame, index])) };
 }
+
+const title = logo();
+save(sheet([title.rows], title.width, title.height, 1, Palette, true), 'sprites/sprLogo.png');
+spriteFrames.sprLogo = { width: title.width, height: title.height, frames: { logo: 0 } };
 
 // the tileset, with a Tiled tileset (.tsx) describing it.
 const tileNames = Object.keys(Tiles);

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="15" height="16" tilewidth="16" tileheight="16" infinite="0" nextlayerid="4" nextobjectid="6">
+ <tileset firstgid="1" source="tiles.tsx"/>
+ <layer id="1" name="Ground" width="15" height="16">
+  <data encoding="csv">
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+19,19,19,19,19,19,19,19,19,19,19,19,19,19,19,
+20,21,20,21,20,21,20,21,20,21,20,21,20,21,20,
+17,17,17,17,18,17,17,17,17,17,18,17,17,17,17,
+16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,
+16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,
+16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,
+3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,
+7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,
+22,2,22,22,22,2,22,22,22,2,22,22,22,2,22
+</data>
+ </layer>
+ <objectgroup id="2" name="Actors">
+  <object id="1" class="actTitleCat" x="112" y="112" width="16" height="16"/>
+  <object id="2" class="actBox" x="64" y="112" width="16" height="16"/>
+  <object id="3" class="actBox" x="160" y="112" width="16" height="16">
+   <properties>
+    <property name="filled" type="bool" value="true"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="3" name="Lanes">
+  <object id="4" name="lane12" class="actLane" x="0" y="192" width="240" height="16">
+   <properties>
+    <property name="actor" value="actCar"/>
+    <property name="speed" type="float" value="-0.8"/>
+    <property name="count" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="5" name="lane13" class="actLane" x="0" y="208" width="240" height="16">
+   <properties>
+    <property name="actor" value="actCar"/>
+    <property name="speed" type="float" value="1.1"/>
+    <property name="count" type="int" value="2"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

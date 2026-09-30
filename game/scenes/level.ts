@@ -2,7 +2,10 @@ import { Controller, Game, Instance, SceneState } from './../../engine';
 import { getRow, loseLife } from './../actors/cat';
 import { HudHeight, Points, RespawnSteps, Rules, Screen } from './../constants';
 import { Sprites } from './../generated/art';
+import { ignorePointerThisStep } from './../input';
 import { addScore, getSession } from './../session';
+import { showTouchButtons } from './../settings';
+import { showBanner } from './panels';
 
 const BoxFrames = Sprites.sprBox.frames;
 
@@ -42,6 +45,7 @@ function fillBox(self: SceneState, cat: Instance, controller: Controller): void 
         addScore(controller, Points.allBoxes);
         self.state.roundOver = true;
         controller.publishEvent('roundCleared', { round: getSession(controller).round });
+        showBanner(self, `ROUND ${getSession(controller).round + 1}`, RespawnSteps * 2);
 
         self.startTimer({ durationSteps: RespawnSteps * 2 }).onEnd(() => {
             getSession(controller).round++;
@@ -74,12 +78,31 @@ function loseCat(self: SceneState, cat: Instance, controller: Controller): void 
         }
         else {
             self.state.gameOver = true;
+            self.floatSubScene('scnGameOver', { width: Screen.width, height: Screen.height, depth: -10 });
             controller.publishEvent('gameOver');
         }
     });
 }
 
+// Pausing floats a panel over the level. The tap that resumes isn't also a hop.
+function togglePause(self: SceneState, controller: Controller): void {
+    if (self.state.gameOver) {
+        return;
+    }
+
+    if (self.state.pausePanel) {
+        self.state.pausePanel.destroy();
+        self.state.pausePanel = undefined;
+        ignorePointerThisStep(controller);
+    }
+    else {
+        self.state.pausePanel = self.floatSubScene('scnPause', { width: Screen.width, height: Screen.height, depth: -10 });
+    }
+    self.paused = !!self.state.pausePanel;
+}
+
 export function buildLevel(game: Game): void {
+    const font = game.construction.fonts.get('fntPixel');
     const map = game.construction.tileMaps.get('mapLevel');
     const level = game.construction.scenes.add('scnLevel', { width: map.pixelWidth, height: map.pixelHeight });
     level.background.setFromTileMap(map, ['Ground']);
@@ -103,7 +126,25 @@ export function buildLevel(game: Game): void {
         camera.portY = HudHeight;
 
         self.floatSubScene('scnHud', { x: 0, y: 0, width: Screen.width, height: HudHeight });
+        showBanner(self, `ROUND ${getSession(controller).round}`, RespawnSteps * 1.5);
+        showTouchButtons(controller, true, font);
     });
+
+    level.onKeyboardInput('p', (self, event, controller) => {
+        if (event.type === 'keydown' && !event.repeat) {
+            togglePause(self, controller);
+        }
+    });
+
+    level.onKeyboardInput('Escape', (self, event, controller) => {
+        if (event.type === 'keydown' && !event.repeat && self.state.pausePanel) {
+            togglePause(self, controller);
+        }
+    });
+
+    level.onGameEvent('togglePause', (self, event, controller) => togglePause(self, controller));
+
+    level.onGameEvent('gameOver', (self, event, controller) => showTouchButtons(controller, false, font));
 
     level.onStep((self, controller) => {
         const cat: Instance | undefined = self.state.cat;

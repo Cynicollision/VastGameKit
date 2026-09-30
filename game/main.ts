@@ -7,6 +7,9 @@ import { Colors, Screen } from './constants';
 import { FontCellSize, FontCharacters, Sprites } from './generated/art';
 import { buildHud } from './scenes/hud';
 import { buildLevel } from './scenes/level';
+import { buildPanels } from './scenes/panels';
+import { buildTitle } from './scenes/title';
+import { applySettings } from './settings';
 import { setFont } from './text';
 
 const game = Game.init({
@@ -23,6 +26,7 @@ const game = Game.init({
 const construction = game.construction;
 construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
 construction.tileMaps.add('mapLevel', { source: './resources/maps/level.tmx' });
+construction.tileMaps.add('mapTitle', { source: './resources/maps/title.tmx' });
 
 // every sprite drawn by tools/build-art.mjs.
 for (const [name, sprite] of Object.entries(Sprites)) {
@@ -37,9 +41,12 @@ game.load().then(() => {
     buildTraffic(game);
 
     buildHud(game);
+    buildPanels(game);
     buildLevel(game);
+    buildTitle(game);
 
-    game.defaultScene.onStart((self, controller) => controller.goToScene('scnLevel'));
+    applySettings(game.controller);
+    game.defaultScene.onStart((self, controller) => controller.goToScene('scnTitle'));
 
     game.start();
 })

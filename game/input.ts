@@ -18,16 +18,23 @@ export function readHop(controller: Controller): Direction | undefined {
     }
 
     const pointer = controller.pointer;
-    if (pointer.swipe !== undefined) {
-        return pointer.swipe;
-    }
-    if (pointer.wasReleased && pointer.pressY >= HudHeight) {
-        return Direction.Up;
+    if (controller.state.pointerIgnoredStep !== controller.currentStep) {
+        if (pointer.swipe !== undefined) {
+            return pointer.swipe;
+        }
+        if (pointer.wasReleased && pointer.pressY >= HudHeight) {
+            return Direction.Up;
+        }
     }
 
     // holding a key keeps hopping.
     const held = Keys.find(([, keys]) => keys.some(key => keyboard.isDown(key)));
     return held ? held[0] : undefined;
+}
+
+// Ignores the pointer for hopping this step, e.g. for the tap that resumed the game.
+export function ignorePointerThisStep(controller: Controller): void {
+    controller.state.pointerIgnoredStep = controller.currentStep;
 }
 
 export function wasStartPressed(controller: Controller): boolean {

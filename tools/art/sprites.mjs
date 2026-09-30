@@ -20,6 +20,24 @@ const Cat = {
         ..kowwoooowwok..
         ...kkkkkkkkkk...
         ................`),
+    // facing down, blinking.
+    blink: pixels(`
+        ................
+        ...k........k...
+        ..kpk......kpk..
+        ..kppkkkkkkppk..
+        ..kooooOOooook..
+        .kooooOooOooook.
+        .kooooooooooook.
+        .kookkooookkook.
+        .kooooowwoooook.
+        ..koowwppwwook..
+        ...kowkwwkwok...
+        ...kkooooookk...
+        ..koOooooooOok..
+        ..kowwoooowwok..
+        ...kkkkkkkkkk...
+        ................`),
     // facing up, away from the player: the back of its head and its tail.
     up: pixels(`
         ................
