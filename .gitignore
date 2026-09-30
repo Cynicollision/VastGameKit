@@ -3,7 +3,7 @@ dist
 lib
 node_modules
 
-# local-only test assets (LPC atlas, not used by the game)
+# local-only test assets
 game/resources/tilemaps/*.png
 game/resources/tilemaps/LPC_Atlas_Attribution.txt
 game/resources/tilemaps/*_atlas.tsx
