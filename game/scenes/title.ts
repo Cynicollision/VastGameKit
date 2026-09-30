@@ -33,13 +33,16 @@ export function buildTitle(game: Game): void {
 
         if (controller.keyboard.wasPressed('m') || (tappedSetting && pointer.pressY < ControlsY - 2)) {
             toggleMute(controller);
+            controller.audio.play('sndSelect');
         }
         else if (controller.keyboard.wasPressed('c') || (tappedSetting && pointer.pressY >= ControlsY - 2)) {
             toggleTouchButtons(controller);
+            controller.audio.play('sndSelect');
         }
         else if (!self.state.starting && wasStartPressed(controller)) {
             self.state.starting = true;
             controller.state.session = newSession();
+            controller.audio.play('sndMeow');
             controller.transitionToScene('scnLevel', { durationMs: 600, color: Colors.outline });
         }
     });

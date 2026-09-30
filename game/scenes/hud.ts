@@ -19,12 +19,14 @@ export function buildHud(game: Game): void {
     hud.onKeyboardInput('m', (self, event, controller) => {
         if (event.type === 'keydown' && !event.repeat) {
             toggleMute(controller);
+            controller.audio.play('sndSelect');
         }
     });
 
     hud.onPointerInput('pointerup', (self, event, controller) => {
         if (event.x >= SoundX - 4 && event.y >= HudHeight / 2) {
             toggleMute(controller);
+            controller.audio.play('sndSelect');
         }
         else {
             controller.publishEvent('togglePause');

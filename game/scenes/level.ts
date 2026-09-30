@@ -40,7 +40,10 @@ function fillBox(self: SceneState, cat: Instance, controller: Controller): void 
     controller.publishEvent('boxFilled');
 
     const boxes = self.instances.getAll('actBox');
-    if (boxes.every(box => box.state.filled)) {
+    const allFilled = boxes.every(box => box.state.filled);
+    controller.audio.play(allFilled ? 'sndRoundClear' : 'sndBox');
+
+    if (allFilled) {
         // every box is full: on to a faster round.
         addScore(controller, Points.allBoxes);
         self.state.roundOver = true;
@@ -79,6 +82,7 @@ function loseCat(self: SceneState, cat: Instance, controller: Controller): void 
         else {
             self.state.gameOver = true;
             self.floatSubScene('scnGameOver', { width: Screen.width, height: Screen.height, depth: -10 });
+            controller.audio.play('sndGameOver');
             controller.publishEvent('gameOver');
         }
     });
@@ -154,6 +158,13 @@ export function buildLevel(game: Game): void {
 
         const session = getSession(controller);
         session.timeLeft--;
+
+        // ticks each second as time runs out.
+        const stepsPerSecond = Math.round(1000 / controller.stepDurationMs);
+        if (session.timeLeft < Rules.timeSteps / 4 && session.timeLeft % stepsPerSecond === 0) {
+            controller.audio.play('sndTick');
+        }
+
         if (session.timeLeft <= 0) {
             loseLife(cat, controller, 'timeUp');
         }

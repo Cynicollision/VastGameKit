@@ -41,7 +41,8 @@ function findBox(controller: Controller, x: number): Instance | undefined {
     return controller.sceneState.instances.getAll('actBox').find(box => Math.abs(box.x - x) <= Tile / 2 && !box.state.filled);
 }
 
-function startHop(self: Instance, direction: Direction, controller: Controller): void {
+// Starts a hop, returning whether there was somewhere to hop to.
+function startHop(self: Instance, direction: Direction, controller: Controller): boolean {
     face(self, direction);
 
     const scene = controller.sceneState.scene;
@@ -49,24 +50,25 @@ function startHop(self: Instance, direction: Direction, controller: Controller):
     let toX = self.x + (direction === Direction.Left ? -Tile : direction === Direction.Right ? Tile : 0);
 
     if (toX < 0 || toX > scene.width - Tile || toY < Tile || toY > scene.height - Tile) {
-        return;
+        return false;
     }
 
     // the roof is a wall except where the boxes are.
     if (Math.round(toY / Tile) === 1) {
         const box = findBox(controller, toX);
         if (!box) {
-            return;
+            return false;
         }
         toX = box.x;
     }
 
     if (!self.isPlaceFree(toX, toY)) {
-        return;
+        return false;
     }
 
     self.state.hop = { fromX: self.x, fromY: self.y, toX: toX, toY: toY, step: 0 };
-    controller.publishEvent('catHopped');
+    controller.audio.play('sndHop');
+    return true;
 }
 
 // Moves along the hop, and lands at its end.
@@ -150,6 +152,7 @@ export function loseLife(self: Instance, controller: Controller, how: CatLoss): 
         self.animation.setFrame(Frames.squashed);
     }
 
+    controller.audio.play(how === 'squashed' ? 'sndSquish' : how === 'splashed' ? 'sndSplash' : 'sndTimeUp');
     controller.publishEvent('catLost', { cat: self, how: how });
 }
 
@@ -175,10 +178,12 @@ export function buildCat(game: Game): void {
             continueHop(self, hop, controller);
         }
         else {
+            // bonks for hops that can't be made, but not over and over while a key is held.
             const direction = readHop(controller);
-            if (direction !== undefined) {
-                startHop(self, direction, controller);
+            if (direction !== undefined && !startHop(self, direction, controller) && !self.state.asking) {
+                controller.audio.play('sndBonk');
             }
+            self.state.asking = direction !== undefined;
         }
 
         if (!self.state.hop && !self.state.lost) {

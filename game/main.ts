@@ -5,6 +5,7 @@ import { buildScenery } from './actors/scenery';
 import { buildTraffic } from './actors/traffic';
 import { Colors, Screen } from './constants';
 import { FontCellSize, FontCharacters, Sprites } from './generated/art';
+import { SoundNames } from './generated/sounds';
 import { buildHud } from './scenes/hud';
 import { buildLevel } from './scenes/level';
 import { buildPanels } from './scenes/panels';
@@ -27,6 +28,11 @@ const construction = game.construction;
 construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
 construction.tileMaps.add('mapLevel', { source: './resources/maps/level.tmx' });
 construction.tileMaps.add('mapTitle', { source: './resources/maps/title.tmx' });
+
+// every sound synthesized by tools/build-sfx.mjs.
+for (const name of SoundNames) {
+    construction.sounds.add(name, { source: `./resources/sounds/${name}.wav` });
+}
 
 // every sprite drawn by tools/build-art.mjs.
 for (const [name, sprite] of Object.entries(Sprites)) {
