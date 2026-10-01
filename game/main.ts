@@ -1,64 +1,60 @@
-// A demo of the engine's features, and a quick way to check they still work together. See the HUD for controls.
+// Nine Lives: a cat crosses town to get home. The engine's demo, using most of its features.
 import { Game } from './../engine';
+import { buildCat } from './actors/cat';
+import { buildScenery } from './actors/scenery';
+import { buildTraffic } from './actors/traffic';
+import { Colors, Screen } from './constants';
+import { FontCellSize, FontCharacters, Sprites } from './generated/art';
+import { SoundNames } from './generated/sounds';
+import { buildHud } from './scenes/hud';
+import { buildLevel } from './scenes/level';
+import { buildPanels } from './scenes/panels';
+import { buildTitle } from './scenes/title';
+import { applySettings } from './settings';
+import { setFont } from './text';
 
-import { buildCoinActor } from './actors/coin';
-import { buildDummyButton } from './actors/dummyButton';
-import { buildPlayerActor } from './actors/player';
-import { buildWallActor } from './actors/wall';
-import { buildAreas } from './scenes/areas';
-import { buildDefaultScene } from './scenes/default';
-import { buildHUD } from './scenes/interface/hud';
-import { buildModal } from './scenes/interface/modal';
-
-const vastGame = Game.init({
+const game = Game.init({
     canvasElementId: 'gameCanvas',
-    name: 'vastgameDemo',
-    targetFPS: 60,
+    name: 'nineLives',
     canvasOptions: {
-        scale: 'integer'
+        backgroundColor: Colors.outline,
+        width: Screen.width,
+        height: Screen.height,
+        // whole screen pixels per game pixel keep the pixel art even, but on phones' dense screens that can leave a wide
+        // border around the game, and pixels a screen pixel apart in size are hard to see. So there, fill the space.
+        scale: window.devicePixelRatio >= 2 ? 'fit' : 'integer',
     },
-    defaultSceneOptions: {
-        height: 1024,
-        width: 1532,
-        persistent: true
-    }
 });
 
-vastGame.construction.sounds.add('sndPlop', { source: './resources/sounds/plop.wav' });
-vastGame.construction.sprites.add('sprButton', { source: './resources/pinkblue.png', height: 32, width: 32 });
-vastGame.construction.sprites.add('sprLink', { source: './resources/guy_sheet.png', height: 16, width: 16 });
-vastGame.construction.sprites.add('granite', { source: './resources/greenblock.png' });
-vastGame.construction.sprites.add('bgAreaA1', { source: './resources/backgrounds/testWorld.png' });
-vastGame.construction.sprites.add('sprCoin', { source: './resources/coin.png' });
-vastGame.construction.sprites.add('sprGrass', { source: './resources/grass.png' });
-vastGame.construction.sprites.add('sprSky', { source: './resources/sky.png' });
+const construction = game.construction;
+construction.fonts.add('fntPixel', { source: './resources/font.png', width: FontCellSize, height: FontCellSize, characters: FontCharacters });
+construction.tileMaps.add('mapLevel', { source: './resources/maps/level.tmx' });
+construction.tileMaps.add('mapTitle', { source: './resources/maps/title.tmx' });
 
-vastGame.load().then(game => {
-    buildCoinActor(game);
-    buildDummyButton(game);
-    buildPlayerActor(game);
-    buildWallActor(game);
+// every sound synthesized by tools/build-sfx.mjs.
+for (const name of SoundNames) {
+    construction.sounds.add(name, { source: `./resources/sounds/${name}.wav` });
+}
 
-    buildHUD(game);
-    buildModal(game);
+// every sprite drawn by tools/build-art.mjs.
+for (const [name, sprite] of Object.entries(Sprites)) {
+    construction.sprites.add(name, { source: `./resources/sprites/${name}.png`, width: sprite.width, height: sprite.height });
+}
 
-    buildDefaultScene(game);
-    buildAreas(game);
+game.load().then(() => {
+    setFont(construction.fonts.get('fntPixel'));
 
-    // shown once the screen is touched.
-    game.controller.setTouchButtons([
-        { key: 'ArrowUp', x: 160, y: 600, width: 120, height: 120, label: '▲' },
-        { key: 'ArrowLeft', x: 40, y: 720, width: 120, height: 120, label: '◀' },
-        { key: 'ArrowRight', x: 280, y: 720, width: 120, height: 120, label: '▶' },
-        { key: 'ArrowDown', x: 160, y: 840, width: 120, height: 120, label: '▼' },
-        { key: 'q', x: 1100, y: 780, width: 140, height: 140, shape: 'circle', label: 'Q' },
-        { key: 'm', x: 940, y: 820, width: 110, height: 110, shape: 'circle', label: 'M' },
-        { key: 'e', x: 1120, y: 640, width: 110, height: 110, shape: 'circle', label: 'E' },
-    ]);
+    buildCat(game);
+    buildScenery(game);
+    buildTraffic(game);
 
-    game.controller.onSceneChange((oldSceneState, newSceneState) => {
-        console.log(`Changing from ${oldSceneState.scene.name} to ${newSceneState.scene.name}`);
-    });
+    buildHud(game);
+    buildPanels(game);
+    buildLevel(game);
+    buildTitle(game);
+
+    applySettings(game.controller);
+    game.defaultScene.onStart((self, controller) => controller.goToScene('scnTitle'));
 
     game.start();
 })

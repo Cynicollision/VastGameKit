@@ -1,4 +1,5 @@
 import { GameError } from './../core';
+import { BitmapFont } from './../resources/bitmapFont';
 import { Sprite } from './../resources/sprite';
 
 // How a canvas is displayed. 'integer' scales it by the largest whole number of screen pixels that fits, so every
@@ -35,9 +36,10 @@ export type CanvasDrawTextOptions = {
     align?: CanvasTextAlign;
     // where y is on the text. Default 'alphabetic', the line the letters sit on.
     baseline?: CanvasTextBaseline;
+    // a CSS color. Default '#000', or a BitmapFont's own colors.
     color?: string;
-    // a CSS font. Default '16px arial'.
-    font?: string;
+    // a CSS font or a BitmapFont. Default '16px arial'.
+    font?: string | BitmapFont;
     opacity?: number;
 };
 
@@ -66,7 +68,7 @@ export interface GameCanvas {
     fillArea(color: string, x: number, y: number, width: number, height: number, options?: CanvasFillOptions): void;
     fillCircle(color: string, x: number, y: number, radius: number, options?: CanvasFillOptions): void;
     // The width text would be drawn at, in pixels.
-    measureText(text: string, font?: string): number;
+    measureText(text: string, font?: string | BitmapFont): number;
     // Until the matching popView, draws within the port rectangle only, with the view rectangle stretched to fill it.
     // The view defaults to the port's size at the origin. Views nest, each relative to the one before.
     popView(): void;
@@ -231,8 +233,14 @@ export class GameCanvasHtml2D implements GameCanvas {
     }
 
     drawText(text: string, x: number, y: number, options: CanvasDrawTextOptions = {}): void {
+        const font = options.font;
+        if (font && typeof font !== 'string') {
+            this.drawBitmapText(font, text, x, y, options);
+            return;
+        }
+
         this.withOpacity(options.opacity, context => {
-            context.font = options.font || GameCanvasHtml2D.DefaultFont;
+            context.font = font || GameCanvasHtml2D.DefaultFont;
             context.fillStyle = options.color || '#000';
             context.textAlign = options.align || 'left';
             context.textBaseline = options.baseline || 'alphabetic';
@@ -240,7 +248,35 @@ export class GameCanvasHtml2D implements GameCanvas {
         });
     }
 
-    measureText(text: string, font?: string): number {
+    // Draws each line's glyphs on whole pixels, aligned as CSS text would be. The alphabetic baseline is the bottom of
+    // the glyphs.
+    private drawBitmapText(font: BitmapFont, text: string, x: number, y: number, options: CanvasDrawTextOptions): void {
+        const layout = font.layout(text);
+        const image = font.getImage(options.color);
+        const align = options.align || 'left';
+        const baseline = options.baseline || 'alphabetic';
+        const top = baseline === 'top' || baseline === 'hanging' ? y : baseline === 'middle' ? y - layout.height / 2 : y - layout.height;
+
+        layout.lines.forEach((line, lineIndex) => {
+            const lineWidth = font.measureLine(line);
+            const left = align === 'center' ? x - lineWidth / 2 : align === 'right' || align === 'end' ? x - lineWidth : x;
+            const lineY = Math.round(top + lineIndex * (font.height + font.lineSpacing));
+
+            line.forEach((character, index) => {
+                const source = font.getGlyphImageSourceCoords(character);
+                if (source) {
+                    const glyphX = Math.round(left + index * (font.width + font.letterSpacing));
+                    this.drawImage(image, source[0], source[1], font.width, font.height, glyphX, lineY, font.width, font.height, { opacity: options.opacity });
+                }
+            });
+        });
+    }
+
+    measureText(text: string, font?: string | BitmapFont): number {
+        if (font && typeof font !== 'string') {
+            return font.measureText(text);
+        }
+
         this.canvasContext2D.font = font || GameCanvasHtml2D.DefaultFont;
         return this.canvasContext2D.measureText(text).width;
     }

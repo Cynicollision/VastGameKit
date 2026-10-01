@@ -12,11 +12,33 @@ npm run debug    # the demo at http://localhost:9000, rebuilt as you edit
 npm test         # run the tests once (npm run test:watch to keep watching)
 npm run lint
 npm run build    # a production build of the game in dist/, ready to upload
+npm run art      # redraw the demo's images from tools/art/
+npm run sfx      # synthesize the demo's sound effects from tools/sounds/
 ```
 
-The engine lives in `engine/`, with everything exported from `engine/index.ts`. The demo in `game/` tours the engine's
-features and is a quick way to check they still work together: `game/main.ts` is its entry point, `game/index.html` its
-page, and `game/resources/` its images, sounds, and maps.
+The engine lives in `engine/`, with everything exported from `engine/index.ts`.
+
+## The demo: Nine Lives
+
+The demo in `game/` is *Nine Lives*, a lane-crossing arcade game: a cat hops across roads, a railroad, and a canal to
+the boxes on a rooftop, with nine lives to do it. It uses most of the engine's features, so it's also a quick way to
+check they still work together. `game/main.ts` is its entry point, `game/index.html` its page, and `game/resources/`
+its images, sounds, and maps.
+
+| Feature | In the demo |
+| --- | --- |
+| Tiled maps | `resources/maps/level.tmx` and `title.tmx` (open them in Tiled): tile layers for the background, walls, and water; objects for the cat, boxes, signals, and lanes, with lane speeds and spacing as custom properties |
+| Cameras and sub-scenes | the camera follows the cat up the level; the HUD, pause and game over panels, and round banners float over it (`scenes/`) |
+| Motion and collision | traffic and floaters wrap around their lanes; the cat rides crates and ducks and is flattened by traffic (`actors/`) |
+| Sprites | animation, flips, hop scaling, fading ghosts, and switching to a splash sprite |
+| Text | a bitmap font for all text, and a logo drawn from it |
+| Input | arrow keys (held keys pause between hops), a touch d-pad on the side picked when starting by touch, and a tappable HUD (`input.ts`, `settings.ts`) |
+| Audio, timers, events, storage | sound effects (off until turned on), respawns and trains on timers, game events between the level, HUD, and actors, and saved high scores and settings |
+
+Its images are drawn as text in `tools/art/`, each character a color from `tools/art/palette.mjs`, and `npm run art`
+turns them into PNGs and the tileset's `.tsx` (add `-- --preview <folder>` to also save copies scaled up 4x). Its sound
+effects are lists of chiptune voices in `tools/sounds/effects.mjs`, and `npm run sfx` turns them into WAVs. Both write
+what the game needs to know about them to `game/generated/`.
 
 ## Making a game in its own repo
 
@@ -117,7 +139,7 @@ game.load().then(() => {
 The engine separates what a game *is* from what's happening while it runs.
 
 **Construction** (`game.construction`) defines the game before it starts: registries of `actors`, `scenes`, `sprites`,
-`sounds`, and `tileMaps`, each added by name. `game.load()` loads every sprite, sound, and map.
+`sounds`, `tileMaps`, and `fonts`, each added by name. `game.load()` loads every sprite, sound, map, and font.
 
 - An **Actor** is a kind of thing (a player, a wall, a coin): its sprite, boundary, whether it's solid, and lifecycle
   callbacks.
@@ -210,6 +232,26 @@ actor.onDraw((self, canvas, controller) => {
 });
 ```
 
+CSS fonts blur when a small canvas is scaled up. For crisp pixel text, add a bitmap font: an image of equally sized
+glyphs, with the characters they are in order.
+
+```ts
+game.construction.fonts.add('fntPixel', {
+    source: './resources/font.png',
+    width: 8, height: 8,              // each glyph
+    characters: ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,!?',
+    letterSpacing: 0, lineSpacing: 2, // optional
+});
+
+const font = game.construction.fonts.get('fntPixel');
+canvas.drawText('GAME OVER\nPRESS START', 112, 128, { font: font, align: 'center', baseline: 'middle', color: '#ff0' });
+canvas.measureText('GAME OVER', font); // 72
+```
+
+Glyphs are drawn on whole pixels, recolored to `color` if given (draw them in white), and a font with only one case of
+letters draws the other case too. Characters the font doesn't have are left blank. `'\n'` starts a new line, and
+`baseline: 'alphabetic'` (the default) puts the bottom of the glyphs at `y`.
+
 ### Scenes, cameras, and sub-scenes
 
 ```ts
@@ -228,7 +270,8 @@ controller.transitionToScene('scnLevel2', { durationMs: 400, color: '#000' }, { 
 ```
 
 A camera shows a rectangle of the Scene (`x`, `y`, `width`, `height`) in a rectangle of the canvas (`portX`, `portY`,
-`portWidth`, `portHeight`), scaling to fit. Sub-scenes run a Scene inside another: *embedded* sub-scenes are part of the
+`portWidth`, `portHeight`), scaling to fit. A following camera stays with its target; with a `maxSpeed` (pixels per
+step) it pans instead when the target jumps, e.g. to a player starting over. Sub-scenes run a Scene inside another: *embedded* sub-scenes are part of the
 Scene's world, and *floating* ones sit above it on the canvas, like a HUD or a dialog.
 
 ### Keyboard, pointer, and events
@@ -256,7 +299,7 @@ the canvas, touching the canvas doesn't scroll the page, and `pointer.pointers` 
 
 ### Touch buttons
 
-Games played with a keyboard can add on-screen buttons that press keys, so they can be played on phones:
+Games played with a keyboard can add on-screen buttons and a d-pad that press keys, so they can be played on phones:
 
 ```ts
 controller.setTouchButtons([
@@ -267,9 +310,20 @@ controller.setTouchButtons([
 ```
 
 Buttons (in canvas coordinates) appear once the player touches the screen, so they're never in the way on a computer
-(set `controller.touchControls.visibility` to `'always'` or `'never'` to change that). Pressing one is the same as
+(set `controller.touchControls.visibility` to `'always'` or `'never'` to change that). Labels can have a `font`, such
+as a bitmap font. Pressing one is the same as
 pressing its key, for `controller.keyboard` and `onKeyboardInput` alike. A touch that starts on a button slides between
 buttons like a d-pad and isn't pointer input; other touches are.
+
+A d-pad is a disc that presses one of four keys (the arrow keys by default) for the direction a touch is from its
+center, so one thumb can rock between directions. The touch keeps steering it after sliding off the disc, and pressing
+near the center presses nothing. For games without diagonal moves, a `diagonalGap` (in degrees) around each diagonal
+presses nothing new, so a slightly-off touch doesn't press the wrong direction:
+
+```ts
+controller.setTouchDPad({ x: 40, y: 140, radius: 28 });  // also keys, deadZone (0.25 of the radius), diagonalGap, font
+controller.setTouchDPad(undefined);                      // removes it
+```
 
 ### Audio
 

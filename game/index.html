@@ -1,10 +1,24 @@
+<!DOCTYPE html>
 <html>
     <head>
-        <title>Vastgame Demo</title>
-        <meta name="viewport" content="width=device-width">
+        <meta charset="utf-8">
+        <title>Nine Lives</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            /* centered in the visible height: on phones, 100vh also counts the space under the browser's toolbars. */
+            body {
+                background-color: #1b1b2f;
+                margin: 0;
+                min-height: 100vh;
+                min-height: 100dvh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        </style>
         <script src="./game_bundle.js" defer></script>
     </head>
-    <body style="background-color: #ccc; text-align: center; margin: 0">
-        <canvas id="gameCanvas" width="1280" height="960"></canvas>
+    <body>
+        <canvas id="gameCanvas" width="240" height="256"></canvas>
     </body>
 </html>

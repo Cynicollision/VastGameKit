@@ -92,6 +92,36 @@ describe('SceneCamera', () => {
             expect(testCamera.y).toBe(0);
         });
 
+        it('moving no faster than its maximum speed, then keeping up', () => {
+            testCamera.follow(testInstance, { maxSpeed: 50 });
+            testInstance.x = 300;
+            testInstance.y = 400;
+
+            testCamera.updateFollowPosition();
+            expect(testCamera.x).toBeCloseTo(30);
+            expect(testCamera.y).toBeCloseTo(40);
+
+            for (let i = 0; i < 9; i++) {
+                testCamera.updateFollowPosition();
+            }
+            expect(testCamera.x).toBeCloseTo(300);
+            expect(testCamera.y).toBeCloseTo(400);
+
+            testInstance.x = 320;
+            testCamera.updateFollowPosition();
+            expect(testCamera.x).toBeCloseTo(320);
+            expect(testCamera.y).toBeCloseTo(400);
+        });
+
+        it('jumping to its target without a maximum speed', () => {
+            testCamera.follow(testInstance, { maxSpeed: 50 });
+            testCamera.follow(testInstance);
+            testInstance.x = 300;
+
+            testCamera.updateFollowPosition();
+            expect(testCamera.x).toBe(300);
+        });
+
         it('centered around the ActorInstance\'s Boundary, staying within the scene maximum bounds', () => {
             testInstance.x = testGame.defaultScene.width;
             testInstance.y = testGame.defaultScene.height;

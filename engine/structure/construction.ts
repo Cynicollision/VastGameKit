@@ -1,4 +1,5 @@
 import { GameError, ObjMap } from './../core';
+import { BitmapFont, BitmapFontOptions } from './../resources/bitmapFont';
 import { Sound, SoundOptions } from './../resources/sound';
 import { Sprite, SpriteOptions } from './../resources/sprite';
 import { TileMap, TileMapOptions } from './../resources/tilemap';
@@ -53,6 +54,7 @@ class GameConstructionRegistry<T, U> {
 
 export class GameConstruction {
     readonly actors: GameConstructionRegistry<ActorDefinition, ActorOptions>;
+    readonly fonts: GameConstructionRegistry<BitmapFont, BitmapFontOptions>;
     readonly scenes: GameConstructionRegistry<Scene, SceneOptions>;
     readonly sounds: GameConstructionRegistry<Sound, SoundOptions>;
     readonly sprites: GameConstructionRegistry<Sprite, SpriteOptions>;
@@ -60,6 +62,7 @@ export class GameConstruction {
 
     constructor() {
         this.actors = new GameConstructionRegistry<ActorDefinition, ActorOptions>('Actor', (name, options) => ActorDefinition.new(name, options));
+        this.fonts = new GameConstructionRegistry<BitmapFont, BitmapFontOptions>('BitmapFont', (name, options) => BitmapFont.new(name, requireOptions('BitmapFont', name, options)));
         this.scenes = new GameConstructionRegistry<Scene, SceneOptions>('Scene', (name, options) => GameScene.new(name, options));
         this.sounds = new GameConstructionRegistry<Sound, SoundOptions>('Sound', (name, options) => Sound.new(name, requireOptions('Sound', name, options)));
         this.sprites = new GameConstructionRegistry<Sprite, SpriteOptions>('Sprite', (name, options) => Sprite.new(name, requireOptions('Sprite', name, options)));
@@ -70,6 +73,7 @@ export class GameConstruction {
     load(audioContext?: BaseAudioContext): Promise<void> {
         const promises: Promise<void | string>[] = [];
 
+        this.fonts.resources.forEach(font => promises.push(font.load()));
         this.sounds.resources.forEach(sound => promises.push(sound.load(audioContext)));
         this.sprites.resources.forEach(sprite => promises.push(sprite.loadImage()));
         this.tileMaps.resources.forEach(map => promises.push(map.load()));
