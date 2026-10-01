@@ -317,10 +317,11 @@ buttons like a d-pad and isn't pointer input; other touches are.
 
 A d-pad is a disc that presses one of four keys (the arrow keys by default) for the direction a touch is from its
 center, so one thumb can rock between directions. The touch keeps steering it after sliding off the disc, and pressing
-near the center presses nothing:
+near the center presses nothing. For games without diagonal moves, a `diagonalGap` (in degrees) around each diagonal
+presses nothing new, so a slightly-off touch doesn't press the wrong direction:
 
 ```ts
-controller.setTouchDPad({ x: 40, y: 140, radius: 28 });  // also keys, deadZone (0.25 of the radius), and font
+controller.setTouchDPad({ x: 40, y: 140, radius: 28 });  // also keys, deadZone (0.25 of the radius), diagonalGap, font
 controller.setTouchDPad(undefined);                      // removes it
 ```
 

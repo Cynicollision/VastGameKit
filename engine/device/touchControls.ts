@@ -35,6 +35,10 @@ export type TouchDPadOptions = {
     keys?: TouchDPadKeys;
     // how far from the center a touch must be to press a key, as a fraction of the radius. Default 0.25.
     deadZone?: number;
+    // the angle, in degrees, of a gap around each diagonal that doesn't start pressing either of its directions, for
+    // games without diagonal moves, so a touch a little off of one direction doesn't press its neighbor. A key already
+    // pressed stays pressed in a gap beside it. Default 0: no gaps.
+    diagonalGap?: number;
     // the arrows' font. Default: a bold sans-serif a third of the pad's radius.
     font?: string | BitmapFont;
 };
@@ -108,13 +112,23 @@ export class TouchControls {
         return dx * dx + dy * dy <= pad.radius * pad.radius;
     }
 
-    // The key for the direction a position is from the pad's center: along whichever axis it's farther.
+    // The key for the direction a position is from the pad's center: along whichever axis it's farther. Near a
+    // diagonal, it's the key already pressed if that's one of the diagonal's two directions, and otherwise none.
     private static padKey(pad: TouchDPad, x: number, y: number): string | undefined {
         const dx = x - pad.x;
         const dy = y - pad.y;
         const deadZone = pad.radius * pad.deadZone;
         if (dx * dx + dy * dy < deadZone * deadZone) {
             return undefined;
+        }
+
+        const horizontal = dx > 0 ? pad.keys.right : pad.keys.left;
+        const vertical = dy > 0 ? pad.keys.down : pad.keys.up;
+
+        // degrees from the nearest diagonal, from 0 on it to 45 on an axis.
+        const angle = Math.atan2(Math.abs(dy), Math.abs(dx)) * 180 / Math.PI;
+        if (Math.abs(angle - 45) < pad.diagonalGap / 2) {
+            return pad.pressed === horizontal || pad.pressed === vertical ? pad.pressed : undefined;
         }
 
         if (Math.abs(dx) > Math.abs(dy)) {
@@ -185,6 +199,7 @@ export class TouchControls {
             ...options,
             keys: options.keys || ArrowKeys,
             deadZone: options.deadZone !== undefined ? options.deadZone : 0.25,
+            diagonalGap: options.diagonalGap || 0,
             pressed: undefined,
         } : undefined;
     }

@@ -155,6 +155,22 @@ describe('TouchControls d-pad', () => {
         expect(raised).toEqual(['keydown ArrowUp', 'keyup ArrowUp']);
     });
 
+    it('presses nothing in the gaps around the diagonals, unless a key beside the gap is already pressed', () => {
+        controls.setDPad({ x: 50, y: 50, radius: 20, diagonalGap: 30 });
+
+        // 40 degrees up and to the right of center: in the gap.
+        controls.handlePointerEvent(touch('pointerdown', 50 + 10 * Math.cos(Math.PI * 40 / 180), 50 - 10 * Math.sin(Math.PI * 40 / 180)), raise);
+        // 70 degrees: up. Then back into the gap, which keeps up pressed.
+        controls.handlePointerEvent(touch('pointermove', 50 + 10 * Math.cos(Math.PI * 70 / 180), 50 - 10 * Math.sin(Math.PI * 70 / 180)), raise);
+        controls.handlePointerEvent(touch('pointermove', 50 + 10 * Math.cos(Math.PI * 40 / 180), 50 - 10 * Math.sin(Math.PI * 40 / 180)), raise);
+        // 20 degrees: right.
+        controls.handlePointerEvent(touch('pointermove', 50 + 10 * Math.cos(Math.PI * 20 / 180), 50 - 10 * Math.sin(Math.PI * 20 / 180)), raise);
+        // the gap down and to the left isn't beside right, so it releases right.
+        controls.handlePointerEvent(touch('pointermove', 40, 60), raise);
+
+        expect(raised).toEqual(['keydown ArrowUp', 'keyup ArrowUp', 'keydown ArrowRight', 'keyup ArrowRight']);
+    });
+
     it('keeps following a touch that slides off of it', () => {
         controls.handlePointerEvent(touch('pointerdown', 50, 60), raise);
         expect(controls.handlePointerEvent(touch('pointermove', 100, 70), raise)).toBeTrue();
