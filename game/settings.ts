@@ -33,5 +33,7 @@ export function showTouchPad(controller: Controller, show: boolean, font: Bitmap
     const radius = 28;
     const margin = 6;
     const x = getPadSide(controller) === 'left' ? margin + radius : Screen.width - margin - radius;
-    controller.setTouchDPad(show ? { x: x, y: Screen.height - margin - radius, radius: radius, font: font } : undefined);
+    // the cat can't hop diagonally, so a touch near a diagonal waits to be clearer about which way it means.
+    const dpad = { x: x, y: Screen.height - margin - radius, radius: radius, diagonalGap: 30, font: font };
+    controller.setTouchDPad(show ? dpad : undefined);
 }

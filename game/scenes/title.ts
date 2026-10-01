@@ -9,7 +9,7 @@ import { drawText } from './../text';
 const SoundY = 156;
 
 // Starting by touch first asks which side the d-pad goes on, with a choice for each side.
-const SidePanel = { x: 24, y: 88, width: 192, height: 80 };
+const SidePanel = { x: 12, y: 88, width: 216, height: 80 };
 const SideChoices: { side: PadSide, label: string, x: number }[] = [
     { side: 'left', label: '◀ LEFT', x: 36 },
     { side: 'right', label: 'RIGHT ▶', x: 124 },
@@ -47,7 +47,7 @@ function drawSideChoices(canvas: GameCanvas, controller: Controller): void {
     canvas.fillArea(Colors.outline, 0, 0, Screen.width, Screen.height, { opacity: 0.5 });
     canvas.fillArea(Colors.outline, SidePanel.x, SidePanel.y, SidePanel.width, SidePanel.height);
     canvas.drawRect(Colors.white, SidePanel.x + 2.5, SidePanel.y + 2.5, SidePanel.width - 5, SidePanel.height - 5);
-    drawText(canvas, 'ARROWS ON WHICH SIDE?', center, SidePanel.y + 14, { align: 'center', color: Colors.yellow });
+    drawText(canvas, 'CONTROLS ON WHICH SIDE?', center, SidePanel.y + 14, { align: 'center', color: Colors.yellow });
 
     // the side chosen last time stands out.
     for (const choice of SideChoices) {
