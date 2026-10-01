@@ -32,7 +32,7 @@ its images, sounds, and maps.
 | Motion and collision | traffic and floaters wrap around their lanes; the cat rides crates and ducks and is flattened by traffic (`actors/`) |
 | Sprites | animation, flips, hop scaling, fading ghosts, and switching to a splash sprite |
 | Text | a bitmap font for all text, and a logo drawn from it |
-| Input | arrow keys, on-screen arrow buttons once the screen is touched, and a tappable HUD (`input.ts`, `settings.ts`) |
+| Input | arrow keys (held keys pause between hops), a touch d-pad on the side picked when starting by touch, and a tappable HUD (`input.ts`, `settings.ts`) |
 | Audio, timers, events, storage | sound effects (off until turned on), respawns and trains on timers, game events between the level, HUD, and actors, and saved high scores and settings |
 
 Its images are drawn as text in `tools/art/`, each character a color from `tools/art/palette.mjs`, and `npm run art`
@@ -299,7 +299,7 @@ the canvas, touching the canvas doesn't scroll the page, and `pointer.pointers` 
 
 ### Touch buttons
 
-Games played with a keyboard can add on-screen buttons that press keys, so they can be played on phones:
+Games played with a keyboard can add on-screen buttons and a d-pad that press keys, so they can be played on phones:
 
 ```ts
 controller.setTouchButtons([
@@ -314,6 +314,15 @@ Buttons (in canvas coordinates) appear once the player touches the screen, so th
 as a bitmap font. Pressing one is the same as
 pressing its key, for `controller.keyboard` and `onKeyboardInput` alike. A touch that starts on a button slides between
 buttons like a d-pad and isn't pointer input; other touches are.
+
+A d-pad is a disc that presses one of four keys (the arrow keys by default) for the direction a touch is from its
+center, so one thumb can rock between directions. The touch keeps steering it after sliding off the disc, and pressing
+near the center presses nothing:
+
+```ts
+controller.setTouchDPad({ x: 40, y: 140, radius: 28 });  // also keys, deadZone (0.25 of the radius), and font
+controller.setTouchDPad(undefined);                      // removes it
+```
 
 ### Audio
 

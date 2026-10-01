@@ -3,7 +3,7 @@ import { GameAudio } from './../device/audio';
 import { GameCanvas } from './../device/canvas';
 import { GameKeyboardState, KeyboardState } from './../device/keyboard';
 import { GamePointerState, PointerState } from './../device/pointer';
-import { TouchButtonOptions, TouchControls } from './../device/touchControls';
+import { TouchButtonOptions, TouchControls, TouchDPadOptions } from './../device/touchControls';
 import { GameStorage } from './../device/storage';
 import { GameConstruction } from './../structure/construction';
 import { GameScene, Scene } from './../structure/scene';
@@ -41,6 +41,8 @@ export interface Controller {
     publishEvent(eventName: string, data?: any): void;
     // Replaces the on-screen touch buttons, releasing any that were pressed.
     setTouchButtons(buttons: TouchButtonOptions[]): void;
+    // Replaces the on-screen touch d-pad, or removes it, releasing any touch controls that were pressed.
+    setTouchDPad(dpad: TouchDPadOptions | undefined): void;
     // starts a GameTimer that ticks every step regardless of Scene. See SceneState.startTimer for Scene-scoped timers.
     startTimer(options: GameTimerOptions): GameTimer;
     transitionToScene(sceneName: string, options?: SceneTransitionOptions, data?: any): Promise<void>;
@@ -155,6 +157,10 @@ export class SceneController implements Controller {
 
     setTouchButtons(buttons: TouchButtonOptions[]): void {
         this.touchControls.setButtons(buttons, ev => this.onKeyboardEvent(ev));
+    }
+
+    setTouchDPad(dpad: TouchDPadOptions | undefined): void {
+        this.touchControls.setDPad(dpad, ev => this.onKeyboardEvent(ev));
     }
 
     onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void {
