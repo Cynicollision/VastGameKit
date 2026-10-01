@@ -47,6 +47,10 @@ export const Points = {
 // steps a hop takes, the steps before a lost life's next cat appears, and the steps to celebrate a cat getting home
 // before the next one does.
 export const HopSteps = 6;
+
+// steps a held key waits after a hop lands before hopping again, so it's easy to let go after one hop. Each press
+// always hops, even one made during a hop.
+export const HoldPauseSteps = 12;
 export const RespawnSteps = 60;
 export const CelebrateSteps = 45;
 

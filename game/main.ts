@@ -20,7 +20,9 @@ const game = Game.init({
         backgroundColor: Colors.outline,
         width: Screen.width,
         height: Screen.height,
-        scale: 'integer',
+        // whole screen pixels per game pixel keep the pixel art even, but on phones' dense screens that can leave a wide
+        // border around the game, and pixels a screen pixel apart in size are hard to see. So there, fill the space.
+        scale: window.devicePixelRatio >= 2 ? 'fit' : 'integer',
     },
 });
 

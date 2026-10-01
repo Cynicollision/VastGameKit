@@ -1,4 +1,5 @@
-import { BitmapFont, Controller, TouchButtonOptions } from './../engine';
+import { BitmapFont, Controller } from './../engine';
+import { Screen } from './constants';
 
 // The player's choices, saved between visits.
 
@@ -16,15 +17,21 @@ export function toggleMute(controller: Controller): void {
     applySettings(controller);
 }
 
-// Shows arrow buttons over the bottom corners of the level, once the player touches the screen.
-export function showTouchButtons(controller: Controller, show: boolean, font: BitmapFont): void {
-    const size = 32;
-    const buttons: TouchButtonOptions[] = [
-        { key: 'ArrowLeft', x: 4, y: 216, label: '◀' },
-        { key: 'ArrowRight', x: 40, y: 216, label: '▶' },
-        { key: 'ArrowUp', x: 204, y: 180, label: '▲' },
-        { key: 'ArrowDown', x: 204, y: 216, label: '▼' },
-    ].map(button => ({ ...button, width: size, height: size, font: font }));
+// Which bottom corner of the level the d-pad sits in, chosen when a game is started by touch.
+export type PadSide = 'left' | 'right';
 
-    controller.setTouchButtons(show ? buttons : []);
+export function getPadSide(controller: Controller): PadSide {
+    return controller.storage.get('padSide', 'right');
+}
+
+export function setPadSide(controller: Controller, side: PadSide): void {
+    controller.storage.set('padSide', side);
+}
+
+// Shows a d-pad over a bottom corner of the level once the player touches the screen, so one thumb can steer the cat.
+export function showTouchPad(controller: Controller, show: boolean, font: BitmapFont): void {
+    const radius = 28;
+    const margin = 6;
+    const x = getPadSide(controller) === 'left' ? margin + radius : Screen.width - margin - radius;
+    controller.setTouchDPad(show ? { x: x, y: Screen.height - margin - radius, radius: radius, font: font } : undefined);
 }

@@ -4,7 +4,7 @@ import { celebrate } from './../actors/scenery';
 import { CameraPanSpeed, CelebrateSteps, HudHeight, Points, RespawnSteps, Rules, Screen, Tile } from './../constants';
 import { Sprites } from './../generated/art';
 import { addScore, getSession } from './../session';
-import { showTouchButtons } from './../settings';
+import { showTouchPad } from './../settings';
 import { showBanner } from './panels';
 
 const BoxFrames = Sprites.sprBox.frames;
@@ -165,7 +165,7 @@ export function buildLevel(game: Game): void {
 
         self.floatSubScene('scnHud', { x: 0, y: 0, width: Screen.width, height: HudHeight });
         showBanner(self, `ROUND ${getSession(controller).round}`, RespawnSteps * 1.5);
-        showTouchButtons(controller, true, font);
+        showTouchPad(controller, true, font);
     });
 
     level.onKeyboardInput('p', (self, event) => {
@@ -182,7 +182,7 @@ export function buildLevel(game: Game): void {
 
     level.onGameEvent('togglePause', (self) => togglePause(self));
 
-    level.onGameEvent('gameOver', (self, event, controller) => showTouchButtons(controller, false, font));
+    level.onGameEvent('gameOver', (self, event, controller) => showTouchPad(controller, false, font));
 
     level.onStep((self, controller) => {
         const cat: Instance | undefined = self.state.cat;

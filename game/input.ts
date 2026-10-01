@@ -7,17 +7,19 @@ const Keys: [Direction, string[]][] = [
     [Direction.Right, ['ArrowRight', 'd']],
 ];
 
-// The direction the player asked to hop this step: a key pressed or held. On touch screens, the arrow buttons press keys.
-export function readHop(controller: Controller): Direction | undefined {
-    const keyboard = controller.keyboard;
-    const pressed = Keys.find(([, keys]) => keys.some(key => keyboard.wasPressed(key)));
-    if (pressed) {
-        return pressed[0];
-    }
+function findDirection(test: (key: string) => boolean): Direction | undefined {
+    const found = Keys.find(([, keys]) => keys.some(test));
+    return found ? found[0] : undefined;
+}
 
-    // holding a key keeps hopping.
-    const held = Keys.find(([, keys]) => keys.some(key => keyboard.isDown(key)));
-    return held ? held[0] : undefined;
+// The direction of a key pressed this step. On touch screens, the d-pad presses keys.
+export function readPress(controller: Controller): Direction | undefined {
+    return findDirection(key => controller.keyboard.wasPressed(key));
+}
+
+// The direction of a key being held down.
+export function readHeld(controller: Controller): Direction | undefined {
+    return findDirection(key => controller.keyboard.isDown(key));
 }
 
 export function wasStartPressed(controller: Controller): boolean {

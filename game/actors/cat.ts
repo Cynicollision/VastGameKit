@@ -1,7 +1,7 @@
 import { Controller, Direction, Game, Instance, InstanceStatus, SpriteTransformation } from './../../engine';
-import { HopSteps, Tile } from './../constants';
+import { HoldPauseSteps, HopSteps, Tile } from './../constants';
 import { Sprites } from './../generated/art';
-import { readHop } from './../input';
+import { readHeld, readPress } from './../input';
 
 const Frames = Sprites.sprCat.frames;
 
@@ -81,6 +81,7 @@ function continueHop(self: Instance, hop: Hop, controller: Controller): void {
 
     if (hop.step >= HopSteps) {
         self.state.hop = undefined;
+        self.state.restSteps = 0;
         setHopScale(self, 1);
         controller.publishEvent('catLanded', { cat: self, row: getRow(self) });
     }
@@ -173,17 +174,29 @@ export function buildCat(game: Game): void {
 
         ride(self);
 
+        // a press during a hop waits for it to land.
+        const pressed = readPress(controller);
+        if (pressed !== undefined) {
+            self.state.nextHop = pressed;
+        }
+
         const hop: Hop | undefined = self.state.hop;
         if (hop) {
             continueHop(self, hop, controller);
         }
-        else {
-            // bonks for hops that can't be made, but not over and over while a key is held.
-            const direction = readHop(controller);
-            if (direction !== undefined && !startHop(self, direction, controller) && !self.state.asking) {
+        else if (self.state.nextHop !== undefined) {
+            // bonks for presses that can't hop, but not over and over for a held key.
+            if (!startHop(self, self.state.nextHop, controller)) {
                 controller.audio.play('sndBonk');
             }
-            self.state.asking = direction !== undefined;
+            self.state.nextHop = undefined;
+        }
+        else {
+            self.state.restSteps = (self.state.restSteps || 0) + 1;
+            const held = readHeld(controller);
+            if (held !== undefined && self.state.restSteps > HoldPauseSteps) {
+                startHop(self, held, controller);
+            }
         }
 
         if (!self.state.hop && !self.state.lost) {
