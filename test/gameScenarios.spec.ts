@@ -72,4 +72,23 @@ describe('Game scenarios', () => {
         expect(restartedPlayers.length).toBe(1);
         expect(restartedPlayers[0].x).toBe(0);
     });
+
+    it('keeps a persistent level\'s HUD running after leaving the level and returning', () => {
+        let hudSteps = 0;
+        testGame.construction.scenes.add('scnHud').onStep(() => hudSteps++);
+        testGame.construction.scenes.add('scnMenu');
+        testGame.construction.scenes.add('scnLevel', { persistent: true }).onStart(self => self.floatSubScene('scnHud'));
+
+        testGame.controller.goToScene('scnLevel');
+        step();
+        expect(hudSteps).toBe(1);
+
+        testGame.controller.goToScene('scnMenu');
+        step();
+        expect(hudSteps).toBe(1);
+
+        testGame.controller.goToScene('scnLevel');
+        step();
+        expect(hudSteps).toBe(2);
+    });
 });

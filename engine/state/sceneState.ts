@@ -157,13 +157,12 @@ export class SceneState {
         }
         else if (this._status === SceneStatus.Suspended) {
             (<GameScene>this.scene).callOnResume(this, controller, data);
+            // sub-scenes were suspended along with this Scene, so they resume with it too.
+            this.embeddedSubScenes.forEach(subScene => subScene.sceneState.startOrResume(controller, data));
+            this.floatingSubScenes.forEach(subScene => subScene.sceneState.startOrResume(controller, data));
         }
 
         this._status = SceneStatus.Running;
-
-        // TODO probably unnecessary/redundant
-        //this.embeddedSubScenes.forEach(embed => embed.sceneState.startOrResume(controller, data));
-        //this.floatingSubScenes.forEach(embed => embed.sceneState.startOrResume(controller, data));
     }
 
     step(controller: Controller): void {

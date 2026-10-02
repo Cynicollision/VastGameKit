@@ -16,6 +16,10 @@ export class SceneSubSceneState {
         delete this.subSceneMap[subSceneKey];
     }
 
+    private toList(): SubScene[] {
+        return Object.values(this.subSceneMap);
+    }
+
     private getByDepthDesc(): SubScene[] {
         return this.toList().sort((a, b) => b.depth - a.depth);
     }
@@ -63,17 +67,6 @@ export class SceneSubSceneState {
                 event.cancel();
             }
         });
-    }
-
-    // TODO make private, tests that use this should test differently.
-    toList(): SubScene[] {
-        const subScenes: SubScene[] = [];
-
-        for (const a in this.subSceneMap) {
-            subScenes.push(this.subSceneMap[a]);
-        }
-
-        return subScenes;
     }
 
     step(controller: SceneController): void {

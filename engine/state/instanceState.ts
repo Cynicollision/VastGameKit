@@ -62,7 +62,6 @@ export class SceneInstanceState {
         }
     }
 
-    // TODO: move x, y back to ActorInstanceOptions for consistency w/ SubScenes
     create(actorName: string, options?: ActorInstanceOptions): Instance {
         const actor = <ActorDefinition>this.controller.gameConstruction.actors.get(actorName);
         const newInstance = new ActorInstance(RuntimeID.next(), actor, this, options);

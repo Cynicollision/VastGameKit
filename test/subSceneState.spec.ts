@@ -1,17 +1,24 @@
 import { Game } from './../engine/game';
 import { GameScene } from './../engine/structure/scene';
+import { SubScene } from './../engine/state/subScene';
 import { SceneSubSceneState } from './../engine/state/subSceneState';
 import { MockGameCanvas } from './mocks/mockGameCanvas';
 import { TestUtil } from './testUtil';
 
-describe('SceneEmbedState', () => {
+describe('SceneSubSceneState', () => {
     let testGame: Game;
-    let testEmbedState: SceneSubSceneState;
+    let testSubSceneState: SceneSubSceneState;
+
+    function getSubScenes(): SubScene[] {
+        const subScenes: SubScene[] = [];
+        testSubSceneState.forEach(subScene => subScenes.push(subScene));
+        return subScenes;
+    }
 
     beforeEach(() => {
         testGame = TestUtil.getTestGame();
         testGame.controller.sceneState.startOrResume(testGame.controller);
-        testEmbedState = new SceneSubSceneState(testGame.controller);
+        testSubSceneState = new SceneSubSceneState(testGame.controller);
 
         testGame.construction.scenes.add('scnSub1', { width: 300, height: 200 });
         testGame.construction.scenes.add('scnSub2', { width: 300, height: 200 });
@@ -19,8 +26,8 @@ describe('SceneEmbedState', () => {
     });
 
     it('creates SubScenes', () => {
-        testEmbedState.create('scnSub1');
-        const subScenes = testEmbedState.toList();
+        testSubSceneState.create('scnSub1');
+        const subScenes = getSubScenes();
 
         expect(subScenes.length).toBe(1);
         expect(subScenes[0].sceneState.scene.name).toBe('scnSub1');
@@ -29,8 +36,8 @@ describe('SceneEmbedState', () => {
     });
 
     it('deletes destroyed SubScenes during step', () => {
-        const subScene = testEmbedState.create('scnSub1');
-        let subScenes = testEmbedState.toList();
+        const subScene = testSubSceneState.create('scnSub1');
+        let subScenes = getSubScenes();
 
         expect(subScenes.length).toBe(1);
         expect(subScenes[0].sceneState.scene.name).toBe('scnSub1');
@@ -38,8 +45,8 @@ describe('SceneEmbedState', () => {
         expect(subScenes[0].sceneState.scene.width).toBe(300);
 
         subScene.destroy();
-        testEmbedState.step(testGame.controller);
-        subScenes = testEmbedState.toList();
+        testSubSceneState.step(testGame.controller);
+        subScenes = getSubScenes();
 
         expect(subScenes.length).toBe(0);
     });
@@ -50,14 +57,14 @@ describe('SceneEmbedState', () => {
         testGame.construction.scenes.get('scnSub2').onDraw(self => drawOrder.push(self.scene.name));
         testGame.construction.scenes.get('scnSub3').onDraw(self => drawOrder.push(self.scene.name));
 
-        testEmbedState.create('scnSub2', { depth: 10 });
-        testEmbedState.create('scnSub1', { depth: -20 });
-        testEmbedState.create('scnSub3', { depth: 0 });
+        testSubSceneState.create('scnSub2', { depth: 10 });
+        testSubSceneState.create('scnSub1', { depth: -20 });
+        testSubSceneState.create('scnSub3', { depth: 0 });
 
         const mockCanvas = <MockGameCanvas>testGame.canvas;
         expect(mockCanvas.drawnImages.length).toBe(0);
 
-        testEmbedState.draw(mockCanvas, testGame.controller);
+        testSubSceneState.draw(mockCanvas, testGame.controller);
 
         expect(mockCanvas.drawnImages.length).toBe(3);
         expect(drawOrder.length).toBe(3);
@@ -66,12 +73,12 @@ describe('SceneEmbedState', () => {
         expect(drawOrder[2]).toBe('scnSub1');
     });
     
-    it('enumerates a callback over its ActorInstances', () => {
-        testEmbedState.create('scnSub1', { x: 10, y: 20 });
-        testEmbedState.create('scnSub1', { x: 10, y: 20 });
+    it('enumerates a callback over its SubScenes', () => {
+        testSubSceneState.create('scnSub1', { x: 10, y: 20 });
+        testSubSceneState.create('scnSub1', { x: 10, y: 20 });
 
-        testEmbedState.forEach(embed => embed.sceneState.state.foo = 'bar');
-        testEmbedState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construction.scenes.get('scnSub1')));
-        testEmbedState.forEach(embed => expect(embed.sceneState.state.foo).toBe('bar'));
+        testSubSceneState.forEach(embed => embed.sceneState.state.foo = 'bar');
+        testSubSceneState.forEach(embed => expect(embed.sceneState.scene).toBe(<GameScene>testGame.construction.scenes.get('scnSub1')));
+        testSubSceneState.forEach(embed => expect(embed.sceneState.state.foo).toBe('bar'));
     });
 });
