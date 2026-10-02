@@ -35,9 +35,6 @@ export interface Controller {
     readonly storage: GameStorage;
     goToScene(sceneName: string, data?: any): void;
     onSceneChange(callback: (oldScene: SceneState, newScene: SceneState) => void): void;
-    // TODO:
-    //onStateLoad(callback: (saveState: GameSaveState) => void): void;
-    //onStateLoad(callback: (saveState: GameSaveState) => void): void;
     publishEvent(eventName: string, data?: any): void;
     // Replaces the on-screen touch buttons, releasing any that were pressed.
     setTouchButtons(buttons: TouchButtonOptions[]): void;

@@ -26,8 +26,8 @@ export interface Scene extends LifecycleEntityBase<Scene, SceneState> {
     onResume(callback: EntityLifecycleCb<SceneState>): void;
     onStart(callback: EntityLifecycleCb<SceneState>): void;
     onSuspend(callback: EntityLifecycleCb<SceneState>): void;
+    // Has an Instance of the Actor created in each new SceneState of this Scene, before onStart.
     placeActor(actorName: string, options?: ActorInstanceOptions): void;
-    // TODO methods for initializing camera, embeds
 }
 
 export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements Scene {
@@ -81,7 +81,6 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
 
     newState(controller: SceneController): SceneState {
         const sceneState = new SceneState(RuntimeID.next(), controller, this);
-        // TODO: process SubScenePlacements, camera "constructs"(?) to initialize sceneState
         this.actorPlacements.forEach(placement => sceneState.instances.create(placement.actorName, placement.options));
         
         return sceneState;
@@ -99,8 +98,7 @@ export class GameScene extends LifecycleEntityBase<Scene, SceneState> implements
         this.onSuspendCallback = callback;
     }
 
-    // TODO needs testing
     placeActor(actorName: string, options: ActorInstanceOptions = {}): void {
-        this.actorPlacements.push({ actorName: actorName, options: options});
+        this.actorPlacements.push({ actorName: actorName, options: options });
     }
 }

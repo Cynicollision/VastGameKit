@@ -61,7 +61,6 @@ export class Game {
         }
         catch (error) {
             const message = error instanceof Error ? error.message : String(error);
-            // TODO: Add GameLog back
             console.error(`Vastgame failed to initialize. ${message}`);
             throw new GameError(message, error instanceof Error ? error : undefined);
         }
