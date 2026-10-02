@@ -34,6 +34,12 @@ export function addScore(controller: Controller, points: number): void {
     }
 }
 
+// How many groups a lane with the given count has this round: lanes start out with fewer, getting busier each round.
+export function getTrafficCount(controller: Controller, count: number): number {
+    const traffic = Math.min(1, Rules.firstRoundTraffic + (getSession(controller).round - 1) * Rules.roundTrafficGrowth);
+    return Math.max(1, Math.round(count * traffic));
+}
+
 // Lanes start out slow and move faster each round, up to a top speed.
 export function getSpeedMultiplier(controller: Controller): number {
     return Math.min(Rules.topSpeed, Rules.firstRoundSpeed + (getSession(controller).round - 1) * Rules.roundSpeedup);
