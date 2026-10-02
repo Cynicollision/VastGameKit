@@ -1,7 +1,7 @@
 import { Controller, Game, Instance } from './../../engine';
 import { Rules, Tile } from './../constants';
 import { Sprites } from './../generated/art';
-import { getSession, getSpeedMultiplier } from './../session';
+import { getSession, getSpeedMultiplier, getTrafficCount } from './../session';
 
 const CarColors = Object.values(Sprites.sprCar.frames);
 const DuckFrames = Sprites.sprDuck.frames;
@@ -19,24 +19,23 @@ const DiveCycle = { swim: 240, dive: 30, under: 90, surface: 30 };
 //   speed: pixels per step, to the right, or to the left if negative.
 //   count: how many groups are spaced evenly along the lane.
 //   size:  how many are in each group, side by side (default 1).
+//   growing: whether the lane starts out with fewer groups, filling in over the rounds (see Rules).
 //   dive:  whether the first group dives now and then (ducks), after the first round.
 // Everything in the lane wraps around from one side to the other, off screen.
 function buildLane(game: Game): void {
     const actLane = game.construction.actors.add('actLane');
 
-    actLane.onCreate((self, controller) => {
-        const actor = game.construction.actors.get(self.state.actor);
-        const width = actor.sprite ? actor.sprite.width : Tile;
+    // Replaces the lane's groups with the given number of them, spaced evenly.
+    const fillLane = (self: Instance, controller: Controller, count: number): void => {
+        const width = self.state.memberWidth;
         const size = self.state.size || 1;
-        const sceneWidth = controller.sceneState.scene.width;
 
-        // groups leave one side entirely before coming back on the other.
-        self.state.margin = size * width + Tile;
-        self.state.wrapWidth = sceneWidth + self.state.margin;
+        (self.state.members as Instance[]).forEach(member => member.destroy());
         self.state.members = [];
+        self.state.groups = count;
 
-        for (let group = 0; group < self.state.count; group++) {
-            const groupX = Math.round(group * self.state.wrapWidth / self.state.count);
+        for (let group = 0; group < count; group++) {
+            const groupX = Math.round(group * self.state.wrapWidth / count);
 
             for (let i = 0; i < size; i++) {
                 const member = controller.sceneState.instances.create(self.state.actor, { x: groupX + i * width, y: self.y });
@@ -48,9 +47,25 @@ function buildLane(game: Game): void {
                 self.state.members.push(member);
             }
         }
+    };
+
+    actLane.onCreate((self, controller) => {
+        const actor = game.construction.actors.get(self.state.actor);
+        self.state.memberWidth = actor.sprite ? actor.sprite.width : Tile;
+
+        // groups leave one side entirely before coming back on the other.
+        self.state.margin = (self.state.size || 1) * self.state.memberWidth + Tile;
+        self.state.wrapWidth = controller.sceneState.scene.width + self.state.margin;
+        self.state.members = [];
     });
 
     actLane.onStep((self, controller) => {
+        // growing lanes fill in when a new round starts, before its first cat.
+        const count = self.state.growing ? getTrafficCount(controller, self.state.count) : self.state.count;
+        if (count !== self.state.groups) {
+            fillLane(self, controller, count);
+        }
+
         const velocity = self.state.speed * getSpeedMultiplier(controller);
         const sceneWidth = controller.sceneState.scene.width;
 

@@ -30,10 +30,12 @@ export function setPadSide(controller: Controller, side: PadSide): void {
 
 // Shows a d-pad over a bottom corner of the level once the player touches the screen, so one thumb can steer the cat.
 export function showTouchPad(controller: Controller, show: boolean, font: BitmapFont): void {
-    const radius = 28;
-    const margin = 6;
-    const x = getPadSide(controller) === 'left' ? margin + radius : Screen.width - margin - radius;
+    const radius = 32;
+    // in from the side a little, so a thumb isn't cramped against the edge of the screen.
+    const marginX = 14;
+    const marginY = 6;
+    const x = getPadSide(controller) === 'left' ? marginX + radius : Screen.width - marginX - radius;
     // the cat can't hop diagonally, so a touch near a diagonal waits to be clearer about which way it means.
-    const dpad = { x: x, y: Screen.height - margin - radius, radius: radius, diagonalGap: 30, font: font };
+    const dpad = { x: x, y: Screen.height - marginY - radius, radius: radius, diagonalGap: 30, font: font };
     controller.setTouchDPad(show ? dpad : undefined);
 }

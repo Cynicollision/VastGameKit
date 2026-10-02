@@ -29,6 +29,10 @@ export const Rules = {
     firstRoundSpeed: 0.6,
     roundSpeedup: 0.1,
     topSpeed: 1.3,
+    // how much of a growing lane's traffic is out in the first round (compared to its count in the map), and how much
+    // more comes out each round, up to all of it. Only vehicle lanes grow: fewer floaters would make the canal harder.
+    firstRoundTraffic: 0.6,
+    roundTrafficGrowth: 0.1,
     // the first round that ducks dive.
     firstDivingRound: 2,
 };
