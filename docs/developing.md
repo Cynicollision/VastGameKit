@@ -121,9 +121,6 @@ To try a change in a game in its own repo before releasing it, point the game at
 (`"vastgame": "file:../VastGameKit"`), and run `npm run build:lib` here after each change, since games use the built
 `lib/`.
 
-Known loose ends are marked with `TODO` comments in the engine, e.g. `Scene.placeActor` has no tests, and `Game.init`
-logs to the console rather than a game log.
-
 ## Nine Lives
 
 Nine Lives is the engine's demo and a real game, published on [seannormoyle.net](https://seannormoyle.net/games/nine-lives/).
